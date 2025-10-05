@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.stripe.com)",
+      "WebFetch(domain:stripe.com)",
+      "WebSearch",
+      "Bash(npx create-react-app:*)",
+      "Bash(pkill:*)",
+      "Bash(rm:*)",
+      "Bash(npm install)",
+      "Bash(npm start)",
+      "Bash(PORT=3001 npm start)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
