@@ -10,10 +10,16 @@ function Sidebar() {
 
   const menuItems = [
     {
+      path: '/home',
+      icon: '🏠',
+      label: 'Home',
+      description: 'Dashboard principal'
+    },
+    {
       path: '/dashboard',
       icon: '📊',
-      label: 'Dashboard',
-      description: 'Transacciones fallidas'
+      label: 'Transacciones',
+      description: 'Pagos fallidos'
     },
     {
       path: '/profile',

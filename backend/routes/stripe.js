@@ -3,6 +3,7 @@ const router = express.Router();
 const Stripe = require('stripe');
 const auth = require('../middleware/auth');
 const User = require('../models/User');
+const Recovery = require('../models/Recovery');
 
 // Helper function para obtener el cliente Stripe del usuario
 const getUserStripeClient = async (userId) => {
@@ -196,8 +197,34 @@ router.post('/retry-payment', auth, async (req, res) => {
 
         attempts.push(attempt);
 
-        // Si tuvo éxito, devolver inmediatamente
+        // Si tuvo éxito, guardar recuperación y devolver
         if (result.status === 'succeeded') {
+          // Obtener información del cliente para guardar en recovery
+          try {
+            const customer = await stripe.customers.retrieve(customerId);
+
+            // Guardar recuperación en la base de datos
+            const recovery = new Recovery({
+              userId: req.user._id,
+              paymentIntentId: result.id,
+              customerId: customerId,
+              customerEmail: customer.email || '',
+              amount: result.amount,
+              currency: result.currency,
+              paymentMethodUsed: method.id,
+              paymentMethodDetails: {
+                brand: method.card?.brand,
+                last4: method.card?.last4
+              },
+              recoveredAt: new Date()
+            });
+
+            await recovery.save();
+          } catch (saveError) {
+            console.error('Error guardando recuperación:', saveError);
+            // No fallar el request si falla guardar, el pago ya se procesó
+          }
+
           return res.json({
             success: true,
             message: `Pago exitoso con ${method.card?.brand} terminada en ${method.card?.last4}`,
