@@ -1,122 +1,160 @@
-/* Minimalist Auth Design - 3 Colors Only */
+/* Colorful Auth Design - Inspired by 30MPC */
 .auth-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F8F9FA;
+  background: linear-gradient(135deg, #c8f4c8 0%, #e8f9e8 100%);
   padding: 20px;
 }
 
 .auth-box {
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 48px;
-  border-radius: 8px;
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  border: 3px solid #1a1a1a;
+  box-shadow: 8px 8px 0px #1a1a1a;
   width: 100%;
-  max-width: 420px;
+  max-width: 450px;
+  transition: all 0.3s ease;
+}
+
+.auth-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 12px 12px 0px #1a1a1a;
 }
 
 .auth-box h1 {
   color: #1a1a1a;
-  margin-bottom: 8px;
-  font-size: 24px;
+  margin-bottom: 12px;
+  font-size: 36px;
   text-align: center;
-  font-weight: 600;
-  letter-spacing: -0.025em;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
 }
 
 .auth-subtitle {
-  color: #6b7280;
+  color: #333333;
   text-align: center;
   margin-bottom: 32px;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: #1a1a1a;
-  font-weight: 500;
+  font-weight: 700;
   font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #E5E7EB;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: 14px 16px;
+  border: 3px solid #1a1a1a;
+  border-radius: 12px;
+  font-size: 16px;
   transition: all 0.2s;
   box-sizing: border-box;
-  background: #FFFFFF;
+  background: #ffffff;
   color: #1a1a1a;
+  font-weight: 600;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #9b9ff5;
+  box-shadow: 0 0 0 4px rgba(155, 159, 245, 0.2);
+  transform: scale(1.02);
 }
 
 .form-group input::placeholder {
-  color: #9ca3af;
+  color: #999999;
+  font-weight: 500;
 }
 
 .auth-button {
   width: 100%;
-  padding: 10px 16px;
-  background: #6366f1;
-  color: #FFFFFF;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 16px 24px;
+  background: #ffd966;
+  color: #1a1a1a;
+  border: 3px solid #1a1a1a;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 900;
   cursor: pointer;
   transition: all 0.2s;
   margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 4px 4px 0px #1a1a1a;
 }
 
 .auth-button:hover:not(:disabled) {
-  background: #4f46e5;
+  background: #ffe680;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #1a1a1a;
+}
+
+.auth-button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #1a1a1a;
 }
 
 .auth-button:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: 4px 4px 0px #1a1a1a;
 }
 
 .auth-link {
   text-align: center;
   margin-top: 24px;
-  color: #6b7280;
-  font-size: 14px;
+  color: #333333;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .auth-link a {
-  color: #6366f1;
+  color: #9b9ff5;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 800;
+  border-bottom: 2px solid #9b9ff5;
+  transition: all 0.2s;
 }
 
 .auth-link a:hover {
-  text-decoration: underline;
+  color: #7b7fe5;
+  border-bottom-color: #7b7fe5;
 }
 
 .error-message {
-  background: #FEE2E2;
-  color: #991b1b;
-  padding: 12px;
-  border: 1px solid #FECACA;
-  border-radius: 6px;
+  background: #ffebee;
+  color: #c62828;
+  padding: 14px 16px;
+  border: 3px solid #c62828;
+  border-radius: 12px;
   margin-bottom: 20px;
   text-align: center;
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 700;
+}
+
+@media (max-width: 480px) {
+  .auth-box {
+    padding: 32px 24px;
+  }
+
+  .auth-box h1 {
+    font-size: 28px;
+  }
 }
