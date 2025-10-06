@@ -25,6 +25,7 @@ if (process.env.MONGODB_URI) {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/stripe', require('./routes/stripe'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/profile', require('./routes/profile'));
 
 // Health check
 app.get('/api/health', (req, res) => {

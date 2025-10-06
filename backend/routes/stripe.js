@@ -1,15 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
-// const auth = require('../middleware/auth'); // Deshabilitado para uso local
+const auth = require('../middleware/auth');
+const User = require('../models/User');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Helper function para obtener el cliente Stripe del usuario
+const getUserStripeClient = async (userId) => {
+  const user = await User.findById(userId).select('+stripeApiKey');
+
+  if (!user) {
+    throw new Error('Usuario no encontrado');
+  }
+
+  if (!user.stripeApiKey) {
+    throw new Error('API key de Stripe no configurada. Por favor configura tu API key en tu perfil.');
+  }
+
+  return new Stripe(user.stripeApiKey);
+};
 
 // @route   GET /api/stripe/failed-transactions
-// @desc    Obtener transacciones fallidas
-// @access  Public (local)
-router.get('/failed-transactions', async (req, res) => {
+// @desc    Obtener transacciones fallidas usando la API key del usuario
+// @access  Private
+router.get('/failed-transactions', auth, async (req, res) => {
   try {
+    // Obtener cliente Stripe del usuario
+    const stripe = await getUserStripeClient(req.user._id);
+
     const { limit = 100, startDate, endDate } = req.query;
 
     // Construir parámetros para la consulta
@@ -62,10 +79,13 @@ router.get('/failed-transactions', async (req, res) => {
 });
 
 // @route   GET /api/stripe/customer/:customerId
-// @desc    Obtener información del cliente
-// @access  Public (local)
-router.get('/customer/:customerId', async (req, res) => {
+// @desc    Obtener información del cliente usando la API key del usuario
+// @access  Private
+router.get('/customer/:customerId', auth, async (req, res) => {
   try {
+    // Obtener cliente Stripe del usuario
+    const stripe = await getUserStripeClient(req.user._id);
+
     const { customerId } = req.params;
 
     if (!customerId) {
@@ -88,10 +108,13 @@ router.get('/customer/:customerId', async (req, res) => {
 });
 
 // @route   GET /api/stripe/payment-methods/:customerId
-// @desc    Obtener métodos de pago del cliente
-// @access  Public (local)
-router.get('/payment-methods/:customerId', async (req, res) => {
+// @desc    Obtener métodos de pago del cliente usando la API key del usuario
+// @access  Private
+router.get('/payment-methods/:customerId', auth, async (req, res) => {
   try {
+    // Obtener cliente Stripe del usuario
+    const stripe = await getUserStripeClient(req.user._id);
+
     const { customerId } = req.params;
 
     if (!customerId) {
@@ -118,10 +141,13 @@ router.get('/payment-methods/:customerId', async (req, res) => {
 });
 
 // @route   POST /api/stripe/retry-payment
-// @desc    Reintentar pago
-// @access  Public (local)
-router.post('/retry-payment', async (req, res) => {
+// @desc    Reintentar pago usando la API key del usuario
+// @access  Private
+router.post('/retry-payment', auth, async (req, res) => {
   try {
+    // Obtener cliente Stripe del usuario
+    const stripe = await getUserStripeClient(req.user._id);
+
     const { paymentIntentId, customerId } = req.body;
 
     if (!paymentIntentId || !customerId) {

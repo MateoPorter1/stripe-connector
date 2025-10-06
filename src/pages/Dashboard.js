@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import Sidebar from '../components/Sidebar';
 import {
   getFailedTransactions,
   getCustomerInfo,
@@ -20,9 +19,6 @@ function Dashboard() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [retryingPayments, setRetryingPayments] = useState(new Set());
-
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
 
   // Function to get default start date (7 days ago for failed transactions)
   const getDefaultStartDate = () => {
@@ -133,28 +129,14 @@ function Dashboard() {
   };
 
   return (
-    <div className="app">
-      <div className="container">
+    <div className="dashboard-layout">
+      <Sidebar />
+      <div className="dashboard-content">
+        <div className="container">
         <div className="header">
           <div>
             <h1>❌ Failed Stripe Transactions</h1>
             <p>Manage and retry failed payments with smart recovery</p>
-          </div>
-          <div className="user-info">
-            <div className="user-details">
-              <span>👤 {user?.name || user?.email}</span>
-              <span className={`plan-badge plan-${user?.plan || 'free'}`}>
-                {user?.plan === 'premium' ? '⭐ Premium' : '🆓 Free'}
-              </span>
-            </div>
-            <div className="header-buttons">
-              {user?.role === 'admin' && (
-                <button onClick={() => navigate('/admin')} className="admin-button">
-                  🔧 Admin Panel
-                </button>
-              )}
-              <button onClick={logout} className="logout-button">Cerrar Sesión</button>
-            </div>
           </div>
         </div>
 
@@ -281,6 +263,7 @@ function Dashboard() {
             <p>No failed transactions found for the selected date range.</p>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

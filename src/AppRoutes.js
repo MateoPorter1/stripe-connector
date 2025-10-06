@@ -5,6 +5,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 
 function AppRoutes() {
@@ -19,6 +20,14 @@ function AppRoutes() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
               </PrivateRoute>
             }
           />

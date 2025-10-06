@@ -32,6 +32,19 @@ body {
   min-height: 100vh;
 }
 
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--mint-green) 0%, var(--light-mint) 100%);
+}
+
+.dashboard-content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 40px;
+  overflow-y: auto;
+}
+
 .app {
   min-height: 100vh;
   padding: 20px;
@@ -47,18 +60,12 @@ body {
   border-radius: 30px;
   box-shadow: 0 25px 50px rgba(26, 90, 62, 0.1);
   padding: 40px;
-  margin-top: 20px;
   border: 3px solid var(--dark-green);
+  margin: 0 auto;
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 40px;
-}
-
-.header > div:first-child {
   text-align: left;
 }
 
@@ -570,7 +577,6 @@ body {
 @media (max-width: 1200px) {
   .container {
     padding: 30px 20px;
-    margin: 10px;
   }
 
   .header h1 {
@@ -579,6 +585,10 @@ body {
 }
 
 @media (max-width: 768px) {
+  .dashboard-content {
+    margin-left: 80px;
+    padding: 20px;
+  }
   .container {
     padding: 20px 15px;
     border-radius: 20px;
@@ -646,6 +656,12 @@ body {
 }
 
 @media (max-width: 480px) {
+  .dashboard-content {
+    margin-left: 0;
+    margin-bottom: 70px;
+    padding: 15px;
+  }
+
   .container {
     border-radius: 15px;
     border-width: 2px;

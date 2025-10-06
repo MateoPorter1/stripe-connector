@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Sidebar from '../components/Sidebar';
 import './Admin.css';
 
 const Admin = () => {
-  const { user, token, logout } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
@@ -99,8 +100,11 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="admin-container">
-        <div className="loading">Cargando panel de administrador...</div>
+      <div className="admin-layout">
+        <Sidebar />
+        <div className="admin-content">
+          <div className="loading">Cargando panel de administrador...</div>
+        </div>
       </div>
     );
   }
@@ -110,14 +114,16 @@ const Admin = () => {
   }
 
   return (
-    <div className="admin-container">
-      <div className="admin-header">
-        <div>
-          <h1>Panel de Administrador</h1>
-          <p>Bienvenido, {user.name}</p>
-        </div>
-        <button onClick={logout} className="logout-btn">Cerrar Sesión</button>
-      </div>
+    <div className="admin-layout">
+      <Sidebar />
+      <div className="admin-content">
+        <div className="admin-container">
+          <div className="admin-header">
+            <div>
+              <h1>Panel de Administrador</h1>
+              <p>Bienvenido, {user.name}</p>
+            </div>
+          </div>
 
       {error && <div className="error-message">{error}</div>}
       {successMessage && <div className="success-message">{successMessage}</div>}
@@ -190,6 +196,8 @@ const Admin = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
         </div>
       </div>
     </div>

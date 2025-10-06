@@ -33,6 +33,15 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  stripeApiKey: {
+    type: String,
+    default: null,
+    select: false // No incluir en queries por defecto (seguridad)
+  },
+  hasConfiguredStripe: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

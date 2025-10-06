@@ -1,14 +1,24 @@
+/* Layout */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #c3f4d6 0%, #e8fdf0 100%);
+}
+
+.admin-content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 40px;
+  overflow-y: auto;
+}
+
 .admin-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 20px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 .admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 2px solid #e0e0e0;
@@ -198,6 +208,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .admin-content {
+    margin-left: 80px;
+    padding: 20px;
+  }
+
   .admin-header {
     flex-direction: column;
     align-items: flex-start;
@@ -214,5 +229,17 @@
 
   .users-table {
     min-width: 800px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-content {
+    margin-left: 0;
+    margin-bottom: 70px;
+    padding: 15px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
