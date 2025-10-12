@@ -2,9 +2,10 @@
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 const getAuthHeader = () => {
-  // Sin autenticación para uso local
+  const token = localStorage.getItem('token');
   return {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
   };
 };
 

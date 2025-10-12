@@ -16,6 +16,7 @@ function Dashboard() {
   const [error, setError] = useState('');
   const [hasLoaded, setHasLoaded] = useState(false);
   const [failedTransactions, setFailedTransactions] = useState([]);
+  const [totalFetched, setTotalFetched] = useState(0);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [retryingPayments, setRetryingPayments] = useState(new Set());
@@ -47,6 +48,8 @@ function Dashboard() {
 
       if (result.success) {
         setHasLoaded(true);
+        setTotalFetched(result.totalFetched || result.transactions.length);
+
         if (result.transactions.length === 0) {
           setError(`No failed transactions found between ${startDate} and ${endDate}.`);
         } else {
@@ -191,7 +194,15 @@ function Dashboard() {
 
         {hasLoaded && failedTransactions.length > 0 && (
           <div className="results-section">
-            <h2>Failed transactions found: {failedTransactions.length}</h2>
+            <div className="results-header">
+              <h2>❌ {failedTransactions.length} Failed Transactions</h2>
+              {totalFetched > 0 && (
+                <p className="results-info">
+                  Encontradas {failedTransactions.length} transacciones fallidas de un total de {totalFetched} transacciones revisadas
+                  ({((failedTransactions.length / totalFetched) * 100).toFixed(1)}% fallidas)
+                </p>
+              )}
+            </div>
 
             <div className="table-container">
               <table className="transactions-table">

@@ -28,11 +28,11 @@ router.get('/failed-transactions', auth, async (req, res) => {
     // Obtener cliente Stripe del usuario
     const stripe = await getUserStripeClient(req.user._id);
 
-    const { limit = 100, startDate, endDate } = req.query;
+    const { startDate, endDate } = req.query;
 
     // Construir parámetros para la consulta
     const params = {
-      limit: parseInt(limit)
+      limit: 100 // Máximo por petición de Stripe
     };
 
     // Agregar filtros de fecha
@@ -52,15 +52,40 @@ router.get('/failed-transactions', auth, async (req, res) => {
       }
     }
 
-    // Obtener payment intents de Stripe
-    const paymentIntents = await stripe.paymentIntents.list(params);
+    // Obtener TODAS las transacciones usando paginación
+    let allPaymentIntents = [];
+    let hasMore = true;
+    let startingAfter = null;
+
+    console.log('🔍 Obteniendo transacciones fallidas...');
+
+    while (hasMore) {
+      const queryParams = { ...params };
+      if (startingAfter) {
+        queryParams.starting_after = startingAfter;
+      }
+
+      const response = await stripe.paymentIntents.list(queryParams);
+      allPaymentIntents = allPaymentIntents.concat(response.data);
+
+      hasMore = response.has_more;
+      if (hasMore && response.data.length > 0) {
+        startingAfter = response.data[response.data.length - 1].id;
+      }
+
+      console.log(`  ✓ Obtenidas ${allPaymentIntents.length} transacciones hasta ahora...`);
+    }
+
+    console.log(`✅ Total de transacciones obtenidas: ${allPaymentIntents.length}`);
 
     // Filtrar solo transacciones fallidas
-    const failedTransactions = paymentIntents.data.filter(transaction =>
+    const failedTransactions = allPaymentIntents.filter(transaction =>
       transaction.status === 'requires_payment_method' ||
       transaction.status === 'failed' ||
       transaction.status === 'canceled'
     );
+
+    console.log(`❌ Transacciones fallidas encontradas: ${failedTransactions.length}`);
 
     // Ordenar por fecha más reciente
     const sortedTransactions = failedTransactions.sort((a, b) => b.created - a.created);
@@ -68,7 +93,8 @@ router.get('/failed-transactions', auth, async (req, res) => {
     res.json({
       success: true,
       transactions: sortedTransactions,
-      total: sortedTransactions.length
+      total: sortedTransactions.length,
+      totalFetched: allPaymentIntents.length
     });
   } catch (error) {
     console.error('Error obteniendo transacciones:', error);

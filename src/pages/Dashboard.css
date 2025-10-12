@@ -162,6 +162,33 @@
   margin-top: 28px;
 }
 
+.results-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.results-header h2 {
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.results-info {
+  background: #e8f9e8;
+  border: 3px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin: 0 auto;
+  max-width: 600px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  box-shadow: 3px 3px 0px #1a1a1a;
+}
+
 .results-section h2 {
   color: #1a1a1a;
   margin-bottom: 20px;
