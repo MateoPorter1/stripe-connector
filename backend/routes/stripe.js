@@ -183,6 +183,9 @@ router.post('/retry-payment', auth, async (req, res) => {
       });
     }
 
+    // Obtener el payment intent original para conocer el monto
+    const originalPaymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
     // Obtener métodos de pago del cliente
     const paymentMethods = await stripe.paymentMethods.list({
       customer: customerId,
@@ -199,32 +202,47 @@ router.post('/retry-payment', auth, async (req, res) => {
 
     const attempts = [];
 
+    console.log(`🔄 Intentando cobrar ${paymentMethods.data.length} métodos de pago...`);
+
     // Intentar con cada método de pago
     for (const method of paymentMethods.data) {
       try {
-        // Actualizar payment intent con el método de pago
-        await stripe.paymentIntents.update(paymentIntentId, {
-          payment_method: method.id
-        });
+        console.log(`  💳 Intentando con ${method.card?.brand} •••• ${method.card?.last4}...`);
 
-        // Confirmar el pago
-        const result = await stripe.paymentIntents.confirm(paymentIntentId);
+        // Crear un NUEVO payment intent para cada tarjeta
+        const newPaymentIntent = await stripe.paymentIntents.create({
+          amount: originalPaymentIntent.amount,
+          currency: originalPaymentIntent.currency,
+          customer: customerId,
+          payment_method: method.id,
+          confirm: true,
+          description: `Retry of ${paymentIntentId}`,
+          metadata: {
+            original_payment_intent: paymentIntentId
+          },
+          automatic_payment_methods: {
+            enabled: true,
+            allow_redirects: 'never'
+          }
+        });
 
         const attempt = {
           paymentMethodId: method.id,
           brand: method.card?.brand,
           last4: method.card?.last4,
           result: {
-            success: result.status === 'succeeded',
-            status: result.status,
-            error: result.status !== 'succeeded' ? result.last_payment_error?.message : null
+            success: newPaymentIntent.status === 'succeeded',
+            status: newPaymentIntent.status,
+            error: newPaymentIntent.status !== 'succeeded' ? newPaymentIntent.last_payment_error?.message : null
           }
         };
 
         attempts.push(attempt);
 
         // Si tuvo éxito, guardar recuperación y devolver
-        if (result.status === 'succeeded') {
+        if (newPaymentIntent.status === 'succeeded') {
+          console.log(`  ✅ Pago exitoso con ${method.card?.brand} •••• ${method.card?.last4}`);
+
           // Obtener información del cliente para guardar en recovery
           try {
             const customer = await stripe.customers.retrieve(customerId);
@@ -232,11 +250,11 @@ router.post('/retry-payment', auth, async (req, res) => {
             // Guardar recuperación en la base de datos
             const recovery = new Recovery({
               userId: req.user._id,
-              paymentIntentId: result.id,
+              paymentIntentId: newPaymentIntent.id,
               customerId: customerId,
               customerEmail: customer.email || '',
-              amount: result.amount,
-              currency: result.currency,
+              amount: newPaymentIntent.amount,
+              currency: newPaymentIntent.currency,
               paymentMethodUsed: method.id,
               paymentMethodDetails: {
                 brand: method.card?.brand,
@@ -255,10 +273,15 @@ router.post('/retry-payment', auth, async (req, res) => {
             success: true,
             message: `Pago exitoso con ${method.card?.brand} terminada en ${method.card?.last4}`,
             attempts,
-            successfulMethod: method
+            successfulMethod: method,
+            newPaymentIntentId: newPaymentIntent.id
           });
+        } else {
+          console.log(`  ❌ Falló con ${method.card?.brand} •••• ${method.card?.last4}: ${newPaymentIntent.last_payment_error?.message}`);
         }
       } catch (error) {
+        console.log(`  ❌ Error con ${method.card?.brand} •••• ${method.card?.last4}: ${error.message}`);
+
         attempts.push({
           paymentMethodId: method.id,
           brand: method.card?.brand,
@@ -273,6 +296,8 @@ router.post('/retry-payment', auth, async (req, res) => {
     }
 
     // Si ningún método funcionó
+    console.log(`❌ Todos los ${paymentMethods.data.length} métodos fallaron`);
+
     res.json({
       success: false,
       message: `Todos los ${paymentMethods.data.length} métodos de pago fallaron`,
