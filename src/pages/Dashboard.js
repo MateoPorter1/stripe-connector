@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import { LuXCircle, LuSearch, LuAlertTriangle, LuUsers, LuRefreshCw, LuCheckCircle2 } from 'react-icons/lu';
+import { LuCircleX, LuSearch, LuTriangleAlert, LuUsers, LuRefreshCw, LuCircleCheckBig } from 'react-icons/lu';
 import {
   getFailedTransactions,
   retryCustomerPayment,
@@ -118,7 +118,7 @@ function Dashboard() {
         <div className="container">
         <div className="header">
           <div>
-            <h1><LuXCircle style={{ display: 'inline', marginRight: '8px' }} /> Failed Stripe Transactions</h1>
+            <h1><LuCircleX style={{ display: 'inline', marginRight: '8px' }} /> Failed Stripe Transactions</h1>
             <p>Manage and retry failed payments with smart recovery</p>
           </div>
         </div>
@@ -168,7 +168,7 @@ function Dashboard() {
 
         {error && (
           <div className="error-message">
-            <LuAlertTriangle style={{ display: 'inline', marginRight: '8px' }} /> {error}
+            <LuTriangleAlert style={{ display: 'inline', marginRight: '8px' }} /> {error}
           </div>
         )}
 
@@ -253,7 +253,7 @@ function Dashboard() {
 
         {hasLoaded && failedTransactions.length === 0 && !error && (
           <div className="empty-state">
-            <h3><LuCheckCircle2 style={{ display: 'inline', marginRight: '8px' }} /> No failed transactions</h3>
+            <h3><LuCircleCheckBig style={{ display: 'inline', marginRight: '8px' }} /> No failed transactions</h3>
             <p>No failed transactions found for the selected date range.</p>
           </div>
         )}

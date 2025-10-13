@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
-import { LuHome, LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuBarChart3, LuInbox } from 'react-icons/lu';
+import { LuHouse, LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuChartBarBig, LuInbox } from 'react-icons/lu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import './Home.css';
 
@@ -161,7 +161,7 @@ function Home() {
           {/* Header */}
           <div className="home-header">
             <div>
-              <h1><LuHome style={{ display: 'inline', marginRight: '8px' }} /> Recovery Dashboard</h1>
+              <h1><LuHouse style={{ display: 'inline', marginRight: '8px' }} /> Recovery Dashboard</h1>
               <p>Monitor how much you've recovered with Stripe Connector</p>
             </div>
           </div>
@@ -256,7 +256,7 @@ function Home() {
 
           {/* Chart Section */}
           <div className="chart-section">
-            <h2 className="chart-title"><LuBarChart3 style={{ display: 'inline', marginRight: '8px' }} /> Monthly Recovery</h2>
+            <h2 className="chart-title"><LuChartBarBig style={{ display: 'inline', marginRight: '8px' }} /> Monthly Recovery</h2>
 
             {monthlyData.length === 0 ? (
               <div className="empty-chart-state">

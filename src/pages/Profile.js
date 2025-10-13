@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { LuUser, LuClipboard, LuStar, LuCircle, LuShield, LuKey, LuCheckCircle2, LuAlertTriangle, LuTrash2, LuInfo, LuEye, LuEyeOff, LuSave } from 'react-icons/lu';
+import { LuUser, LuClipboard, LuStar, LuCircle, LuShield, LuKey, LuCircleCheckBig, LuTriangleAlert, LuTrash2, LuInfo, LuEye, LuEyeOff, LuSave } from 'react-icons/lu';
 import './Profile.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -153,7 +153,7 @@ function Profile() {
               <div className="status-indicator">
                 <span className={`status-dot ${hasConfiguredStripe ? 'status-active' : 'status-inactive'}`}></span>
                 <span className="status-text">
-                  {hasConfiguredStripe ? <><LuCheckCircle2 size={16} /> API Key Configured</> : <><LuAlertTriangle size={16} /> API Key Pending</>}
+                  {hasConfiguredStripe ? <><LuCircleCheckBig size={16} /> API Key Configured</> : <><LuTriangleAlert size={16} /> API Key Pending</>}
                 </span>
               </div>
               {hasConfiguredStripe && (
@@ -178,7 +178,7 @@ function Profile() {
                 <li>Paste it in the field below</li>
               </ol>
               <div className="warning-box">
-                <LuAlertTriangle style={{ display: 'inline', marginRight: '8px' }} /> <strong>Important:</strong> Never share your API key with anyone. It will be securely saved in your profile.
+                <LuTriangleAlert style={{ display: 'inline', marginRight: '8px' }} /> <strong>Important:</strong> Never share your API key with anyone. It will be securely saved in your profile.
               </div>
             </div>
 

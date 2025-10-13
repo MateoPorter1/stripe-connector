@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LuHome, LuCreditCard, LuUser, LuShield, LuLogOut, LuStar, LuCircle } from 'react-icons/lu';
+import { LuHouse, LuCreditCard, LuUser, LuShield, LuLogOut, LuStar, LuCircle } from 'react-icons/lu';
 import './Sidebar.css';
 
 function Sidebar() {
@@ -12,7 +12,7 @@ function Sidebar() {
   const menuItems = [
     {
       path: '/home',
-      icon: LuHome,
+      icon: LuHouse,
       label: 'Home',
       description: 'Main dashboard'
     },
