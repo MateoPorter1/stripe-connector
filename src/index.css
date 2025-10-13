@@ -10,8 +10,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #fcfbf8;
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 25%, #2c5364 50%, #e94560 75%, #ff6b9d 100%);
+  background-attachment: fixed;
   min-height: 100vh;
+  color: #ffffff;
 }
 
 #root {
