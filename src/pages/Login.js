@@ -31,8 +31,8 @@ function Login() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>Iniciar Sesión</h1>
-        <p className="auth-subtitle">Accede a tu panel de transacciones</p>
+        <h1>Sign In</h1>
+        <p className="auth-subtitle">Access your transactions panel</p>
 
         {error && (
           <div className="error-message">
@@ -48,13 +48,13 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder="your@email.com"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
+            <label htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
@@ -67,12 +67,12 @@ function Login() {
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <p className="auth-link">
-          ¿No tienes cuenta? <Link to="/signup">Regístrate aquí</Link>
+          Don't have an account? <Link to="/signup">Sign up here</Link>
         </p>
       </div>
     </div>

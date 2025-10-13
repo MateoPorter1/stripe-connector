@@ -34,13 +34,13 @@ const Admin = () => {
         });
 
         if (!usersResponse.ok) {
-          throw new Error('Error al cargar usuarios');
+          throw new Error('Error loading users');
         }
 
         const usersData = await usersResponse.json();
         setUsers(usersData.users);
 
-        // Obtener estadísticas
+        // Get statistics
         const statsResponse = await fetch(`${API_URL}/admin/stats`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -48,7 +48,7 @@ const Admin = () => {
         });
 
         if (!statsResponse.ok) {
-          throw new Error('Error al cargar estadísticas');
+          throw new Error('Error loading statistics');
         }
 
         const statsData = await statsResponse.json();
@@ -83,15 +83,15 @@ const Admin = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al actualizar plan');
+        throw new Error(data.error || 'Error updating plan');
       }
 
-      // Actualizar la lista de usuarios
+      // Update users list
       setUsers(users.map(u =>
         u.id === userId ? { ...u, plan: data.user.plan, planExpiry: data.user.planExpiry } : u
       ));
 
-      setSuccessMessage(`Plan actualizado a ${newPlan}`);
+      setSuccessMessage(`Plan updated to ${newPlan}`);
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       setError(err.message);
@@ -103,7 +103,7 @@ const Admin = () => {
       <div className="admin-layout">
         <Sidebar />
         <div className="admin-content">
-          <div className="loading">Cargando panel de administrador...</div>
+          <div className="loading">Loading admin panel...</div>
         </div>
       </div>
     );
@@ -120,49 +120,49 @@ const Admin = () => {
         <div className="admin-container">
           <div className="admin-header">
             <div>
-              <h1>Panel de Administrador</h1>
-              <p>Bienvenido, {user.name}</p>
+              <h1>Admin Panel</h1>
+              <p>Welcome, {user.name}</p>
             </div>
           </div>
 
       {error && <div className="error-message">{error}</div>}
       {successMessage && <div className="success-message">{successMessage}</div>}
 
-      {/* Estadísticas */}
+      {/* Statistics */}
       {stats && (
         <div className="stats-grid">
           <div className="stat-card">
             <h3>{stats.totalUsers}</h3>
-            <p>Total Usuarios</p>
+            <p>Total Users</p>
           </div>
           <div className="stat-card">
             <h3>{stats.freeUsers}</h3>
-            <p>Plan Gratis</p>
+            <p>Free Plan</p>
           </div>
           <div className="stat-card">
             <h3>{stats.premiumUsers}</h3>
-            <p>Plan Premium</p>
+            <p>Premium Plan</p>
           </div>
           <div className="stat-card">
             <h3>{stats.adminUsers}</h3>
-            <p>Administradores</p>
+            <p>Administrators</p>
           </div>
         </div>
       )}
 
-      {/* Tabla de usuarios */}
+      {/* Users table */}
       <div className="users-section">
-        <h2>Gestión de Usuarios</h2>
+        <h2>User Management</h2>
         <div className="table-container">
           <table className="users-table">
             <thead>
               <tr>
-                <th>Nombre</th>
+                <th>Name</th>
                 <th>Email</th>
-                <th>Rol</th>
-                <th>Plan Actual</th>
-                <th>Fecha Registro</th>
-                <th>Acciones</th>
+                <th>Role</th>
+                <th>Current Plan</th>
+                <th>Registration Date</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -172,12 +172,12 @@ const Admin = () => {
                   <td>{u.email}</td>
                   <td>
                     <span className={`badge badge-${u.role}`}>
-                      {u.role === 'admin' ? 'Admin' : 'Usuario'}
+                      {u.role === 'admin' ? 'Admin' : 'User'}
                     </span>
                   </td>
                   <td>
                     <span className={`badge badge-${u.plan}`}>
-                      {u.plan === 'free' ? 'Gratis' : 'Premium'}
+                      {u.plan === 'free' ? 'Free' : 'Premium'}
                     </span>
                   </td>
                   <td>{new Date(u.createdAt).toLocaleDateString()}</td>
@@ -188,7 +188,7 @@ const Admin = () => {
                       className="plan-select"
                       disabled={u.id === user.id}
                     >
-                      <option value="free">Gratis</option>
+                      <option value="free">Free</option>
                       <option value="premium">Premium</option>
                     </select>
                   </td>

@@ -19,12 +19,12 @@ function Signup() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      setError('Passwords don\'t match');
       return;
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      setError('Password must be at least 6 characters');
       return;
     }
 
@@ -44,8 +44,8 @@ function Signup() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>Crear Cuenta</h1>
-        <p className="auth-subtitle">Regístrate para gestionar tus transacciones</p>
+        <h1>Create Account</h1>
+        <p className="auth-subtitle">Sign up to manage your transactions</p>
 
         {error && (
           <div className="error-message">
@@ -55,13 +55,13 @@ function Signup() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="name">Nombre</label>
+            <label htmlFor="name">Name</label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Tu nombre"
+              placeholder="Your name"
               required
             />
           </div>
@@ -73,44 +73,44 @@ function Signup() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
+              placeholder="your@email.com"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
+            <label htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Minimum 6 characters"
               required
               minLength={6}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirmar Contraseña</label>
+            <label htmlFor="confirmPassword">Confirm Password</label>
             <input
               id="confirmPassword"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirma tu contraseña"
+              placeholder="Confirm your password"
               required
               minLength={6}
             />
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
         <p className="auth-link">
-          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión aquí</Link>
+          Already have an account? <Link to="/login">Sign in here</Link>
         </p>
       </div>
     </div>
