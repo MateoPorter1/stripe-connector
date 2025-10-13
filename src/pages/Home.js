@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import { LuHome, LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuBarChart3, LuInbox } from 'react-icons/lu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import './Home.css';
 
@@ -160,7 +161,7 @@ function Home() {
           {/* Header */}
           <div className="home-header">
             <div>
-              <h1>🏠 Dashboard de Recaudación</h1>
+              <h1><LuHome style={{ display: 'inline', marginRight: '8px' }} /> Dashboard de Recaudación</h1>
               <p>Monitorea cuánto has recuperado con Stripe Connector</p>
             </div>
           </div>
@@ -203,7 +204,7 @@ function Home() {
                 />
               </div>
               <button onClick={handleApplyFilter} className="apply-filter-btn">
-                📅 Aplicar Filtro
+                <LuCalendar /> Aplicar Filtro
               </button>
             </div>
           </div>
@@ -211,7 +212,7 @@ function Home() {
           {/* Scorecards */}
           <div className="scorecards-grid">
             <div className="scorecard scorecard-primary">
-              <div className="scorecard-icon">💰</div>
+              <div className="scorecard-icon"><LuDollarSign size={28} /></div>
               <div className="scorecard-content">
                 <div className="scorecard-value">
                   {formatCurrency(getMainCurrencyTotal(), selectedCurrency)}
@@ -221,7 +222,7 @@ function Home() {
             </div>
 
             <div className="scorecard scorecard-success">
-              <div className="scorecard-icon">🔄</div>
+              <div className="scorecard-icon"><LuRefreshCw size={28} /></div>
               <div className="scorecard-content">
                 <div className="scorecard-value">{getMainCurrencyCount()}</div>
                 <div className="scorecard-label">Pagos Recuperados</div>
@@ -229,7 +230,7 @@ function Home() {
             </div>
 
             <div className="scorecard scorecard-info">
-              <div className="scorecard-icon">📈</div>
+              <div className="scorecard-icon"><LuTrendingUp size={28} /></div>
               <div className="scorecard-content">
                 <div className="scorecard-value">
                   {getMainCurrencyCount() > 0
@@ -241,7 +242,7 @@ function Home() {
             </div>
 
             <div className="scorecard scorecard-warning">
-              <div className="scorecard-icon">📅</div>
+              <div className="scorecard-icon"><LuClock size={28} /></div>
               <div className="scorecard-content">
                 <div className="scorecard-value">
                   {summary?.lastRecovery
@@ -255,11 +256,11 @@ function Home() {
 
           {/* Chart Section */}
           <div className="chart-section">
-            <h2 className="chart-title">📊 Recaudación Mensual</h2>
+            <h2 className="chart-title"><LuBarChart3 style={{ display: 'inline', marginRight: '8px' }} /> Recaudación Mensual</h2>
 
             {monthlyData.length === 0 ? (
               <div className="empty-chart-state">
-                <p className="empty-icon">📭</p>
+                <p className="empty-icon"><LuInbox size={64} /></p>
                 <h3>No hay datos para mostrar</h3>
                 <p>Recupera tu primer pago para ver las estadísticas aquí</p>
               </div>

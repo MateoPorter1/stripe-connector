@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
+import { LuUser, LuClipboard, LuStar, LuCircle, LuShield, LuKey, LuCheckCircle2, LuAlertTriangle, LuTrash2, LuInfo, LuEye, LuEyeOff, LuSave } from 'react-icons/lu';
 import './Profile.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';

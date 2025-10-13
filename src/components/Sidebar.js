@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { LuHome, LuCreditCard, LuUser, LuShield, LuLogOut, LuStar, LuCircle } from 'react-icons/lu';
 import './Sidebar.css';
 
 function Sidebar() {
@@ -11,19 +12,19 @@ function Sidebar() {
   const menuItems = [
     {
       path: '/home',
-      icon: '🏠',
+      icon: LuHome,
       label: 'Home',
       description: 'Dashboard principal'
     },
     {
       path: '/dashboard',
-      icon: '📊',
+      icon: LuCreditCard,
       label: 'Transacciones',
       description: 'Pagos fallidos'
     },
     {
       path: '/profile',
-      icon: '👤',
+      icon: LuUser,
       label: 'Mi Perfil',
       description: 'Configuración y API'
     }
@@ -33,7 +34,7 @@ function Sidebar() {
   if (user?.role === 'admin') {
     menuItems.push({
       path: '/admin',
-      icon: '🔧',
+      icon: LuShield,
       label: 'Admin Panel',
       description: 'Gestión de usuarios'
     });
@@ -59,30 +60,41 @@ function Sidebar() {
         <div className="user-info-sidebar">
           <div className="user-name">{user?.name || user?.email}</div>
           <div className={`user-plan plan-${user?.plan || 'free'}`}>
-            {user?.plan === 'premium' ? '⭐ Premium' : '🆓 Free'}
+            {user?.plan === 'premium' ? (
+              <>
+                <LuStar size={12} /> Premium
+              </>
+            ) : (
+              <>
+                <LuCircle size={12} /> Free
+              </>
+            )}
           </div>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => handleNavigation(item.path)}
-            className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-          >
-            <span className="nav-icon">{item.icon}</span>
-            <div className="nav-content">
-              <div className="nav-label">{item.label}</div>
-              <div className="nav-description">{item.description}</div>
-            </div>
-          </button>
-        ))}
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
+            <button
+              key={item.path}
+              onClick={() => handleNavigation(item.path)}
+              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
+            >
+              <span className="nav-icon"><IconComponent /></span>
+              <div className="nav-content">
+                <div className="nav-label">{item.label}</div>
+                <div className="nav-description">{item.description}</div>
+              </div>
+            </button>
+          );
+        })}
       </nav>
 
       <div className="sidebar-footer">
         <button onClick={handleLogout} className="logout-btn">
-          <span className="nav-icon">🚪</span>
+          <span className="nav-icon"><LuLogOut /></span>
           <span>Cerrar Sesión</span>
         </button>
       </div>
