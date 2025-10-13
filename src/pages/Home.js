@@ -133,10 +133,10 @@ function Home() {
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     const diffInDays = Math.floor(diffInHours / 24);
 
-    if (diffInHours < 1) return 'Hace menos de 1h';
-    if (diffInHours < 24) return `Hace ${diffInHours}h`;
-    if (diffInDays === 1) return 'Hace 1 día';
-    return `Hace ${diffInDays} días`;
+    if (diffInHours < 1) return 'Less than 1h ago';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays === 1) return '1 day ago';
+    return `${diffInDays} days ago`;
   };
 
   if (loading) {
@@ -146,7 +146,7 @@ function Home() {
         <div className="home-content">
           <div className="loading-state">
             <div className="spinner-large"></div>
-            <p>Cargando estadísticas...</p>
+            <p>Loading statistics...</p>
           </div>
         </div>
       </div>
@@ -161,24 +161,24 @@ function Home() {
           {/* Header */}
           <div className="home-header">
             <div>
-              <h1><LuHome style={{ display: 'inline', marginRight: '8px' }} /> Dashboard de Recaudación</h1>
-              <p>Monitorea cuánto has recuperado con Stripe Connector</p>
+              <h1><LuHome style={{ display: 'inline', marginRight: '8px' }} /> Recovery Dashboard</h1>
+              <p>Monitor how much you've recovered with Stripe Connector</p>
             </div>
           </div>
 
           {/* Quick Filters */}
           <div className="quick-filters">
             <button onClick={() => handleQuickFilter('this-month')} className="quick-filter-btn">
-              Este Mes
+              This Month
             </button>
             <button onClick={() => handleQuickFilter('last-3-months')} className="quick-filter-btn">
-              Últimos 3 Meses
+              Last 3 Months
             </button>
             <button onClick={() => handleQuickFilter('this-year')} className="quick-filter-btn">
-              Este Año
+              This Year
             </button>
             <button onClick={() => handleQuickFilter('all-time')} className="quick-filter-btn">
-              Todo el Tiempo
+              All Time
             </button>
           </div>
 
@@ -186,7 +186,7 @@ function Home() {
           <div className="date-filter-section">
             <div className="date-inputs">
               <div className="date-input-group">
-                <label>Desde:</label>
+                <label>From:</label>
                 <input
                   type="date"
                   value={startDate}
@@ -195,7 +195,7 @@ function Home() {
                 />
               </div>
               <div className="date-input-group">
-                <label>Hasta:</label>
+                <label>To:</label>
                 <input
                   type="date"
                   value={endDate}
@@ -204,7 +204,7 @@ function Home() {
                 />
               </div>
               <button onClick={handleApplyFilter} className="apply-filter-btn">
-                <LuCalendar /> Aplicar Filtro
+                <LuCalendar /> Apply Filter
               </button>
             </div>
           </div>
@@ -217,7 +217,7 @@ function Home() {
                 <div className="scorecard-value">
                   {formatCurrency(getMainCurrencyTotal(), selectedCurrency)}
                 </div>
-                <div className="scorecard-label">Total Recaudado</div>
+                <div className="scorecard-label">Total Recovered</div>
               </div>
             </div>
 
@@ -225,7 +225,7 @@ function Home() {
               <div className="scorecard-icon"><LuRefreshCw size={28} /></div>
               <div className="scorecard-content">
                 <div className="scorecard-value">{getMainCurrencyCount()}</div>
-                <div className="scorecard-label">Pagos Recuperados</div>
+                <div className="scorecard-label">Recovered Payments</div>
               </div>
             </div>
 
@@ -237,7 +237,7 @@ function Home() {
                     ? formatCurrency(getMainCurrencyTotal() / getMainCurrencyCount(), selectedCurrency)
                     : formatCurrency(0, selectedCurrency)}
                 </div>
-                <div className="scorecard-label">Promedio por Pago</div>
+                <div className="scorecard-label">Average per Payment</div>
               </div>
             </div>
 
@@ -249,20 +249,20 @@ function Home() {
                     ? formatLastRecoveryTime(summary.lastRecovery.date)
                     : 'N/A'}
                 </div>
-                <div className="scorecard-label">Último Pago</div>
+                <div className="scorecard-label">Last Payment</div>
               </div>
             </div>
           </div>
 
           {/* Chart Section */}
           <div className="chart-section">
-            <h2 className="chart-title"><LuBarChart3 style={{ display: 'inline', marginRight: '8px' }} /> Recaudación Mensual</h2>
+            <h2 className="chart-title"><LuBarChart3 style={{ display: 'inline', marginRight: '8px' }} /> Monthly Recovery</h2>
 
             {monthlyData.length === 0 ? (
               <div className="empty-chart-state">
                 <p className="empty-icon"><LuInbox size={64} /></p>
-                <h3>No hay datos para mostrar</h3>
-                <p>Recupera tu primer pago para ver las estadísticas aquí</p>
+                <h3>No data to display</h3>
+                <p>Recover your first payment to see statistics here</p>
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={400}>
@@ -285,7 +285,7 @@ function Home() {
                       borderRadius: '15px',
                       fontWeight: '600'
                     }}
-                    formatter={(value) => [`$${value}`, 'Recaudado']}
+                    formatter={(value) => [`$${value}`, 'Recovered']}
                   />
                   <Legend
                     wrapperStyle={{ fontWeight: '700', fontSize: '14px' }}
@@ -296,7 +296,7 @@ function Home() {
                     stroke="#1a5a3e"
                     strokeWidth={2}
                     radius={[10, 10, 0, 0]}
-                    name="Monto Recaudado"
+                    name="Recovered Amount"
                   />
                 </BarChart>
               </ResponsiveContainer>

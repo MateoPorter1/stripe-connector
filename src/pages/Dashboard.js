@@ -178,7 +178,7 @@ function Dashboard() {
               <h2><LuUsers style={{ display: 'inline', marginRight: '8px' }} /> {failedTransactions.length} Customers with Failed Transactions</h2>
               {totalFetched > 0 && (
                 <p className="results-info">
-                  {failedTransactions.length} clientes únicos con transacciones fallidas de un total de {totalFetched} transacciones revisadas
+                  {failedTransactions.length} unique customers with failed transactions out of {totalFetched} transactions reviewed
                 </p>
               )}
             </div>

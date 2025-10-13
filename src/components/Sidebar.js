@@ -14,29 +14,29 @@ function Sidebar() {
       path: '/home',
       icon: LuHome,
       label: 'Home',
-      description: 'Dashboard principal'
+      description: 'Main dashboard'
     },
     {
       path: '/dashboard',
       icon: LuCreditCard,
-      label: 'Transacciones',
-      description: 'Pagos fallidos'
+      label: 'Transactions',
+      description: 'Failed payments'
     },
     {
       path: '/profile',
       icon: LuUser,
-      label: 'Mi Perfil',
-      description: 'Configuración y API'
+      label: 'My Profile',
+      description: 'Settings and API'
     }
   ];
 
-  // Solo mostrar panel admin si el usuario es admin
+  // Only show admin panel if user is admin
   if (user?.role === 'admin') {
     menuItems.push({
       path: '/admin',
       icon: LuShield,
       label: 'Admin Panel',
-      description: 'Gestión de usuarios'
+      description: 'User management'
     });
   }
 
@@ -95,7 +95,7 @@ function Sidebar() {
       <div className="sidebar-footer">
         <button onClick={handleLogout} className="logout-btn">
           <span className="nav-icon"><LuLogOut /></span>
-          <span>Cerrar Sesión</span>
+          <span>Logout</span>
         </button>
       </div>
     </div>

@@ -56,22 +56,22 @@ function Profile() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message || '✅ API key guardada exitosamente' });
+        setMessage({ type: 'success', text: data.message || '✅ API key saved successfully' });
         setHasConfiguredStripe(true);
         setStripeApiKey('');
         setShowKey(false);
       } else {
-        setMessage({ type: 'error', text: data.error || '❌ Error al guardar la API key' });
+        setMessage({ type: 'error', text: data.error || '❌ Error saving API key' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: '❌ Error de conexión. Por favor intenta de nuevo.' });
+      setMessage({ type: 'error', text: '❌ Connection error. Please try again.' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteApiKey = async () => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar tu API key de Stripe?')) {
+    if (!window.confirm('Are you sure you want to delete your Stripe API key?')) {
       return;
     }
 
@@ -91,14 +91,14 @@ function Profile() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message || '✅ API key eliminada exitosamente' });
+        setMessage({ type: 'success', text: data.message || '✅ API key deleted successfully' });
         setHasConfiguredStripe(false);
         setStripeApiKey('');
       } else {
-        setMessage({ type: 'error', text: data.error || '❌ Error al eliminar la API key' });
+        setMessage({ type: 'error', text: data.error || '❌ Error deleting API key' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: '❌ Error de conexión. Por favor intenta de nuevo.' });
+      setMessage({ type: 'error', text: '❌ Connection error. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -110,16 +110,16 @@ function Profile() {
       <div className="profile-content">
         <div className="profile-container">
           <div className="profile-header">
-            <h1><LuUser style={{ display: 'inline', marginRight: '8px' }} /> Mi Perfil</h1>
-            <p>Administra tu información y configuración de Stripe</p>
+            <h1><LuUser style={{ display: 'inline', marginRight: '8px' }} /> My Profile</h1>
+            <p>Manage your information and Stripe configuration</p>
           </div>
 
           {/* Información del usuario */}
           <div className="profile-section">
-            <h2 className="section-title"><LuClipboard style={{ display: 'inline', marginRight: '8px' }} /> Información Personal</h2>
+            <h2 className="section-title"><LuClipboard style={{ display: 'inline', marginRight: '8px' }} /> Personal Information</h2>
             <div className="info-grid">
               <div className="info-item">
-                <label>Nombre</label>
+                <label>Name</label>
                 <div className="info-value">{user?.name}</div>
               </div>
               <div className="info-item">
@@ -135,10 +135,10 @@ function Profile() {
                 </div>
               </div>
               <div className="info-item">
-                <label>Rol</label>
+                <label>Role</label>
                 <div className="info-value">
                   <span className={`role-badge ${user?.role === 'admin' ? 'role-admin' : 'role-user'}`}>
-                    {user?.role === 'admin' ? <><LuShield size={14} /> Administrador</> : <><LuUser size={14} /> Usuario</>}
+                    {user?.role === 'admin' ? <><LuShield size={14} /> Administrator</> : <><LuUser size={14} /> User</>}
                   </span>
                 </div>
               </div>
@@ -147,18 +147,18 @@ function Profile() {
 
           {/* Configuración de Stripe */}
           <div className="profile-section">
-            <h2 className="section-title"><LuKey style={{ display: 'inline', marginRight: '8px' }} /> Configuración de Stripe</h2>
+            <h2 className="section-title"><LuKey style={{ display: 'inline', marginRight: '8px' }} /> Stripe Configuration</h2>
 
             <div className="stripe-status">
               <div className="status-indicator">
                 <span className={`status-dot ${hasConfiguredStripe ? 'status-active' : 'status-inactive'}`}></span>
                 <span className="status-text">
-                  {hasConfiguredStripe ? <><LuCheckCircle2 size={16} /> API Key Configurada</> : <><LuAlertTriangle size={16} /> API Key Pendiente</>}
+                  {hasConfiguredStripe ? <><LuCheckCircle2 size={16} /> API Key Configured</> : <><LuAlertTriangle size={16} /> API Key Pending</>}
                 </span>
               </div>
               {hasConfiguredStripe && (
                 <button onClick={handleDeleteApiKey} className="delete-key-btn" disabled={loading}>
-                  <LuTrash2 /> Eliminar API Key
+                  <LuTrash2 /> Delete API Key
                 </button>
               )}
             </div>
@@ -170,15 +170,15 @@ function Profile() {
             )}
 
             <div className="stripe-info-box">
-              <h3><LuInfo style={{ display: 'inline', marginRight: '8px' }} /> ¿Dónde encuentro mi API key?</h3>
+              <h3><LuInfo style={{ display: 'inline', marginRight: '8px' }} /> Where do I find my API key?</h3>
               <ol>
-                <li>Ve a tu <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">Dashboard de Stripe</a></li>
-                <li>En el menú lateral, busca "Developers" → "API keys"</li>
-                <li>Copia tu "Secret key" (comienza con <code>sk_test_</code> o <code>sk_live_</code>)</li>
-                <li>Pégala en el campo de abajo</li>
+                <li>Go to your <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">Stripe Dashboard</a></li>
+                <li>In the sidebar, look for "Developers" → "API keys"</li>
+                <li>Copy your "Secret key" (starts with <code>sk_test_</code> or <code>sk_live_</code>)</li>
+                <li>Paste it in the field below</li>
               </ol>
               <div className="warning-box">
-                <LuAlertTriangle style={{ display: 'inline', marginRight: '8px' }} /> <strong>Importante:</strong> Nunca compartas tu API key con nadie. Se guardará de forma segura en tu perfil.
+                <LuAlertTriangle style={{ display: 'inline', marginRight: '8px' }} /> <strong>Important:</strong> Never share your API key with anyone. It will be securely saved in your profile.
               </div>
             </div>
 
@@ -186,7 +186,7 @@ function Profile() {
               <div className="form-group-profile">
                 <label htmlFor="stripeApiKey">
                   Stripe Secret Key
-                  {hasConfiguredStripe && <span className="label-hint">(Actualizar)</span>}
+                  {hasConfiguredStripe && <span className="label-hint">(Update)</span>}
                 </label>
                 <div className="input-with-toggle">
                   <input
@@ -194,7 +194,7 @@ function Profile() {
                     type={showKey ? 'text' : 'password'}
                     value={stripeApiKey}
                     onChange={(e) => setStripeApiKey(e.target.value)}
-                    placeholder={hasConfiguredStripe ? 'sk_•••••••••••••••' : 'sk_test_... o sk_live_...'}
+                    placeholder={hasConfiguredStripe ? 'sk_•••••••••••••••' : 'sk_test_... or sk_live_...'}
                     className="api-key-input"
                     required
                   />
@@ -207,7 +207,7 @@ function Profile() {
                   </button>
                 </div>
                 <small className="input-hint">
-                  Debe comenzar con "sk_test_" (modo prueba) o "sk_live_" (modo producción)
+                  Must start with "sk_test_" (test mode) or "sk_live_" (production mode)
                 </small>
               </div>
 
@@ -215,11 +215,11 @@ function Profile() {
                 {loading ? (
                   <>
                     <div className="spinner-small"></div>
-                    Guardando...
+                    Saving...
                   </>
                 ) : (
                   <>
-                    <LuSave /> {hasConfiguredStripe ? 'Actualizar API Key' : 'Guardar API Key'}
+                    <LuSave /> {hasConfiguredStripe ? 'Update API Key' : 'Save API Key'}
                   </>
                 )}
               </button>
