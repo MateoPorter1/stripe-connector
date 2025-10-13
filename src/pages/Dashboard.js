@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import {
   getFailedTransactions,
-  getCustomerInfo,
-  getCustomerPaymentMethods,
   retryCustomerPayment,
   formatCurrency,
   formatDate,
@@ -53,8 +51,22 @@ function Dashboard() {
         if (result.customers.length === 0) {
           setError(`No failed transactions found between ${startDate} and ${endDate}.`);
         } else {
-          // Enrich customers with their data
-          await enrichCustomersWithData(result.customers, result.totalFailedTransactions);
+          // Backend now returns fully enriched data - just format it for display
+          const formattedCustomers = result.customers.map(customerData => ({
+            customer: customerData.customer,
+            email: customerData.email,
+            totalAmount: formatCurrency(customerData.totalAmount, customerData.currency),
+            failedCount: customerData.failedCount,
+            country: customerData.country,
+            countryFlag: getCountryFlag(customerData.country),
+            paymentMethodsCount: customerData.paymentMethodsCount,
+            date: formatDate(customerData.latestDate),
+            rawAmount: customerData.totalAmount,
+            currency: customerData.currency,
+            transactions: customerData.transactions
+          }));
+
+          setFailedTransactions(formattedCustomers);
         }
       } else {
         setError(result.error || 'Error fetching failed transactions');
@@ -64,38 +76,6 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const enrichCustomersWithData = async (customers, totalFailedTransactions) => {
-    const enriched = [];
-
-    for (const customerData of customers) {
-      let customerInfo = null;
-      let paymentMethods = { count: 0, methods: [] };
-
-      if (customerData.customer) {
-        customerInfo = await getCustomerInfo(customerData.customer);
-        paymentMethods = await getCustomerPaymentMethods(customerData.customer);
-      }
-
-      const enrichedCustomer = {
-        customer: customerData.customer,
-        email: customerInfo?.email || 'No email',
-        totalAmount: formatCurrency(customerData.totalAmount, customerData.currency),
-        failedCount: customerData.failedCount,
-        country: customerInfo?.address?.country || 'Unknown',
-        countryFlag: getCountryFlag(customerInfo?.address?.country),
-        paymentMethodsCount: paymentMethods.count,
-        date: formatDate(customerData.latestDate),
-        rawAmount: customerData.totalAmount,
-        currency: customerData.currency,
-        transactions: customerData.transactions
-      };
-
-      enriched.push(enrichedCustomer);
-    }
-
-    setFailedTransactions(enriched);
   };
 
   const handleRetryPayment = async (customer) => {

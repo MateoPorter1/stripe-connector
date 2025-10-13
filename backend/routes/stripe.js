@@ -121,10 +121,45 @@ router.get('/failed-transactions', auth, async (req, res) => {
 
     console.log(`👥 Clientes únicos con transacciones fallidas: ${customerList.length}`);
 
+    // Enriquecer datos de clientes (email, país, métodos de pago)
+    console.log(`🔄 Enriching customer data...`);
+    const enrichedCustomers = await Promise.all(
+      customerList.map(async (customerData) => {
+        try {
+          // Obtener info del cliente y métodos de pago en paralelo
+          const [customerInfo, paymentMethods] = await Promise.all([
+            stripe.customers.retrieve(customerData.customer),
+            stripe.paymentMethods.list({
+              customer: customerData.customer,
+              type: 'card'
+            })
+          ]);
+
+          return {
+            ...customerData,
+            email: customerInfo.email || 'No email',
+            country: customerInfo.address?.country || 'Unknown',
+            paymentMethodsCount: paymentMethods.data.length
+          };
+        } catch (error) {
+          console.error(`❌ Error enriching customer ${customerData.customer}:`, error.message);
+          // Devolver datos básicos si falla el enriquecimiento
+          return {
+            ...customerData,
+            email: 'Error loading',
+            country: 'Unknown',
+            paymentMethodsCount: 0
+          };
+        }
+      })
+    );
+
+    console.log(`✅ Customer data enriched successfully`);
+
     res.json({
       success: true,
-      customers: customerList,
-      totalCustomers: customerList.length,
+      customers: enrichedCustomers,
+      totalCustomers: enrichedCustomers.length,
       totalFailedTransactions: failedTransactions.length,
       totalFetched: allPaymentIntents.length
     });
