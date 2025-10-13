@@ -1,10 +1,10 @@
-/* Colorful Dashboard - Inspired by 30MPC */
+/* Lovable.dev Inspired Dashboard */
 
 /* Layout */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(135deg, #c8f4c8 0%, #e8f9e8 100%);
+  background: #fcfbf8;
 }
 
 .dashboard-content {
@@ -18,11 +18,11 @@
   max-width: 1400px;
   width: 100%;
   background: #ffffff;
-  border-radius: 16px;
-  border: 4px solid #1a1a1a;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
   padding: 32px;
   margin: 0 auto;
-  box-shadow: 8px 8px 0px #1a1a1a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 /* Header */
@@ -32,28 +32,26 @@
 }
 
 .header h1 {
-  font-size: 42px;
+  font-size: 32px;
   color: #1a1a1a;
   margin-bottom: 8px;
-  font-weight: 900;
-  letter-spacing: -1px;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .header p {
-  font-size: 18px;
-  color: #333333;
-  font-weight: 600;
+  font-size: 16px;
+  color: #6b7280;
+  font-weight: 400;
 }
 
 /* Filter Section */
 .filter-section {
-  background: #ffd966;
-  border: 4px solid #1a1a1a;
-  border-radius: 16px;
+  background: #fcfbf8;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
   padding: 24px;
   margin-bottom: 28px;
-  box-shadow: 5px 5px 0px #1a1a1a;
 }
 
 .date-filters {
@@ -71,60 +69,52 @@
 }
 
 .date-input-group label {
-  font-weight: 800;
+  font-weight: 500;
   color: #1a1a1a;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 14px;
 }
 
 .date-input {
   padding: 10px 14px;
-  border: 3px solid #1a1a1a;
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   font-size: 14px;
   background: #ffffff;
   color: #1a1a1a;
   min-width: 140px;
-  transition: all 0.2s;
-  font-weight: 600;
+  transition: all 0.2s ease;
+  font-weight: 400;
 }
 
 .date-input:focus {
   outline: none;
-  border-color: #9b9ff5;
-  box-shadow: 0 0 0 4px rgba(155, 159, 245, 0.2);
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
 }
 
 .search-button {
-  background: #1a1a1a;
+  background: #4f46e5;
   color: #ffffff;
-  border: 3px solid #1a1a1a;
+  border: none;
   padding: 10px 24px;
   font-size: 14px;
-  font-weight: 900;
-  border-radius: 12px;
+  font-weight: 500;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 180px;
   justify-content: center;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 .search-button:hover:not(:disabled) {
-  background: #333333;
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.3);
+  background: #4338ca;
 }
 
 .search-button:active:not(:disabled) {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+  transform: scale(0.98);
 }
 
 .search-button:disabled {
@@ -146,15 +136,15 @@
 }
 
 .error-message {
-  background: #ffebee;
-  color: #c62828;
-  padding: 14px;
-  border: 3px solid #c62828;
-  border-radius: 12px;
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
   margin-bottom: 20px;
   text-align: center;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 /* Results Section */
@@ -170,42 +160,38 @@
 .results-header h2 {
   color: #1a1a1a;
   margin-bottom: 12px;
-  font-size: 28px;
-  font-weight: 900;
+  font-size: 24px;
+  font-weight: 600;
   letter-spacing: -0.5px;
-  text-transform: uppercase;
 }
 
 .results-info {
-  background: #e8f9e8;
-  border: 3px solid #1a1a1a;
-  border-radius: 12px;
-  padding: 16px 24px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 14px 20px;
   margin: 0 auto;
   max-width: 600px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #1a1a1a;
-  box-shadow: 3px 3px 0px #1a1a1a;
+  font-size: 14px;
+  font-weight: 400;
+  color: #166534;
 }
 
 .results-section h2 {
   color: #1a1a1a;
   margin-bottom: 20px;
-  font-size: 24px;
+  font-size: 20px;
   text-align: center;
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: -0.3px;
 }
 
 /* Table */
 .table-container {
   overflow-x: auto;
-  border-radius: 12px;
-  border: 4px solid #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   background: #ffffff;
-  box-shadow: 5px 5px 0px #1a1a1a;
 }
 
 .transactions-table {
@@ -215,27 +201,25 @@
 }
 
 .transactions-table thead {
-  background: #9b9ff5;
-  border-bottom: 3px solid #1a1a1a;
+  background: #fcfbf8;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .transactions-table th {
-  padding: 14px 16px;
+  padding: 12px 16px;
   text-align: left;
-  font-weight: 900;
-  font-size: 12px;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 500;
+  font-size: 13px;
+  color: #6b7280;
 }
 
 .transactions-table tbody tr {
-  transition: background 0.15s;
-  border-bottom: 2px solid #e0e0e0;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #f3f4f6;
 }
 
 .transactions-table tbody tr:hover {
-  background: #e8f9e8;
+  background: #fcfbf8;
 }
 
 .transactions-table tbody tr:last-child {
@@ -243,10 +227,10 @@
 }
 
 .transactions-table td {
-  padding: 16px;
+  padding: 14px 16px;
   vertical-align: middle;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* Table Cells */
@@ -261,16 +245,16 @@
 }
 
 .email {
-  font-weight: 700;
+  font-weight: 500;
   color: #1a1a1a;
   font-size: 14px;
 }
 
 .transaction-id {
   font-family: 'Monaco', monospace;
-  font-size: 11px;
-  color: #666666;
-  font-weight: 600;
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
 }
 
 .valor-cell {
@@ -279,8 +263,8 @@
 }
 
 .amount {
-  font-weight: 900;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 15px;
   color: #1a1a1a;
 }
 
@@ -302,9 +286,8 @@
 
 .country-name {
   font-size: 11px;
-  color: #666666;
-  font-weight: 700;
-  text-transform: uppercase;
+  color: #6b7280;
+  font-weight: 500;
 }
 
 .payment-methods-cell {
@@ -313,13 +296,13 @@
 }
 
 .payment-count {
-  background: #9b9ff5;
-  color: #ffffff;
-  border: 2px solid #1a1a1a;
-  padding: 4px 12px;
-  border-radius: 8px;
+  background: #eef2ff;
+  color: #4f46e5;
+  border: 1px solid #c7d2fe;
+  padding: 4px 10px;
+  border-radius: 6px;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
   display: inline-block;
 }
 
@@ -328,10 +311,10 @@
 }
 
 .date {
-  color: #666666;
+  color: #6b7280;
   font-size: 13px;
   font-family: 'Monaco', monospace;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .actions-cell {
@@ -340,34 +323,28 @@
 }
 
 .retry-button {
-  background: #ffd966;
-  color: #1a1a1a;
-  border: 3px solid #1a1a1a;
-  padding: 8px 16px;
+  background: #4f46e5;
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
   font-size: 13px;
-  font-weight: 900;
-  border-radius: 10px;
+  font-weight: 500;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 6px;
   justify-content: center;
   margin: 0 auto;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  box-shadow: 3px 3px 0px #1a1a1a;
 }
 
 .retry-button:hover:not(:disabled) {
-  background: #ffe680;
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0px #1a1a1a;
+  background: #4338ca;
 }
 
 .retry-button:active:not(:disabled) {
-  transform: translate(1px, 1px);
-  box-shadow: 2px 2px 0px #1a1a1a;
+  transform: scale(0.98);
 }
 
 .retry-button:disabled {
@@ -378,8 +355,8 @@
 .spinner-small {
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-top-color: #1a1a1a;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -388,21 +365,20 @@
 .empty-state {
   text-align: center;
   padding: 80px 20px;
-  color: #333333;
+  color: #6b7280;
 }
 
 .empty-state h3 {
-  font-size: 24px;
+  font-size: 20px;
   margin-bottom: 10px;
   color: #1a1a1a;
-  font-weight: 900;
-  text-transform: uppercase;
+  font-weight: 600;
 }
 
 .empty-state p {
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 /* Responsive */
@@ -417,7 +393,7 @@
   }
 
   .header h1 {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .date-filters {
@@ -436,7 +412,7 @@
 
   .transactions-table th,
   .transactions-table td {
-    padding: 12px 8px;
+    padding: 10px 8px;
   }
 
   .email-cell {
@@ -479,30 +455,30 @@
   }
 
   .container {
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px;
   }
 
   .filter-section {
-    border-radius: 12px;
+    border-radius: 10px;
     padding: 16px;
   }
 
   .table-container {
-    border-radius: 10px;
+    border-radius: 8px;
   }
 
   .transactions-table th,
   .transactions-table td {
-    padding: 10px 6px;
+    padding: 8px 6px;
   }
 
   .header h1 {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .header p {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .date-input {
