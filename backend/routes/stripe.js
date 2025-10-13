@@ -87,13 +87,45 @@ router.get('/failed-transactions', auth, async (req, res) => {
 
     console.log(`❌ Transacciones fallidas encontradas: ${failedTransactions.length}`);
 
-    // Ordenar por fecha más reciente
-    const sortedTransactions = failedTransactions.sort((a, b) => b.created - a.created);
+    // Agrupar por cliente (customer)
+    const groupedByCustomer = {};
+
+    failedTransactions.forEach(transaction => {
+      const customerId = transaction.customer;
+
+      if (!customerId) return; // Saltar transacciones sin cliente
+
+      if (!groupedByCustomer[customerId]) {
+        groupedByCustomer[customerId] = {
+          customer: customerId,
+          transactions: [],
+          totalAmount: 0,
+          failedCount: 0,
+          latestDate: transaction.created,
+          currency: transaction.currency
+        };
+      }
+
+      groupedByCustomer[customerId].transactions.push(transaction);
+      groupedByCustomer[customerId].totalAmount += transaction.amount;
+      groupedByCustomer[customerId].failedCount += 1;
+
+      // Mantener la fecha más reciente
+      if (transaction.created > groupedByCustomer[customerId].latestDate) {
+        groupedByCustomer[customerId].latestDate = transaction.created;
+      }
+    });
+
+    // Convertir a array y ordenar por fecha más reciente
+    const customerList = Object.values(groupedByCustomer).sort((a, b) => b.latestDate - a.latestDate);
+
+    console.log(`👥 Clientes únicos con transacciones fallidas: ${customerList.length}`);
 
     res.json({
       success: true,
-      transactions: sortedTransactions,
-      total: sortedTransactions.length,
+      customers: customerList,
+      totalCustomers: customerList.length,
+      totalFailedTransactions: failedTransactions.length,
       totalFetched: allPaymentIntents.length
     });
   } catch (error) {

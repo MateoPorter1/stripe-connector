@@ -48,13 +48,13 @@ function Dashboard() {
 
       if (result.success) {
         setHasLoaded(true);
-        setTotalFetched(result.totalFetched || result.transactions.length);
+        setTotalFetched(result.totalFetched || 0);
 
-        if (result.transactions.length === 0) {
+        if (result.customers.length === 0) {
           setError(`No failed transactions found between ${startDate} and ${endDate}.`);
         } else {
-          // Enrich transactions with customer data
-          await enrichFailedTransactionsWithCustomerData(result.transactions);
+          // Enrich customers with their data
+          await enrichCustomersWithData(result.customers, result.totalFailedTransactions);
         }
       } else {
         setError(result.error || 'Error fetching failed transactions');
@@ -66,57 +66,56 @@ function Dashboard() {
     }
   };
 
-  const enrichFailedTransactionsWithCustomerData = async (rawTransactions) => {
+  const enrichCustomersWithData = async (customers, totalFailedTransactions) => {
     const enriched = [];
 
-    for (const transaction of rawTransactions) {
+    for (const customerData of customers) {
       let customerInfo = null;
       let paymentMethods = { count: 0, methods: [] };
 
-      if (transaction.customer) {
-        customerInfo = await getCustomerInfo(transaction.customer);
-        paymentMethods = await getCustomerPaymentMethods(transaction.customer);
+      if (customerData.customer) {
+        customerInfo = await getCustomerInfo(customerData.customer);
+        paymentMethods = await getCustomerPaymentMethods(customerData.customer);
       }
 
-      const enrichedTransaction = {
-        id: transaction.id,
-        customer: transaction.customer,
+      const enrichedCustomer = {
+        customer: customerData.customer,
         email: customerInfo?.email || 'No email',
-        amount: formatCurrency(transaction.amount, transaction.currency),
-        country: customerInfo?.address?.country ||
-                 transaction.charges?.data?.[0]?.billing_details?.address?.country ||
-                 'Unknown',
-        countryFlag: getCountryFlag(
-          customerInfo?.address?.country ||
-          transaction.charges?.data?.[0]?.billing_details?.address?.country
-        ),
+        totalAmount: formatCurrency(customerData.totalAmount, customerData.currency),
+        failedCount: customerData.failedCount,
+        country: customerInfo?.address?.country || 'Unknown',
+        countryFlag: getCountryFlag(customerInfo?.address?.country),
         paymentMethodsCount: paymentMethods.count,
-        date: formatDate(transaction.created),
-        rawAmount: transaction.amount,
-        currency: transaction.currency
+        date: formatDate(customerData.latestDate),
+        rawAmount: customerData.totalAmount,
+        currency: customerData.currency,
+        transactions: customerData.transactions
       };
 
-      enriched.push(enrichedTransaction);
+      enriched.push(enrichedCustomer);
     }
 
     setFailedTransactions(enriched);
   };
 
-  const handleRetryPayment = async (transaction) => {
-    if (!transaction.customer) {
-      alert('Cannot retry payment: No customer associated with this transaction');
+  const handleRetryPayment = async (customer) => {
+    if (!customer.customer) {
+      alert('Cannot retry payment: No customer ID');
       return;
     }
 
-    setRetryingPayments(prev => new Set([...prev, transaction.id]));
+    // Usar el primer payment intent como referencia para el retry
+    const firstTransaction = customer.transactions[0];
+
+    setRetryingPayments(prev => new Set([...prev, customer.customer]));
 
     try {
-      const result = await retryCustomerPayment(transaction.id, transaction.customer);
+      const result = await retryCustomerPayment(firstTransaction.id, customer.customer);
 
       if (result.success) {
-        alert(`✅ Payment successful! ${result.message}`);
-        // Remove this transaction from the failed list since it's now successful
-        setFailedTransactions(prev => prev.filter(t => t.id !== transaction.id));
+        alert(`✅ Payment successful! ${result.message}\n\nRecovered ${customer.failedCount} failed transaction(s) for ${customer.email}`);
+        // Remove this customer from the failed list since payment is now successful
+        setFailedTransactions(prev => prev.filter(c => c.customer !== customer.customer));
       } else {
         alert(`❌ Payment failed: ${result.message}\n\nAttempts made: ${result.attempts.length}`);
       }
@@ -125,7 +124,7 @@ function Dashboard() {
     } finally {
       setRetryingPayments(prev => {
         const newSet = new Set(prev);
-        newSet.delete(transaction.id);
+        newSet.delete(customer.customer);
         return newSet;
       });
     }
@@ -195,11 +194,10 @@ function Dashboard() {
         {hasLoaded && failedTransactions.length > 0 && (
           <div className="results-section">
             <div className="results-header">
-              <h2>❌ {failedTransactions.length} Failed Transactions</h2>
+              <h2>👥 {failedTransactions.length} Customers with Failed Transactions</h2>
               {totalFetched > 0 && (
                 <p className="results-info">
-                  Encontradas {failedTransactions.length} transacciones fallidas de un total de {totalFetched} transacciones revisadas
-                  ({((failedTransactions.length / totalFetched) * 100).toFixed(1)}% fallidas)
+                  {failedTransactions.length} clientes únicos con transacciones fallidas de un total de {totalFetched} transacciones revisadas
                 </p>
               )}
             </div>
@@ -209,46 +207,50 @@ function Dashboard() {
                 <thead>
                   <tr>
                     <th>Email</th>
-                    <th>Amount</th>
+                    <th>Total Amount</th>
+                    <th>Failed Count</th>
                     <th>Country</th>
                     <th>Payment Methods</th>
-                    <th>Date</th>
+                    <th>Latest Date</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {failedTransactions.map((transaction, index) => (
-                    <tr key={transaction.id} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
+                  {failedTransactions.map((customer, index) => (
+                    <tr key={customer.customer} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
                       <td className="email-cell">
                         <div className="email-info">
-                          <span className="email">{transaction.email}</span>
-                          <span className="transaction-id">#{transaction.id.slice(-8)}</span>
+                          <span className="email">{customer.email}</span>
+                          <span className="transaction-id">#{customer.customer.slice(-8)}</span>
                         </div>
                       </td>
                       <td className="valor-cell">
-                        <span className="amount">{transaction.amount}</span>
+                        <span className="amount">{customer.totalAmount}</span>
+                      </td>
+                      <td className="failed-count-cell">
+                        <span className="failed-count">{customer.failedCount} failed</span>
                       </td>
                       <td className="country-cell">
                         <div className="country-info">
-                          <span className="flag">{transaction.countryFlag}</span>
-                          <span className="country-name">{transaction.country}</span>
+                          <span className="flag">{customer.countryFlag}</span>
+                          <span className="country-name">{customer.country}</span>
                         </div>
                       </td>
                       <td className="payment-methods-cell">
                         <span className="payment-count">
-                          {transaction.paymentMethodsCount} method{transaction.paymentMethodsCount !== 1 ? 's' : ''}
+                          {customer.paymentMethodsCount} method{customer.paymentMethodsCount !== 1 ? 's' : ''}
                         </span>
                       </td>
                       <td className="fecha-cell">
-                        <span className="date">{transaction.date}</span>
+                        <span className="date">{customer.date}</span>
                       </td>
                       <td className="actions-cell">
                         <button
-                          onClick={() => handleRetryPayment(transaction)}
-                          disabled={retryingPayments.has(transaction.id) || transaction.paymentMethodsCount === 0}
+                          onClick={() => handleRetryPayment(customer)}
+                          disabled={retryingPayments.has(customer.customer) || customer.paymentMethodsCount === 0}
                           className="retry-button"
                         >
-                          {retryingPayments.has(transaction.id) ? (
+                          {retryingPayments.has(customer.customer) ? (
                             <>
                               <div className="spinner-small"></div>
                               Retrying...
