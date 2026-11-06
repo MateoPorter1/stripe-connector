@@ -599,3 +599,10 @@ button:disabled{opacity:.6}
 .recovery-banner{border-image-slice:44;border-image-width:30px;border-image-outset:3px}
 .scan-note{color:var(--muted);font-size:12px;margin-top:16px;max-width:650px}
 .scan-progress{color:var(--blue);font-size:13px;margin:0 0 18px;line-height:1.6}
+.session-screen{min-height:100vh;display:grid;place-items:center;padding:26px}
+.session-box{margin:0 auto;max-width:520px;width:100%}
+.session-box h1{font-size:29px;margin:22px 0 16px}
+.session-box p{color:var(--muted);font-size:14px;margin-bottom:17px}
+.session-box .session-brand{color:var(--blue);font-weight:700;font-size:17px}
+.session-box .spinner-large{margin:8px 0}
+.session-box .quick-filter-btn{margin-top:18px}

@@ -1,5 +1,5 @@
 import { authFetch } from '../services/authFetch';
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -7,43 +7,46 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const [sessionError, setSessionError] = useState('');
+  const sessionRequest = useRef(0);
 
   const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').trim().replace(/\/$/, '');
 
-  // Verificar si hay un usuario autenticado al cargar
-  useEffect(() => {
-    const checkAuth = async () => {
-      const savedToken = localStorage.getItem('token');
-
-      if (savedToken) {
-        try {
-          const response = await authFetch(`${API_URL}/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${savedToken}`
-            }
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data.user);
-            setToken(savedToken);
-          } else if (response.status === 401 || response.status === 403) {
-            // Only invalid credentials should clear a saved session.
-            localStorage.removeItem('token');
-            setToken(null);
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Error verificando autenticación:', error);
-          // Preserve the saved session during a temporary server outage.
-        }
+  const checkSession = useCallback(async () => {
+    const requestId = ++sessionRequest.current;
+    const savedToken = localStorage.getItem('token');
+    setLoading(true);
+    setSessionError('');
+    try {
+      if (!savedToken) return;
+      const response = await authFetch(`${API_URL}/auth/me`, {
+        timeoutMs: 6000,
+        headers: { Authorization: `Bearer ${savedToken}` }
+      });
+      if (requestId !== sessionRequest.current) return;
+      if (response.ok) {
+        const data = await response.json();
+        if (!data.user) throw new Error('Your session could not be checked. Please try again.');
+        setUser(data.user);
+        setToken(savedToken);
+      } else if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('token');
+        setToken(null);
+        setUser(null);
+      } else {
+        throw new Error('The server is temporarily unavailable. Your saved login is still here.');
       }
-
-      setLoading(false);
-    };
-
-    checkAuth();
+    } catch (error) {
+      if (requestId === sessionRequest.current) setSessionError(error.message);
+    } finally {
+      if (requestId === sessionRequest.current) setLoading(false);
+    }
   }, [API_URL]);
+
+  useEffect(() => {
+    checkSession();
+    return () => { sessionRequest.current += 1; };
+  }, [checkSession]);
 
   const login = async (email, password) => {
     try {
@@ -64,6 +67,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || 'Sign-in failed. Check your email and password.');
       }
 
+      sessionRequest.current += 1;
+      setSessionError('');
+      setLoading(false);
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser(data.user);
@@ -93,6 +99,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || 'Could not create your account.');
       }
 
+      sessionRequest.current += 1;
+      setSessionError('');
+      setLoading(false);
       localStorage.setItem('token', data.token);
       setToken(data.token);
       setUser(data.user);
@@ -104,6 +113,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    sessionRequest.current += 1;
+    setSessionError('');
+    setLoading(false);
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
@@ -113,6 +125,8 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     loading,
+    sessionError,
+    retrySession: checkSession,
     login,
     signup,
     logout,
