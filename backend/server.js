@@ -13,16 +13,24 @@ app.use(express.json());
 mongoose.set('bufferCommands', false);
 
 // Database connection
-if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 5000
-  })
-  .then(() => console.log('✅ Conectado a MongoDB'))
-  .catch(err => console.error('❌ Error conectando a MongoDB:', err));
-} else {
-  console.log('⚠️  Ejecutando sin MongoDB (solo desarrollo local)');
+async function connectDatabase() {
+  if (!process.env.MONGODB_URI) {
+    console.log('Database is not configured.');
+    return;
+  }
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000
+    });
+    console.log('Database connected.');
+  } catch (error) {
+    // Recover automatically when a paused database becomes available again.
+    console.error('Database connection failed:', error.code || error.name);
+    setTimeout(connectDatabase, 30000);
+  }
 }
+connectDatabase();
 
 // The app cannot authenticate or load account data without the database.
 app.use('/api', (req, res, next) => {
