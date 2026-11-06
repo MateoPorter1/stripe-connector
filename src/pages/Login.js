@@ -20,7 +20,7 @@ function Login() {
     const result = await login(email, password);
 
     if (result.success) {
-      navigate('/home');
+      navigate('/dashboard');
     } else {
       setError(result.error);
     }
@@ -30,13 +30,18 @@ function Login() {
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
-        <h1>Sign In</h1>
-        <p className="auth-subtitle">Access your transactions panel</p>
+      <aside className="recovery-intro">
+        <a className="recovery-brand" href="/">↺ Revenue recovery</a>
+        <div><h2>A failed payment shouldn’t be the end of the story.</h2><p>Find the customers who need attention. Understand what failed. Get back to recovering revenue.</p>
+        <div className="recovery-flow"><span>Payment fails</span><span>Review the cause</span><span>Take the next step</span></div></div>
+        <p>Your recovery work starts here.</p>
+      </aside><div className="auth-box">
+        <h1>Welcome back</h1>
+        <p className="auth-subtitle">Sign in to your recovery workspace.</p>
 
         {error && (
-          <div className="error-message">
-            ⚠️ {error}
+          <div className="error-message" role="alert">
+            {error}
           </div>
         )}
 
@@ -45,7 +50,7 @@ function Login() {
             <label htmlFor="email">Email</label>
             <input
               id="email"
-              type="email"
+              type="email" autoComplete="username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
@@ -57,7 +62,7 @@ function Login() {
             <label htmlFor="password">Password</label>
             <input
               id="password"
-              type="password"
+              type="password" autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

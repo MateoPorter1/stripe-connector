@@ -1,3 +1,4 @@
+import { authFetch } from '../services/authFetch';
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext(null);
@@ -7,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').trim().replace(/\/$/, '');
 
   // Verificar si hay un usuario autenticado al cargar
   useEffect(() => {
@@ -16,7 +17,7 @@ export const AuthProvider = ({ children }) => {
 
       if (savedToken) {
         try {
-          const response = await fetch(`${API_URL}/auth/me`, {
+          const response = await authFetch(`${API_URL}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${savedToken}`
             }
@@ -26,17 +27,15 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
             setUser(data.user);
             setToken(savedToken);
-          } else {
-            // Token inválido, limpiar
+          } else if (response.status === 401 || response.status === 403) {
+            // Only invalid credentials should clear a saved session.
             localStorage.removeItem('token');
             setToken(null);
             setUser(null);
           }
         } catch (error) {
           console.error('Error verificando autenticación:', error);
-          localStorage.removeItem('token');
-          setToken(null);
-          setUser(null);
+          // Preserve the saved session during a temporary server outage.
         }
       }
 
@@ -48,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      const response = await authFetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -56,10 +55,13 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password })
       });
 
+      if (response.status >= 500) {
+        throw new Error('Sign-in is temporarily unavailable. Please try again shortly.');
+      }
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
+        throw new Error(data.error || 'Sign-in failed. Check your email and password.');
       }
 
       localStorage.setItem('token', data.token);
@@ -74,7 +76,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password) => {
     try {
-      const response = await fetch(`${API_URL}/auth/signup`, {
+      const response = await authFetch(`${API_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -82,10 +84,13 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ name, email, password })
       });
 
+      if (response.status >= 500) {
+        throw new Error('Sign-in is temporarily unavailable. Please try again shortly.');
+      }
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Error al registrarse');
+        throw new Error(data.error || 'Could not create your account.');
       }
 
       localStorage.setItem('token', data.token);
@@ -111,7 +116,7 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    isAuthenticated: !!token
+    isAuthenticated: !!token && !!user
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

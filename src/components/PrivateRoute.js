@@ -15,7 +15,7 @@ function PrivateRoute({ children }) {
         fontSize: '18px',
         color: '#666'
       }}>
-        Cargando...
+        Checking your session…
       </div>
     );
   }
