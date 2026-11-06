@@ -540,15 +540,54 @@ h1{font-size:28px}
 scroll-behavior:auto!important}
 }
 
-
-.crayon-defs{position:absolute;
-width:0;
-height:0;
-overflow:hidden}
-.filter-section:after,.date-filter-section:after,.table-container:after,.profile-section:after,.chart-section:after{filter:url(#crayon-edge);
-border-style:solid;
-opacity:.75;
-inset:-1px 1px 1px -1px}
-.table-container:after{inset:1px;
-z-index:1}
-
+/* Shared paper and wax-pencil edges, including native form controls. */
+:root{
+--paper-grain:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2296%22%20height%3D%2296%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.8%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22%2F%3E%3C%2Ffilter%3E%3Cpattern%20id%3D%22w%22%20width%3D%226%22%20height%3D%226%22%20patternUnits%3D%22userSpaceOnUse%22%20patternTransform%3D%22rotate%2832%29%22%3E%3Cpath%20d%3D%22M0%200v6%22%20stroke%3D%22%2355544b%22%20stroke-width%3D%22.6%22%20opacity%3D%22.16%22%2F%3E%3Cpath%20d%3D%22M0%201h6%22%20stroke%3D%22%2355544b%22%20stroke-width%3D%22.6%22%20opacity%3D%22.12%22%2F%3E%3Ccircle%20cx%3D%222%22%20cy%3D%223%22%20r%3D%22.65%22%20fill%3D%22%2355544b%22%20opacity%3D%22.14%22%2F%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url%28%23w%29%22%20d%3D%22M0%200h96v96H0z%22%2F%3E%3Cpath%20filter%3D%22url%28%23n%29%22%20opacity%3D%22.13%22%20d%3D%22M0%200h96v96H0z%22%2F%3E%3C%2Fsvg%3E");
+--pencil-blue:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22100%22%20viewBox%3D%220%200%20180%20100%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22rough%22%20x%3D%22-10%25%22%20y%3D%22-20%25%22%20width%3D%22120%25%22%20height%3D%22140%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.5%22%20numOctaves%3D%223%22%20seed%3D%228%22%20result%3D%22noise%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20in2%3D%22noise%22%20scale%3D%222.2%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23315de4%22%20filter%3D%22url%28%23rough%29%22%3E%3Cpath%20d%3D%22M19%204%20Q8%202%204%2017%20L4%2081%20Q3%2095%2019%2096%20L161%2096%20Q177%2098%20176%2081%20L176%2020%20Q177%203%20161%204%20Z%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M18%206%20Q6%204%206%2020%20L5%2080%20Q6%2093%2020%2094%20L160%2095%20Q174%2095%20174%2080%20L175%2020%20Q174%206%20160%206%20Z%22%20stroke-width%3D%22.8%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M22%202%20L40%203%20M142%2098%20L157%2097%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+--pencil-red:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22100%22%20viewBox%3D%220%200%20180%20100%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22rough%22%20x%3D%22-10%25%22%20y%3D%22-20%25%22%20width%3D%22120%25%22%20height%3D%22140%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.5%22%20numOctaves%3D%223%22%20seed%3D%228%22%20result%3D%22noise%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20in2%3D%22noise%22%20scale%3D%222.2%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23e6533c%22%20filter%3D%22url%28%23rough%29%22%3E%3Cpath%20d%3D%22M19%204%20Q8%202%204%2017%20L4%2081%20Q3%2095%2019%2096%20L161%2096%20Q177%2098%20176%2081%20L176%2020%20Q177%203%20161%204%20Z%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M18%206%20Q6%204%206%2020%20L5%2080%20Q6%2093%2020%2094%20L160%2095%20Q174%2095%20174%2080%20L175%2020%20Q174%206%20160%206%20Z%22%20stroke-width%3D%22.8%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M22%202%20L40%203%20M142%2098%20L157%2097%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+--pencil-gold:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22100%22%20viewBox%3D%220%200%20180%20100%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22rough%22%20x%3D%22-10%25%22%20y%3D%22-20%25%22%20width%3D%22120%25%22%20height%3D%22140%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.5%22%20numOctaves%3D%223%22%20seed%3D%228%22%20result%3D%22noise%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20in2%3D%22noise%22%20scale%3D%222.2%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d89c19%22%20filter%3D%22url%28%23rough%29%22%3E%3Cpath%20d%3D%22M19%204%20Q8%202%204%2017%20L4%2081%20Q3%2095%2019%2096%20L161%2096%20Q177%2098%20176%2081%20L176%2020%20Q177%203%20161%204%20Z%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M18%206%20Q6%204%206%2020%20L5%2080%20Q6%2093%2020%2094%20L160%2095%20Q174%2095%20174%2080%20L175%2020%20Q174%206%20160%206%20Z%22%20stroke-width%3D%22.8%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M22%202%20L40%203%20M142%2098%20L157%2097%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+--pencil-green:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22100%22%20viewBox%3D%220%200%20180%20100%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22rough%22%20x%3D%22-10%25%22%20y%3D%22-20%25%22%20width%3D%22120%25%22%20height%3D%22140%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.5%22%20numOctaves%3D%223%22%20seed%3D%228%22%20result%3D%22noise%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20in2%3D%22noise%22%20scale%3D%222.2%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23339765%22%20filter%3D%22url%28%23rough%29%22%3E%3Cpath%20d%3D%22M19%204%20Q8%202%204%2017%20L4%2081%20Q3%2095%2019%2096%20L161%2096%20Q177%2098%20176%2081%20L176%2020%20Q177%203%20161%204%20Z%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M18%206%20Q6%204%206%2020%20L5%2080%20Q6%2093%2020%2094%20L160%2095%20Q174%2095%20174%2080%20L175%2020%20Q174%206%20160%206%20Z%22%20stroke-width%3D%22.8%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M22%202%20L40%203%20M142%2098%20L157%2097%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+--pencil-pink:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22100%22%20viewBox%3D%220%200%20180%20100%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22rough%22%20x%3D%22-10%25%22%20y%3D%22-20%25%22%20width%3D%22120%25%22%20height%3D%22140%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.5%22%20numOctaves%3D%223%22%20seed%3D%228%22%20result%3D%22noise%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20in2%3D%22noise%22%20scale%3D%222.2%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23d24f91%22%20filter%3D%22url%28%23rough%29%22%3E%3Cpath%20d%3D%22M19%204%20Q8%202%204%2017%20L4%2081%20Q3%2095%2019%2096%20L161%2096%20Q177%2098%20176%2081%20L176%2020%20Q177%203%20161%204%20Z%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M18%206%20Q6%204%206%2020%20L5%2080%20Q6%2093%2020%2094%20L160%2095%20Q174%2095%20174%2080%20L175%2020%20Q174%206%20160%206%20Z%22%20stroke-width%3D%22.8%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M22%202%20L40%203%20M142%2098%20L157%2097%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+--pencil-gray:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22100%22%20viewBox%3D%220%200%20180%20100%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22rough%22%20x%3D%22-10%25%22%20y%3D%22-20%25%22%20width%3D%22120%25%22%20height%3D%22140%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.5%22%20numOctaves%3D%223%22%20seed%3D%228%22%20result%3D%22noise%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20in2%3D%22noise%22%20scale%3D%222.2%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%238b897d%22%20filter%3D%22url%28%23rough%29%22%3E%3Cpath%20d%3D%22M19%204%20Q8%202%204%2017%20L4%2081%20Q3%2095%2019%2096%20L161%2096%20Q177%2098%20176%2081%20L176%2020%20Q177%203%20161%204%20Z%22%20stroke-width%3D%221.8%22%2F%3E%3Cpath%20d%3D%22M18%206%20Q6%204%206%2020%20L5%2080%20Q6%2093%2020%2094%20L160%2095%20Q174%2095%20174%2080%20L175%2020%20Q174%206%20160%206%20Z%22%20stroke-width%3D%22.8%22%20opacity%3D%22.75%22%2F%3E%3Cpath%20d%3D%22M22%202%20L40%203%20M142%2098%20L157%2097%22%20stroke-width%3D%221.2%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
+body{background-color:#f8f7f2;background-image:var(--paper-grain);background-size:96px 96px}
+.sidebar{background-color:#f8f7f2;background-image:var(--paper-grain)}
+.filter-section,.date-filter-section,.scorecard,.stat-card,.chart-section,.profile-section,.users-section,.info-item,.stripe-info-box,.stripe-status,.warning-box,.error-message,.success-message,.message,.auth-box,.user-info-sidebar,.workspace-tag,.table-container,button,input,select,.badge,.plan-badge-profile,.role-badge,.user-plan{
+  --pencil:var(--pencil-blue);
+  border:2px solid transparent;
+  border-image-source:var(--pencil);
+  border-image-slice:20;
+  border-image-width:11px;
+  border-image-outset:2px;
+  border-image-repeat:stretch;
+  background-image:var(--paper-grain);
+}
+.filter-section,.date-filter-section,.scorecard,.stat-card{--pencil:var(--pencil-gold)}
+.table-container,.error-message,.warning-box,.message-error,.delete-key-btn{--pencil:var(--pencil-red)}
+.scorecard:nth-child(2),.stat-card:nth-child(2){--pencil:var(--pencil-pink)}
+.scorecard:nth-child(3),.stat-card:nth-child(3),.message-success,.success-message{--pencil:var(--pencil-green)}
+.scorecard:nth-child(4),.stat-card:nth-child(4){--pencil:var(--pencil-blue)}
+.info-item,.stripe-status,.user-info-sidebar{--pencil:var(--pencil-gray)}
+input,select{--pencil:var(--pencil-gray);background-color:rgba(255,255,255,.7)}
+input:focus,select:focus{--pencil:var(--pencil-blue)}
+.auth-box{padding:38px;width:min(460px,85%);background-color:rgba(255,255,255,.35);border-image-width:15px}
+.auth-link{line-height:1.7}
+.user-info-sidebar{padding:12px}
+.user-plan{padding:3px 7px}
+.nav-item{--pencil:var(--pencil-gray);background-color:rgba(255,255,255,.23)}
+.nav-item.active{--pencil:var(--pencil-blue);background-color:#e9edfc}
+.logout-btn{padding:9px}
+.badge,.plan-badge-profile,.role-badge,.workspace-tag,.user-plan{border-image-width:7px;border-image-outset:1px}
+.table-container{background-color:#faf9f6;padding:8px}
+th{background-color:#eeede6;background-image:var(--paper-grain)}
+td{background-image:var(--paper-grain)}
+.filter-section:after,.date-filter-section:after,.table-container:after,.profile-section:after,.chart-section:after{display:none}
+.quick-filter-btn:hover,.nav-item:hover{--pencil:var(--pencil-blue)}
+button:disabled{opacity:.6}
+@media(max-width:760px){.auth-box{padding:26px;margin:32px auto}.sidebar-header{padding:15px 10px}.nav-item{padding:14px 6px}.sidebar-footer{padding:15px 8px}.logout-btn{justify-content:center}}
+/* Keep the pencil stroke visible around filled actions and artwork. */
+.search-button,.apply-filter-btn,.save-button,.auth-button{background-color:#e9edff;color:#2447ac}
+.search-button:hover,.apply-filter-btn:hover,.save-button:hover,.auth-button:hover{background-color:#dce4ff}
+.recovery-banner{border:2px solid transparent;border-image-source:var(--pencil-gold);border-image-slice:20;border-image-width:12px;border-image-outset:2px}
+#root button,#root input,#root select{border:2px solid transparent;border-image-source:var(--pencil,var(--pencil-blue));border-image-slice:20;border-image-width:11px;border-image-outset:2px;border-image-repeat:stretch}
+.filter-section,.date-filter-section,.table-container,.scorecard,.stat-card,.chart-section,.profile-section,.users-section{border-image-width:18px}
