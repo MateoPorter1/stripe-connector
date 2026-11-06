@@ -1,5 +1,5 @@
 // Servicio para llamar al backend en lugar de Stripe directamente
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = (process.env.REACT_APP_API_URL || 'http://localhost:5000/api').trim().replace(/\/$/, '');
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
@@ -9,35 +9,29 @@ const getAuthHeader = () => {
   };
 };
 
-export const getFailedTransactions = async (limit = 100, startDate = null, endDate = null) => {
+export const getFailedTransactions = async (limit = 100, startDate = null, endDate = null, cursor = null, signal) => {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (startDate) params.set('startDate', startDate);
+  if (endDate) params.set('endDate', endDate);
+  if (cursor) params.set('cursor', cursor);
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  signal?.addEventListener('abort', cancel, { once: true });
+  const timer = setTimeout(cancel, 30000);
   try {
-    let url = `${API_URL}/stripe/failed-transactions?limit=${limit}`;
-
-    if (startDate) {
-      url += `&startDate=${startDate}`;
-    }
-    if (endDate) {
-      url += `&endDate=${endDate}`;
-    }
-
-    const response = await fetch(url, {
-      headers: getAuthHeader()
+    const response = await fetch(`${API_URL}/stripe/failed-transactions?${params}`, {
+      headers: getAuthHeader(), signal: controller.signal
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Error fetching transactions');
-    }
-
     const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Could not load payments. Please try again.');
     return data;
   } catch (error) {
-    console.error('Error fetching transactions:', error);
-    return {
-      success: false,
-      error: error.message,
-      transactions: []
-    };
+    if (signal?.aborted) throw error;
+    return { success: false, error: controller.signal.aborted ? 'Stripe took too long to respond. Please try again.' : error.message };
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', cancel);
   }
 };
 
@@ -60,23 +54,24 @@ export const getCustomerInfo = async (customerId) => {
 };
 
 export const getCustomerPaymentMethods = async (customerId) => {
-  if (!customerId) return { count: 0, methods: [] };
+  if (!customerId) return { success: false, count: null, methods: [] };
 
   try {
     const response = await fetch(`${API_URL}/stripe/payment-methods/${customerId}`, {
       headers: getAuthHeader()
     });
 
-    if (!response.ok) return { count: 0, methods: [] };
+    if (!response.ok) return { success: false, count: null, methods: [] };
 
     const data = await response.json();
     return {
+      success: true,
       count: data.count,
       methods: data.methods
     };
   } catch (error) {
     console.error('Error fetching customer payment methods:', error);
-    return { count: 0, methods: [] };
+    return { success: false, count: null, methods: [] };
   }
 };
 

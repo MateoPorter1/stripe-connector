@@ -4,17 +4,18 @@ const Stripe = require('stripe');
 const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Recovery = require('../models/Recovery');
+const { getFailedPaymentsPage } = require('../services/failedPayments');
 
 // Helper function para obtener el cliente Stripe del usuario
 const getUserStripeClient = async (userId) => {
   const user = await User.findById(userId).select('+stripeApiKey');
 
   if (!user) {
-    throw new Error('Usuario no encontrado');
+    throw Object.assign(new Error('Account not found. Please sign in again.'), { statusCode: 400 });
   }
 
   if (!user.stripeApiKey) {
-    throw new Error('API key de Stripe no configurada. Por favor configura tu API key en tu perfil.');
+    throw Object.assign(new Error('Connect Stripe in My Profile before loading payments.'), { statusCode: 400 });
   }
 
   return new Stripe(user.stripeApiKey);
@@ -25,149 +26,14 @@ const getUserStripeClient = async (userId) => {
 // @access  Private
 router.get('/failed-transactions', auth, async (req, res) => {
   try {
-    // Obtener cliente Stripe del usuario
     const stripe = await getUserStripeClient(req.user._id);
-
-    const { startDate, endDate } = req.query;
-
-    // Construir parámetros para la consulta
-    const params = {
-      limit: 100 // Máximo por petición de Stripe
-    };
-
-    // Agregar filtros de fecha
-    if (!startDate && !endDate) {
-      // Por defecto: últimos 7 días
-      const sevenDaysAgo = Math.floor((Date.now() - (7 * 24 * 60 * 60 * 1000)) / 1000);
-      params.created = { gte: sevenDaysAgo };
-    } else {
-      params.created = {};
-      if (startDate) {
-        const startTimestamp = Math.floor(new Date(startDate + 'T00:00:00Z').getTime() / 1000);
-        params.created.gte = startTimestamp;
-      }
-      if (endDate) {
-        const endTimestamp = Math.floor(new Date(endDate + 'T23:59:59Z').getTime() / 1000);
-        params.created.lte = endTimestamp;
-      }
-    }
-
-    // Obtener TODAS las transacciones usando paginación
-    let allPaymentIntents = [];
-    let hasMore = true;
-    let startingAfter = null;
-
-    console.log('🔍 Obteniendo transacciones fallidas...');
-
-    while (hasMore) {
-      const queryParams = { ...params };
-      if (startingAfter) {
-        queryParams.starting_after = startingAfter;
-      }
-
-      const response = await stripe.paymentIntents.list(queryParams);
-      allPaymentIntents = allPaymentIntents.concat(response.data);
-
-      hasMore = response.has_more;
-      if (hasMore && response.data.length > 0) {
-        startingAfter = response.data[response.data.length - 1].id;
-      }
-
-      console.log(`  ✓ Obtenidas ${allPaymentIntents.length} transacciones hasta ahora...`);
-    }
-
-    console.log(`✅ Total de transacciones obtenidas: ${allPaymentIntents.length}`);
-
-    // Filtrar solo transacciones fallidas
-    const failedTransactions = allPaymentIntents.filter(transaction =>
-      transaction.status === 'requires_payment_method' ||
-      transaction.status === 'failed' ||
-      transaction.status === 'canceled'
-    );
-
-    console.log(`❌ Transacciones fallidas encontradas: ${failedTransactions.length}`);
-
-    // Agrupar por cliente (customer)
-    const groupedByCustomer = {};
-
-    failedTransactions.forEach(transaction => {
-      const customerId = transaction.customer;
-
-      if (!customerId) return; // Saltar transacciones sin cliente
-
-      if (!groupedByCustomer[customerId]) {
-        groupedByCustomer[customerId] = {
-          customer: customerId,
-          transactions: [],
-          totalAmount: 0,
-          failedCount: 0,
-          latestDate: transaction.created,
-          currency: transaction.currency
-        };
-      }
-
-      groupedByCustomer[customerId].transactions.push(transaction);
-      groupedByCustomer[customerId].totalAmount += transaction.amount;
-      groupedByCustomer[customerId].failedCount += 1;
-
-      // Mantener la fecha más reciente
-      if (transaction.created > groupedByCustomer[customerId].latestDate) {
-        groupedByCustomer[customerId].latestDate = transaction.created;
-      }
-    });
-
-    // Convertir a array y ordenar por fecha más reciente
-    const customerList = Object.values(groupedByCustomer).sort((a, b) => b.latestDate - a.latestDate);
-
-    console.log(`👥 Clientes únicos con transacciones fallidas: ${customerList.length}`);
-
-    // Enriquecer datos de clientes (email, país, métodos de pago)
-    console.log(`🔄 Enriching customer data...`);
-    const enrichedCustomers = await Promise.all(
-      customerList.map(async (customerData) => {
-        try {
-          // Obtener info del cliente y métodos de pago en paralelo
-          const [customerInfo, paymentMethods] = await Promise.all([
-            stripe.customers.retrieve(customerData.customer),
-            stripe.paymentMethods.list({
-              customer: customerData.customer,
-              type: 'card'
-            })
-          ]);
-
-          return {
-            ...customerData,
-            email: customerInfo.email || 'No email',
-            country: customerInfo.address?.country || 'Unknown',
-            paymentMethodsCount: paymentMethods.data.length
-          };
-        } catch (error) {
-          console.error(`❌ Error enriching customer ${customerData.customer}:`, error.message);
-          // Devolver datos básicos si falla el enriquecimiento
-          return {
-            ...customerData,
-            email: 'Error loading',
-            country: 'Unknown',
-            paymentMethodsCount: 0
-          };
-        }
-      })
-    );
-
-    console.log(`✅ Customer data enriched successfully`);
-
-    res.json({
-      success: true,
-      customers: enrichedCustomers,
-      totalCustomers: enrichedCustomers.length,
-      totalFailedTransactions: failedTransactions.length,
-      totalFetched: allPaymentIntents.length
-    });
+    res.set('Cache-Control', 'no-store');
+    res.json(await getFailedPaymentsPage(stripe, req.query));
   } catch (error) {
-    console.error('Error obteniendo transacciones:', error);
-    res.status(500).json({
+    console.error('Failed payment scan:', error.type || error.name);
+    res.status(error.statusCode === 400 ? 400 : 502).json({
       success: false,
-      error: error.message
+      error: error.statusCode === 400 ? error.message : 'Could not load this batch from Stripe. Please try again.'
     });
   }
 });

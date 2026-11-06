@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import RecoveryBanner from '../components/RecoveryBanner';
-import { LuCircleX, LuSearch, LuTriangleAlert, LuUsers, LuRefreshCw, LuCircleCheckBig } from 'react-icons/lu';
+import { LuCircleX, LuSearch, LuTriangleAlert, LuUsers, LuRefreshCw } from 'react-icons/lu';
 import {
   getFailedTransactions,
+  getCustomerPaymentMethods,
   retryCustomerPayment,
   formatCurrency,
   formatDate,
   getCountryFlag
 } from '../services/api';
+import { mergePaymentPages, queueKey } from '../services/recoveryQueue';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -20,6 +22,16 @@ function Dashboard() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [retryingPayments, setRetryingPayments] = useState(new Set());
+  const [checkingCards, setCheckingCards] = useState(new Set());
+  const [nextCursor, setNextCursor] = useState(null);
+  const [scanComplete, setScanComplete] = useState(false);
+  const [scanRange, setScanRange] = useState(null);
+  const scanController = useRef(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; scanController.current?.abort(); };
+  }, []);
 
   // Function to get default start date (7 days ago for failed transactions)
   const getDefaultStartDate = () => {
@@ -39,44 +51,61 @@ function Dashboard() {
     setEndDate(getTodayDate());
   }, []);
 
-  const handleGetFailedTransactions = async () => {
+  const handleGetFailedTransactions = async (resume = false) => {
+    scanController.current?.abort();
+    const controller = new AbortController();
+    scanController.current = controller;
+    const range = resume ? scanRange : { startDate, endDate };
+    if (!range || range.startDate > range.endDate) {
+      setError('The start date must come before the end date.');
+      return;
+    }
     setLoading(true);
     setError('');
-
+    setScanComplete(false);
+    if (!resume) {
+      setFailedTransactions([]);
+      setTotalFetched(0);
+      setHasLoaded(false);
+      setNextCursor(null);
+      setScanRange(range);
+    }
+    let cursor = resume ? nextCursor : null;
     try {
-      const result = await getFailedTransactions(100, startDate, endDate);
-
-      if (result.success) {
-        setHasLoaded(true);
-        setTotalFetched(result.totalFetched || 0);
-
-        if (result.customers.length === 0) {
-          setError(`No failed transactions found between ${startDate} and ${endDate}.`);
-        } else {
-          // Backend now returns fully enriched data - just format it for display
-          const formattedCustomers = result.customers.map(customerData => ({
-            customer: customerData.customer,
-            email: customerData.email,
-            totalAmount: formatCurrency(customerData.totalAmount, customerData.currency),
-            failedCount: customerData.failedCount,
-            country: customerData.country,
-            countryFlag: getCountryFlag(customerData.country),
-            paymentMethodsCount: customerData.paymentMethodsCount,
-            date: formatDate(customerData.latestDate),
-            rawAmount: customerData.totalAmount,
-            currency: customerData.currency,
-            transactions: customerData.transactions
-          }));
-
-          setFailedTransactions(formattedCustomers);
+      do {
+        const result = await getFailedTransactions(100, range.startDate, range.endDate, cursor, controller.signal);
+        if (controller.signal.aborted || !mounted.current) return;
+        if (!result.success) throw new Error(result.error || 'Could not load payments.');
+        if (result.hasMore && (!result.nextCursor || result.nextCursor === cursor)) {
+          throw new Error('The scan could not advance. Please reload the queue.');
         }
-      } else {
-        setError(result.error || 'Error fetching failed transactions');
-      }
+        setHasLoaded(true);
+        setFailedTransactions(previous => mergePaymentPages(previous, result.customers));
+        setTotalFetched(previous => previous + (result.totalFetched || 0));
+        cursor = result.nextCursor || null;
+        setNextCursor(cursor);
+      } while (cursor);
+      setScanComplete(true);
     } catch (err) {
-      setError('Connection error. Please check your internet connection.');
+      if (!controller.signal.aborted && mounted.current) setError(err.message);
     } finally {
-      setLoading(false);
+      if (scanController.current === controller && mounted.current) setLoading(false);
+    }
+  };
+
+  const handleCheckCards = async customer => {
+    setCheckingCards(previous => new Set([...previous, customer.customer]));
+    try {
+      const result = await getCustomerPaymentMethods(customer.customer);
+      if (!mounted.current) return;
+      if (!result.success) throw new Error('Could not check saved cards. Please try again.');
+      setFailedTransactions(previous => previous.map(row => row.customer === customer.customer ? { ...row, paymentMethodsCount: result.count } : row));
+    } catch (err) {
+      if (mounted.current) setError(err.message);
+    } finally {
+      if (mounted.current) setCheckingCards(previous => {
+        const next = new Set(previous); next.delete(customer.customer); return next;
+      });
     }
   };
 
@@ -95,9 +124,14 @@ function Dashboard() {
       const result = await retryCustomerPayment(firstTransaction.id, customer.customer);
 
       if (result.success) {
-        alert(`✅ Payment successful! ${result.message}\n\nRecovered ${customer.failedCount} failed transaction(s) for ${customer.email}`);
-        // Remove this customer from the failed list since payment is now successful
-        setFailedTransactions(prev => prev.filter(c => c.customer !== customer.customer));
+        alert(`Payment successful. Recovered ${formatCurrency(firstTransaction.amount, customer.currency)} for ${customer.email}.`);
+        setFailedTransactions(previous => previous.flatMap(row => {
+          if (queueKey(row) !== queueKey(customer)) return [row];
+          const transactions = row.transactions.filter(payment => payment.id !== firstTransaction.id);
+          return transactions.length ? [{ ...row, transactions, failedCount: transactions.length,
+            totalAmount: transactions.reduce((sum, payment) => sum + payment.amount, 0),
+            latestDate: Math.max(...transactions.map(payment => payment.created)) }] : [];
+        }));
       } else {
         alert(`❌ Payment failed: ${result.message}\n\nAttempts made: ${result.attempts.length}`);
       }
@@ -129,6 +163,7 @@ function Dashboard() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                disabled={loading}
                 className="date-input"
               />
             </div>
@@ -140,19 +175,20 @@ function Dashboard() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                disabled={loading}
                 className="date-input"
               />
             </div>
 
             <button
-              onClick={handleGetFailedTransactions}
+              onClick={() => handleGetFailedTransactions(false)}
               disabled={loading || !startDate || !endDate}
               className="search-button"
             >
               {loading ? (
                 <>
                   <div className="spinner"></div>
-                  Loading...
+                  Scanning…
                 </>
               ) : (
                 <>
@@ -160,11 +196,18 @@ function Dashboard() {
                 </>
               )}
             </button>
+            {loading && <button className="quick-filter-btn" onClick={() => { scanController.current?.abort(); setLoading(false); }}>Pause scan</button>}
+            {!loading && nextCursor && scanRange?.startDate === startDate && scanRange?.endDate === endDate && <button className="quick-filter-btn" onClick={() => handleGetFailedTransactions(true)}>Continue scan</button>}
           </div>
+          <p className="scan-note">Customers appear as payments are checked. Saved cards are checked separately when you need them.</p>
         </div>
 
+        {(loading || hasLoaded) && <p className="scan-progress" role="status" aria-live="polite">
+          {loading ? 'Scanning Stripe — results are updating.' : scanComplete ? 'Scan complete.' : 'Scan incomplete — results below cover only the payments checked so far.'}
+          {' '}{totalFetched.toLocaleString()} payments checked.
+        </p>}
         {error && (
-          <div className="error-message">
+          <div className="error-message" role="alert">
             <LuTriangleAlert style={{ display: 'inline', marginRight: '8px' }} /> {error}
           </div>
         )}
@@ -172,10 +215,10 @@ function Dashboard() {
         {(
           <div className="results-section">
             <div className="results-header">
-              <h2><LuUsers /> {hasLoaded ? `${failedTransactions.length} customers` : 'Your customers'}</h2>
+              <h2><LuUsers /> {hasLoaded ? `${new Set(failedTransactions.map(customer => customer.customer)).size} customers` : 'Your customers'}</h2>
               {totalFetched > 0 && (
                 <p className="results-info">
-                  {failedTransactions.length} unique customers with failed transactions out of {totalFetched} transactions reviewed
+                  {new Set(failedTransactions.map(customer => customer.customer)).size} customers · {failedTransactions.length} rows, separated by currency · {totalFetched.toLocaleString()} payments reviewed
                 </p>
               )}
             </div>
@@ -194,10 +237,10 @@ function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {failedTransactions.length === 0 && <tr><td colSpan="7"><div className="queue-empty"><LuCircleX size={32}/><h3>{loading ? 'Finding failed payments…' : hasLoaded ? 'No customers in this queue' : 'Your next recovery starts here.'}</h3><p>{hasLoaded ? 'Choose another date range to review more payments.' : 'Choose a date range and load failed payments to see your recovery queue.'}</p></div></td></tr>}
+                  {failedTransactions.length === 0 && <tr><td colSpan="7"><div className="queue-empty"><LuCircleX size={32}/><h3>{loading ? 'Finding failed payments…' : scanComplete ? 'No customers in this queue' : hasLoaded ? 'No failed payments found so far'  : 'Your next recovery starts here.'}</h3><p>{scanComplete ? 'Choose another date range to review more payments.' : loading ? 'Results will appear here as each batch arrives.' : 'Choose a date range and load failed payments to see your recovery queue.'}</p></div></td></tr>}
 
                   {failedTransactions.map((customer, index) => (
-                    <tr key={customer.customer} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
+                    <tr key={queueKey(customer)} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
                       <td className="email-cell">
                         <div className="email-info">
                           <span className="email">{customer.email}</span>
@@ -205,29 +248,30 @@ function Dashboard() {
                         </div>
                       </td>
                       <td className="valor-cell">
-                        <span className="amount">{customer.totalAmount}</span>
+                        <span className="amount">{formatCurrency(customer.totalAmount, customer.currency)}</span>
                       </td>
                       <td className="failed-count-cell">
                         <span className="failed-count">{customer.failedCount} failed</span>
                       </td>
                       <td className="country-cell">
                         <div className="country-info">
-                          <span className="flag">{customer.countryFlag}</span>
+                          <span className="flag">{getCountryFlag(customer.country)}</span>
                           <span className="country-name">{customer.country}</span>
                         </div>
                       </td>
                       <td className="payment-methods-cell">
-                        <span className="payment-count">
-                          {customer.paymentMethodsCount} method{customer.paymentMethodsCount !== 1 ? 's' : ''}
-                        </span>
+                        {customer.paymentMethodsCount === null ? <button className="quick-filter-btn" onClick={() => handleCheckCards(customer)} disabled={checkingCards.has(customer.customer)}>
+                          {checkingCards.has(customer.customer) ? 'Checking…' : 'Check cards'}
+                        </button> : <span className="payment-count">{customer.paymentMethodsCount} saved card{customer.paymentMethodsCount !== 1 ? 's' : ''}</span>}
                       </td>
                       <td className="fecha-cell">
-                        <span className="date">{customer.date}</span>
+                        <span className="date">{formatDate(customer.latestDate)}</span>
                       </td>
                       <td className="actions-cell">
                         <button
                           onClick={() => handleRetryPayment(customer)}
-                          disabled={retryingPayments.has(customer.customer) || customer.paymentMethodsCount === 0}
+                          disabled={loading || !scanComplete || retryingPayments.has(customer.customer) || !customer.paymentMethodsCount}
+                          title={!scanComplete ? 'Finish the scan before retrying a payment.' : customer.paymentMethodsCount === null ? 'Check saved cards first.' : customer.paymentMethodsCount === 0 ? 'This customer has no saved cards.' : 'Retry the latest failed payment.'}
                           className="retry-button"
                         >
                           {retryingPayments.has(customer.customer) ? (
@@ -250,12 +294,7 @@ function Dashboard() {
           </div>
         )}
 
-        {hasLoaded && failedTransactions.length === 0 && !error && (
-          <div className="empty-state">
-            <h3><LuCircleCheckBig style={{ display: 'inline', marginRight: '8px' }} /> No failed transactions</h3>
-            <p>No failed transactions found for the selected date range.</p>
-          </div>
-        )}
+
         </div>
       </div>
     </div>

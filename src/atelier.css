@@ -597,3 +597,5 @@ button:disabled{opacity:.6}
 .auth-box,.filter-section,.date-filter-section,.table-container,.scorecard,.stat-card,.chart-section,.profile-section,.users-section{border-image-slice:44;border-image-width:34px;border-image-outset:4px}
 .info-item,.stripe-info-box,.stripe-status,.user-info-sidebar,.workspace-tag,.badge,.plan-badge-profile,.role-badge,.user-plan,.warning-box,.error-message,.success-message,.message{border-image-slice:44;border-image-width:22px;border-image-outset:2px}
 .recovery-banner{border-image-slice:44;border-image-width:30px;border-image-outset:3px}
+.scan-note{color:var(--muted);font-size:12px;margin-top:16px;max-width:650px}
+.scan-progress{color:var(--blue);font-size:13px;margin:0 0 18px;line-height:1.6}
