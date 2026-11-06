@@ -13,14 +13,14 @@ function Sidebar() {
     {
       path: '/home',
       icon: LuHouse,
-      label: 'Overview',
-      description: 'Main dashboard'
+      label: 'Earlier recoveries',
+      description: 'Previous app attempts'
     },
     {
       path: '/dashboard',
       icon: LuCreditCard,
-      label: 'Recovery queue',
-      description: 'Failed payments'
+      label: 'Automatic recovery',
+      description: 'Subscription invoices'
     },
     {
       path: '/profile',

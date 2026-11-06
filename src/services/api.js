@@ -136,3 +136,22 @@ export const getCountryFlag = (countryCode) => {
 
   return countryFlags[countryCode.toUpperCase()] || '🏳️';
 };
+
+export async function getSubscriptionRecovery(view = 'open', cursor = null, signal) {
+  const params = new URLSearchParams({ view });
+  if (cursor) params.set('cursor', cursor);
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  const timer = setTimeout(abort, 30000);
+  try {
+    const response = await fetch(`${API_URL}/stripe/subscription-recovery?${params}`, { headers: getAuthHeader(), signal: controller.signal });
+    const data = await response.json();
+    if (!response.ok || !data.success) throw new Error(data.error || 'Could not refresh invoices.');
+    return data;
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    throw new Error(controller.signal.aborted ? 'Stripe took too long to respond. The next refresh will try again.' : error.message);
+  } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
+}

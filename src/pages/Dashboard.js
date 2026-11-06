@@ -1,304 +1,88 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import RecoveryBanner from '../components/RecoveryBanner';
-import { LuCircleX, LuSearch, LuTriangleAlert, LuUsers, LuRefreshCw } from 'react-icons/lu';
-import {
-  getFailedTransactions,
-  getCustomerPaymentMethods,
-  retryCustomerPayment,
-  formatCurrency,
-  formatDate,
-  getCountryFlag
-} from '../services/api';
-import { mergePaymentPages, queueKey } from '../services/recoveryQueue';
+import { LuRefreshCw, LuExternalLink, LuCircleCheckBig } from 'react-icons/lu';
+import { getSubscriptionRecovery, formatCurrency, formatDate } from '../services/api';
 import './Dashboard.css';
 
-function Dashboard() {
-  const [loading, setLoading] = useState(false);
+const labels = {
+  scheduled: 'Retry scheduled', processing: 'Payment processing', customer_action: 'Customer action needed',
+  manual_collection: 'Customer payment required', paused: 'Collection paused', no_schedule: 'No retry scheduled',
+  paid_after_retries: 'Paid after retries', ended: 'Recovery ended'
+};
+
+export default function Dashboard() {
+  const [view, setView] = useState('open');
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [failedTransactions, setFailedTransactions] = useState([]);
-  const [totalFetched, setTotalFetched] = useState(0);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [retryingPayments, setRetryingPayments] = useState(new Set());
-  const [checkingCards, setCheckingCards] = useState(new Set());
-  const [nextCursor, setNextCursor] = useState(null);
-  const [scanComplete, setScanComplete] = useState(false);
-  const [scanRange, setScanRange] = useState(null);
-  const scanController = useRef(null);
+  const [reviewed, setReviewed] = useState(0);
+  const [updated, setUpdated] = useState(null);
+  const active = useRef(null);
+  const refreshTimer = useRef(null);
   const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => { mounted.current = false; scanController.current?.abort(); };
-  }, []);
 
-  // Function to get default start date (7 days ago for failed transactions)
-  const getDefaultStartDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() - 7);
-    return date.toISOString().split('T')[0];
-  };
-
-  // Function to get today's date
-  const getTodayDate = () => {
-    return new Date().toISOString().split('T')[0];
-  };
-
-  // Initialize default dates
-  React.useEffect(() => {
-    setStartDate(getDefaultStartDate());
-    setEndDate(getTodayDate());
-  }, []);
-
-  const handleGetFailedTransactions = async (resume = false) => {
-    scanController.current?.abort();
+  const refresh = useCallback(async () => {
+    clearTimeout(refreshTimer.current);
+    active.current?.abort();
     const controller = new AbortController();
-    scanController.current = controller;
-    const range = resume ? scanRange : { startDate, endDate };
-    if (!range || range.startDate > range.endDate) {
-      setError('The start date must come before the end date.');
-      return;
-    }
-    setLoading(true);
-    setError('');
-    setScanComplete(false);
-    if (!resume) {
-      setFailedTransactions([]);
-      setTotalFetched(0);
-      setHasLoaded(false);
-      setNextCursor(null);
-      setScanRange(range);
-    }
-    let cursor = resume ? nextCursor : null;
+    active.current = controller;
+    setLoading(true); setError(''); setReviewed(0);
+    const rows = new Map();
+    let cursor = null;
     try {
       do {
-        const result = await getFailedTransactions(100, range.startDate, range.endDate, cursor, controller.signal);
+        const result = await getSubscriptionRecovery(view, cursor, controller.signal);
         if (controller.signal.aborted || !mounted.current) return;
-        if (!result.success) throw new Error(result.error || 'Could not load payments.');
-        if (result.hasMore && (!result.nextCursor || result.nextCursor === cursor)) {
-          throw new Error('The scan could not advance. Please reload the queue.');
-        }
-        setHasLoaded(true);
-        setFailedTransactions(previous => mergePaymentPages(previous, result.customers));
-        setTotalFetched(previous => previous + (result.totalFetched || 0));
-        cursor = result.nextCursor || null;
-        setNextCursor(cursor);
+        result.invoices.forEach(invoice => rows.set(invoice.id, invoice));
+        setInvoices([...rows.values()]);
+        setReviewed(previous => previous + result.totalFetched);
+        if (result.hasMore && (!result.nextCursor || result.nextCursor === cursor)) throw new Error('Could not finish the invoice scan. Please refresh again.');
+        cursor = result.nextCursor;
       } while (cursor);
-      setScanComplete(true);
+      setUpdated(new Date());
     } catch (err) {
       if (!controller.signal.aborted && mounted.current) setError(err.message);
     } finally {
-      if (scanController.current === controller && mounted.current) setLoading(false);
-    }
-  };
-
-  const handleCheckCards = async customer => {
-    setCheckingCards(previous => new Set([...previous, customer.customer]));
-    try {
-      const result = await getCustomerPaymentMethods(customer.customer);
-      if (!mounted.current) return;
-      if (!result.success) throw new Error('Could not check saved cards. Please try again.');
-      setFailedTransactions(previous => previous.map(row => row.customer === customer.customer ? { ...row, paymentMethodsCount: result.count } : row));
-    } catch (err) {
-      if (mounted.current) setError(err.message);
-    } finally {
-      if (mounted.current) setCheckingCards(previous => {
-        const next = new Set(previous); next.delete(customer.customer); return next;
-      });
-    }
-  };
-
-  const handleRetryPayment = async (customer) => {
-    if (!customer.customer) {
-      alert('Cannot retry payment: No customer ID');
-      return;
-    }
-
-    // Usar el primer payment intent como referencia para el retry
-    const firstTransaction = customer.transactions[0];
-
-    setRetryingPayments(prev => new Set([...prev, customer.customer]));
-
-    try {
-      const result = await retryCustomerPayment(firstTransaction.id, customer.customer);
-
-      if (result.success) {
-        alert(`Payment successful. Recovered ${formatCurrency(firstTransaction.amount, customer.currency)} for ${customer.email}.`);
-        setFailedTransactions(previous => previous.flatMap(row => {
-          if (queueKey(row) !== queueKey(customer)) return [row];
-          const transactions = row.transactions.filter(payment => payment.id !== firstTransaction.id);
-          return transactions.length ? [{ ...row, transactions, failedCount: transactions.length,
-            totalAmount: transactions.reduce((sum, payment) => sum + payment.amount, 0),
-            latestDate: Math.max(...transactions.map(payment => payment.created)) }] : [];
-        }));
-      } else {
-        alert(`❌ Payment failed: ${result.message}\n\nAttempts made: ${result.attempts.length}`);
+      if (active.current === controller && mounted.current) {
+        setLoading(false);
+        refreshTimer.current = setTimeout(() => refresh(), 60000);
       }
-    } catch (error) {
-      alert(`❌ Error retrying payment: ${error.message}`);
-    } finally {
-      setRetryingPayments(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(customer.customer);
-        return newSet;
-      });
     }
-  };
+  }, [view]);
 
-  return (
-    <div className="dashboard-layout">
-      <Sidebar />
-      <div className="dashboard-content">
-        <div className="container">
-        <RecoveryBanner title="Good revenue deserves a comeback." subtitle="Find failed payments. Review your customers. Bring revenue back into the fold." />
-        <div className="workspace-heading"><div><h1>Recovery queue</h1><p>Failed payments, grouped by customer.</p></div><span className="workspace-tag">Stripe workspace</span></div>
+  useEffect(() => {
+    mounted.current = true;
+    setInvoices([]); setUpdated(null);
+    refresh();
+    return () => { mounted.current = false; active.current?.abort(); clearTimeout(refreshTimer.current); };
+  }, [refresh]);
 
-        <div className="filter-section">
-          <div className="date-filters">
-            <div className="date-input-group">
-              <label htmlFor="startDate">From Date:</label>
-              <input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                disabled={loading}
-                className="date-input"
-              />
-            </div>
+  const scheduled = invoices.filter(invoice => invoice.state === 'scheduled').length;
+  const needsAttention = invoices.filter(invoice => !['scheduled', 'processing', 'paid_after_retries'].includes(invoice.state)).length;
+  const totals = invoices.reduce((result, invoice) => ({ ...result, [invoice.currency]: (result[invoice.currency] || 0) + invoice.amount }), {});
 
-            <div className="date-input-group">
-              <label htmlFor="endDate">To Date:</label>
-              <input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                disabled={loading}
-                className="date-input"
-              />
-            </div>
-
-            <button
-              onClick={() => handleGetFailedTransactions(false)}
-              disabled={loading || !startDate || !endDate}
-              className="search-button"
-            >
-              {loading ? (
-                <>
-                  <div className="spinner"></div>
-                  Scanning…
-                </>
-              ) : (
-                <>
-                  <LuSearch /> Load Failed Transactions
-                </>
-              )}
-            </button>
-            {loading && <button className="quick-filter-btn" onClick={() => { scanController.current?.abort(); setLoading(false); }}>Pause scan</button>}
-            {!loading && nextCursor && scanRange?.startDate === startDate && scanRange?.endDate === endDate && <button className="quick-filter-btn" onClick={() => handleGetFailedTransactions(true)}>Continue scan</button>}
-          </div>
-          <p className="scan-note">Customers appear as payments are checked. Saved cards are checked separately when you need them.</p>
-        </div>
-
-        {(loading || hasLoaded) && <p className="scan-progress" role="status" aria-live="polite">
-          {loading ? 'Scanning Stripe — results are updating.' : scanComplete ? 'Scan complete.' : 'Scan incomplete — results below cover only the payments checked so far.'}
-          {' '}{totalFetched.toLocaleString()} payments checked.
-        </p>}
-        {error && (
-          <div className="error-message" role="alert">
-            <LuTriangleAlert style={{ display: 'inline', marginRight: '8px' }} /> {error}
-          </div>
-        )}
-
-        {(
-          <div className="results-section">
-            <div className="results-header">
-              <h2><LuUsers /> {hasLoaded ? `${new Set(failedTransactions.map(customer => customer.customer)).size} customers` : 'Your customers'}</h2>
-              {totalFetched > 0 && (
-                <p className="results-info">
-                  {new Set(failedTransactions.map(customer => customer.customer)).size} customers · {failedTransactions.length} rows, separated by currency · {totalFetched.toLocaleString()} payments reviewed
-                </p>
-              )}
-            </div>
-
-            <div className="table-container">
-              <table className="transactions-table">
-                <thead>
-                  <tr>
-                    <th>Email</th>
-                    <th>Total Amount</th>
-                    <th>Failed Count</th>
-                    <th>Country</th>
-                    <th>Payment Methods</th>
-                    <th>Latest Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {failedTransactions.length === 0 && <tr><td colSpan="7"><div className="queue-empty"><LuCircleX size={32}/><h3>{loading ? 'Finding failed payments…' : scanComplete ? 'No customers in this queue' : hasLoaded ? 'No failed payments found so far'  : 'Your next recovery starts here.'}</h3><p>{scanComplete ? 'Choose another date range to review more payments.' : loading ? 'Results will appear here as each batch arrives.' : 'Choose a date range and load failed payments to see your recovery queue.'}</p></div></td></tr>}
-
-                  {failedTransactions.map((customer, index) => (
-                    <tr key={queueKey(customer)} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
-                      <td className="email-cell">
-                        <div className="email-info">
-                          <span className="email">{customer.email}</span>
-                          <span className="transaction-id">#{customer.customer.slice(-8)}</span>
-                        </div>
-                      </td>
-                      <td className="valor-cell">
-                        <span className="amount">{formatCurrency(customer.totalAmount, customer.currency)}</span>
-                      </td>
-                      <td className="failed-count-cell">
-                        <span className="failed-count">{customer.failedCount} failed</span>
-                      </td>
-                      <td className="country-cell">
-                        <div className="country-info">
-                          <span className="flag">{getCountryFlag(customer.country)}</span>
-                          <span className="country-name">{customer.country}</span>
-                        </div>
-                      </td>
-                      <td className="payment-methods-cell">
-                        {customer.paymentMethodsCount === null ? <button className="quick-filter-btn" onClick={() => handleCheckCards(customer)} disabled={checkingCards.has(customer.customer)}>
-                          {checkingCards.has(customer.customer) ? 'Checking…' : 'Check cards'}
-                        </button> : <span className="payment-count">{customer.paymentMethodsCount} saved card{customer.paymentMethodsCount !== 1 ? 's' : ''}</span>}
-                      </td>
-                      <td className="fecha-cell">
-                        <span className="date">{formatDate(customer.latestDate)}</span>
-                      </td>
-                      <td className="actions-cell">
-                        <button
-                          onClick={() => handleRetryPayment(customer)}
-                          disabled={loading || !scanComplete || retryingPayments.has(customer.customer) || !customer.paymentMethodsCount}
-                          title={!scanComplete ? 'Finish the scan before retrying a payment.' : customer.paymentMethodsCount === null ? 'Check saved cards first.' : customer.paymentMethodsCount === 0 ? 'This customer has no saved cards.' : 'Retry the latest failed payment.'}
-                          className="retry-button"
-                        >
-                          {retryingPayments.has(customer.customer) ? (
-                            <>
-                              <div className="spinner-small"></div>
-                              Retrying...
-                            </>
-                          ) : (
-                            <>
-                              <LuRefreshCw /> Retry Payment
-                            </>
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-
-        </div>
-      </div>
+  return <div className="dashboard-layout"><Sidebar /><main className="dashboard-content"><div className="container">
+    <RecoveryBanner title="Recovery runs. You get on with your day." subtitle="Stripe collects unpaid subscription invoices automatically, according to your retry policy—even when this app is closed." />
+    <div className="workspace-heading"><div><h1>Automatic recovery</h1><p>Invoice outcomes and the next collection attempt, directly from Stripe.</p></div>
+      <a className="quick-filter-btn policy-link" href="https://dashboard.stripe.com/revenue_recovery/retries" target="_blank" rel="noreferrer">View retry policy <LuExternalLink /></a>
     </div>
-  );
+    <div className="automation-notice"><LuCircleCheckBig /><div><strong>Stripe Billing handles collection</strong><p>No card checks or per-customer retry clicks. Some declines need a new payment method or customer authentication; those appear below.</p></div></div>
+    <div className="recovery-tabs" role="group" aria-label="Invoice views">
+      {[['open', 'Unpaid subscriptions'], ['paid', 'Paid after retries'], ['uncollectible', 'Recovery ended']].map(([value, label]) => <button key={value} className={`quick-filter-btn ${view === value ? 'selected-view' : ''}`} aria-pressed={view === value} onClick={() => setView(value)}>{label}</button>)}
+      <button className="quick-filter-btn" onClick={refresh} disabled={loading}><LuRefreshCw /> {loading ? 'Refreshing…' : 'Refresh status'}</button>
+    </div>
+    <p className="scan-progress" role="status">{loading ? `Refreshing from Stripe · ${reviewed} invoices checked so far. Totals may change.` : error ? 'Refresh incomplete. Displayed results may be partial or out of date.' : `Up to date · ${reviewed} invoices checked.`} {updated && !loading && !error ? `Updated ${updated.toLocaleTimeString()}.` : ''}</p>
+    <p className="scan-note">{view === 'open' ? 'All unpaid subscription invoices with a prior payment attempt, with no age cutoff.' : 'Subscription invoices created in the last 90 days. “Paid after retries” means multiple collection attempts; it is not a claim that this app recovered the payment.'} Status refreshes automatically every minute while this page is open.</p>
+    {error && <div className="error-message" role="alert">{error}</div>}
+    <div className="scorecards-grid recovery-metrics">
+      <div className="scorecard"><div className="scorecard-value">{invoices.length}</div><div className="scorecard-label">{view === 'open' ? 'Unpaid invoices' : view === 'paid' ? 'Paid after multiple attempts' : 'Recovery ended'}</div></div>
+      {view === 'open' && <><div className="scorecard"><div className="scorecard-value">{scheduled}</div><div className="scorecard-label">Next retry scheduled</div></div><div className="scorecard"><div className="scorecard-value">{needsAttention}</div><div className="scorecard-label">Need attention</div></div></>}
+      <div className="scorecard"><div className="recovery-total">{Object.entries(totals).map(([currency, amount]) => <div key={currency}>{formatCurrency(amount, currency)} <small>{currency.toUpperCase()}</small></div>)}{!invoices.length && '—'}</div><div className="scorecard-label">{view === 'paid' ? 'Paid amount' : 'Outstanding amount'} · currencies kept separate</div></div>
+    </div>
+    <div className="table-container"><table className="transactions-table"><thead><tr><th>Customer</th><th>Invoice</th><th>{view === 'paid' ? 'Paid' : 'Outstanding'}</th><th>Recovery status</th><th>Attempts</th><th>{view === 'paid' ? 'Paid on' : 'Next automatic retry'}</th><th>Details</th></tr></thead><tbody>
+      {!invoices.length && <tr><td colSpan="7"><div className="queue-empty"><h3>{loading ? 'Checking subscription invoices…' : error ? 'Invoice status is unavailable' : 'No matching invoices'}</h3><p>{loading ? 'Invoices appear as each batch arrives.' : 'Automatic retries keep running in Stripe according to your policy.'}</p></div></td></tr>}
+      {invoices.map(invoice => <tr key={invoice.id}><td><span className="email">{invoice.email}</span></td><td><span className="invoice-number">{invoice.number}</span></td><td className="amount">{formatCurrency(invoice.amount, invoice.currency)} <small>{invoice.currency.toUpperCase()}</small></td><td><span className={`badge recovery-${invoice.state}`}>{labels[invoice.state]}</span><p className="recovery-reason">{invoice.explanation}</p></td><td>{invoice.attempts}</td><td>{view === 'paid' ? invoice.paidAt ? formatDate(invoice.paidAt) : 'Not reported' : invoice.nextAttempt ? formatDate(invoice.nextAttempt) : '—'}</td><td><a className="quick-filter-btn invoice-link" href={invoice.stripeUrl} target="_blank" rel="noreferrer">View invoice <LuExternalLink /></a></td></tr>)}
+    </tbody></table></div>
+  </div></main></div>;
 }
-
-export default Dashboard;
