@@ -13,13 +13,13 @@ function Sidebar() {
     {
       path: '/home',
       icon: LuHouse,
-      label: 'Home',
+      label: 'Overview',
       description: 'Main dashboard'
     },
     {
       path: '/dashboard',
       icon: LuCreditCard,
-      label: 'Transactions',
+      label: 'Recovery queue',
       description: 'Failed payments'
     },
     {
@@ -56,7 +56,7 @@ function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2 className="sidebar-title">Stripe Connector</h2>
+        <h2 className="sidebar-title">Revenue recovery</h2>
         <div className="user-info-sidebar">
           <div className="user-name">{user?.name || user?.email}</div>
           <div className={`user-plan plan-${user?.plan || 'free'}`}>
@@ -80,6 +80,8 @@ function Sidebar() {
             <button
               key={item.path}
               onClick={() => handleNavigation(item.path)}
+              aria-label={item.label}
+              aria-current={isActive(item.path) ? 'page' : undefined}
               className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
             >
               <span className="nav-icon"><IconComponent /></span>
@@ -93,9 +95,9 @@ function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <button onClick={handleLogout} className="logout-btn">
+        <button onClick={handleLogout} className="logout-btn" aria-label="Sign out">
           <span className="nav-icon"><LuLogOut /></span>
-          <span>Logout</span>
+          <span>Sign out</span>
         </button>
       </div>
     </div>

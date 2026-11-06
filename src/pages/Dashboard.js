@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
+import RecoveryBanner from '../components/RecoveryBanner';
 import { LuCircleX, LuSearch, LuTriangleAlert, LuUsers, LuRefreshCw, LuCircleCheckBig } from 'react-icons/lu';
 import {
   getFailedTransactions,
@@ -116,12 +117,8 @@ function Dashboard() {
       <Sidebar />
       <div className="dashboard-content">
         <div className="container">
-        <div className="header">
-          <div>
-            <h1><LuCircleX style={{ display: 'inline', marginRight: '8px' }} /> Failed Stripe Transactions</h1>
-            <p>Manage and retry failed payments with smart recovery</p>
-          </div>
-        </div>
+        <RecoveryBanner title="Good revenue deserves a comeback." subtitle="Find failed payments. Review your customers. Bring revenue back into the fold." />
+        <div className="workspace-heading"><div><h1>Recovery queue</h1><p>Failed payments, grouped by customer.</p></div><span className="workspace-tag">Stripe workspace</span></div>
 
         <div className="filter-section">
           <div className="date-filters">
@@ -172,10 +169,10 @@ function Dashboard() {
           </div>
         )}
 
-        {hasLoaded && failedTransactions.length > 0 && (
+        {(
           <div className="results-section">
             <div className="results-header">
-              <h2><LuUsers style={{ display: 'inline', marginRight: '8px' }} /> {failedTransactions.length} Customers with Failed Transactions</h2>
+              <h2><LuUsers /> {hasLoaded ? `${failedTransactions.length} customers` : 'Your customers'}</h2>
               {totalFetched > 0 && (
                 <p className="results-info">
                   {failedTransactions.length} unique customers with failed transactions out of {totalFetched} transactions reviewed
@@ -197,6 +194,8 @@ function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
+                  {failedTransactions.length === 0 && <tr><td colSpan="7"><div className="queue-empty"><LuCircleX size={32}/><h3>{loading ? 'Finding failed payments…' : hasLoaded ? 'No customers in this queue' : 'Your next recovery starts here.'}</h3><p>{hasLoaded ? 'Choose another date range to review more payments.' : 'Choose a date range and load failed payments to see your recovery queue.'}</p></div></td></tr>}
+
                   {failedTransactions.map((customer, index) => (
                     <tr key={customer.customer} className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
                       <td className="email-cell">
