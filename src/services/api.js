@@ -155,3 +155,10 @@ export async function getSubscriptionRecovery(view = 'open', cursor = null, sign
     throw new Error(controller.signal.aborted ? 'Stripe took too long to respond. The next refresh will try again.' : error.message);
   } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
 }
+
+export async function fallbackRequest(path = '', options = {}) {
+  const response = await fetch(`${API_URL}/fallback${path}`, { ...options, headers: getAuthHeader(), signal: AbortSignal.timeout(60000) });
+  const data = await response.json();
+  if (!response.ok || !data.success) throw new Error(data.error || 'Could not update card fallback.');
+  return data;
+}

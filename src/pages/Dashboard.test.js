@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import Dashboard from './Dashboard';
 import { getSubscriptionRecovery } from '../services/api';
 jest.mock('../components/Sidebar', () => () => null);
+jest.mock('../components/CardFallback', () => () => null);
 jest.mock('../services/api', () => ({ ...jest.requireActual('../services/api'), getSubscriptionRecovery: jest.fn() }));
 const invoice = id => ({ id, number: id, email: 'demo@example.invalid', currency: 'usd', amount: 1500, state: 'scheduled', explanation: 'Stripe has scheduled the next attempt.', nextAttempt: 1800000000, attempts: 2, stripeUrl: 'https://dashboard.stripe.com/invoices/'+id });
 let root, container;

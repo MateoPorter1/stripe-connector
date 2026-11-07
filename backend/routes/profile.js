@@ -82,6 +82,7 @@ router.put('/stripe-key', async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
+    user.fallbackRecovery = { enabled: false, cursor: null };
     user.stripeApiKey = stripeApiKey.trim();
     user.hasConfiguredStripe = true;
     await user.save();
@@ -108,6 +109,7 @@ router.delete('/stripe-key', async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
+    user.fallbackRecovery = { enabled: false, cursor: null };
     user.stripeApiKey = null;
     user.hasConfiguredStripe = false;
     await user.save();

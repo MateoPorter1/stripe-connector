@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
+import CardFallback from '../components/CardFallback';
 import RecoveryBanner from '../components/RecoveryBanner';
-import { LuRefreshCw, LuExternalLink, LuCircleCheckBig } from 'react-icons/lu';
+import { LuRefreshCw, LuExternalLink } from 'react-icons/lu';
 import { getSubscriptionRecovery, formatCurrency, formatDate } from '../services/api';
 import './Dashboard.css';
 
@@ -63,11 +64,12 @@ export default function Dashboard() {
   const totals = invoices.reduce((result, invoice) => ({ ...result, [invoice.currency]: (result[invoice.currency] || 0) + invoice.amount }), {});
 
   return <div className="dashboard-layout"><Sidebar /><main className="dashboard-content"><div className="container">
-    <RecoveryBanner title="Recovery runs. You get on with your day." subtitle="Stripe collects unpaid subscription invoices automatically, according to your retry policy—even when this app is closed." />
-    <div className="workspace-heading"><div><h1>Automatic recovery</h1><p>Invoice outcomes and the next collection attempt, directly from Stripe.</p></div>
+    <RecoveryBanner title="Recovery runs. You get on with your day." subtitle="Automatically try alternate saved cards on unpaid subscription invoices. Track every attempt without charging the same invoice twice." />
+    <div className="workspace-heading"><div><h1>Automatic recovery</h1><p>Alternate-card recovery controls and live invoice outcomes.</p></div>
       <a className="quick-filter-btn policy-link" href="https://dashboard.stripe.com/revenue_recovery/retries" target="_blank" rel="noreferrer">View retry policy <LuExternalLink /></a>
     </div>
-    <div className="automation-notice"><LuCircleCheckBig /><div><strong>Stripe Billing handles collection</strong><p>No card checks or per-customer retry clicks. Some declines need a new payment method or customer authentication; those appear below.</p></div></div>
+    <CardFallback />
+    <h2 className="invoice-monitor-heading">Invoice status in Stripe</h2>
     <div className="recovery-tabs" role="group" aria-label="Invoice views">
       {[['open', 'Unpaid subscriptions'], ['paid', 'Paid after retries'], ['uncollectible', 'Recovery ended']].map(([value, label]) => <button key={value} className={`quick-filter-btn ${view === value ? 'selected-view' : ''}`} aria-pressed={view === value} onClick={() => setView(value)}>{label}</button>)}
       <button className="quick-filter-btn" onClick={refresh} disabled={loading}><LuRefreshCw /> {loading ? 'Refreshing…' : 'Refresh status'}</button>

@@ -44,6 +44,7 @@ app.use('/api', (req, res, next) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/stripe', require('./routes/stripe'));
+app.use('/api/fallback', require('./routes/fallback'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/stats', require('./routes/stats'));
@@ -63,3 +64,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
+
+require('./services/fallbackWorker').startFallbackWorker();

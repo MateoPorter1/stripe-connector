@@ -42,6 +42,15 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  fallbackRecovery: {
+    enabled: { type: Boolean, default: false },
+    accountId: String,
+    authorizedAt: Date,
+    cursor: { type: String, default: null },
+    lastRunAt: Date,
+    lastError: String,
+    lastSummary: { type: mongoose.Schema.Types.Mixed, default: null }
+  },
   createdAt: {
     type: Date,
     default: Date.now
