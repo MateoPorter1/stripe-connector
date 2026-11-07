@@ -6,7 +6,9 @@ const Attempt = require('../models/FallbackAttempt');
 const Lease = require('../models/FallbackLease');
 const Recovery = require('../models/Recovery');
 const { recoverInvoice, idOf } = require('./cardFallback');
+const { prepareFallbackStorage } = require('./fallbackStorage');
 let running = false;
+let storageReady = false;
 
 async function runUser(user) {
   const stripe = new Stripe(user.stripeApiKey);
@@ -69,7 +71,10 @@ async function runFallbackTick() {
   running = true;
   try {
     // Unique indexes must exist before the first possible collection attempt.
-    await Promise.all([Attempt.init(), Lease.init(), Recovery.init()]);
+    if (!storageReady) {
+      await prepareFallbackStorage(Attempt, Lease, Recovery);
+      storageReady = true;
+    }
     const users = await User.find({ 'fallbackRecovery.enabled': true, 'fallbackRecovery.authorizedAt': { $ne: null }, hasConfiguredStripe: true })
       .select('+stripeApiKey').sort({ 'fallbackRecovery.lastRunAt': 1 }).limit(10);
     for (const user of users) {
@@ -80,6 +85,11 @@ async function runFallbackTick() {
           'fallbackRecovery.lastError': 'Fallback paused this run because Stripe or the database could not confirm a safe next step. Review the attempt log.' } });
       }
     }
+  } catch (error) {
+    console.error('Fallback storage error:', error.name, error.code || 'no_code');
+    await User.updateMany({ 'fallbackRecovery.enabled': true }, { $set: {
+      'fallbackRecovery.lastError': 'The background worker could not initialize its safety records. No new card attempts will be submitted until storage is ready.'
+    } });
   } finally { running = false; }
 }
 function startFallbackWorker() {
