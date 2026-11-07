@@ -65,4 +65,4 @@ app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
 });
 
-require('./services/fallbackWorker').startFallbackWorker();
+// Automatic fallback worker stopped at the owner's request.
