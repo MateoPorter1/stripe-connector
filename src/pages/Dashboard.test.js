@@ -32,3 +32,18 @@ test('incomplete filtering cannot start a payment run',async()=>{
   await act(async()=>root.render(<Dashboard/>));await act(async()=>button('Apply dates').click());
   expect(container.textContent).toContain('Stripe unavailable');expect(button('Retry filtered').disabled).toBe(true);
 });
+test('keeps written-off and unavailable subscriptions visible, submits only payable rows',async()=>{
+  const written={...invoice('in_written'),selectionToken:null,displayStatus:'written_off',retryNote:'Stripe marked this invoice uncollectible.'};
+  const unavailable={...invoice('pi_deleted'),amount:null,failedAmount:14501,selectionToken:null,displayStatus:'unavailable',retryNote:'Original invoice unavailable.'};
+  const paid={...invoice('in_paid'),selectionToken:null,displayStatus:'paid'};
+  paymentBatchRequest.mockResolvedValueOnce({batch:null})
+    .mockResolvedValueOnce({invoices:[invoice('in_1'),written,paid],totalFetched:100,nextCursor:null,nextPhase:'payments'})
+    .mockResolvedValueOnce({invoices:[unavailable],totalFetched:100,nextCursor:null});
+  await act(async()=>root.render(<Dashboard/>));await act(async()=>button('Apply dates').click());
+  expect(paymentBatchRequest.mock.calls[2][0]).toContain('phase=payments');expect(container.textContent).toContain('in_written');expect(container.textContent).toContain('pi_deleted');expect(container.textContent).not.toContain('in_paid');
+  expect(button('Retry filtered').textContent).toContain('(1)');
+  await act(async()=>button('All failure history').click());expect(container.textContent).toContain('in_paid');
+  paymentBatchRequest.mockResolvedValueOnce({batch:{_id:'batch_1',status:'completed',items:[]},attempts:[]});
+  await act(async()=>button('Retry filtered').click());
+  const request=paymentBatchRequest.mock.calls.find(call=>call[0]==='/start');expect(JSON.parse(request[1].body).tokens).toEqual(['signed_in_1']);
+});
