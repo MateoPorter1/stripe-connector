@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Recovery = require('../models/Recovery');
 const auth = require('../middleware/auth');
+const {recoveryFilter,recoveryHistory,TIMEZONE}=require('../services/recoveryHistory');
 
 // Todas las rutas requieren autenticación
 router.use(auth);
@@ -14,19 +15,7 @@ router.get('/summary', async (req, res) => {
     const { startDate, endDate } = req.query;
     const userId = req.user._id;
 
-    // Construir filtro de fecha
-    const dateFilter = { userId };
-    if (startDate || endDate) {
-      dateFilter.recoveredAt = {};
-      if (startDate) {
-        dateFilter.recoveredAt.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        dateFilter.recoveredAt.$lte = end;
-      }
-    }
+    const dateFilter = recoveryFilter(userId, {startDate,endDate});
 
     // Obtener todas las recuperaciones del periodo
     const recoveries = await Recovery.find(dateFilter);
@@ -73,9 +62,9 @@ router.get('/summary', async (req, res) => {
     });
   } catch (error) {
     console.error('Error obteniendo resumen:', error);
-    res.status(500).json({
+    res.status(error.statusCode||500).json({
       success: false,
-      error: 'Error al obtener resumen de recaudación'
+      error: error.statusCode?error.message:'Could not load recovery totals.'
     });
   }
 });
@@ -88,19 +77,7 @@ router.get('/by-month', async (req, res) => {
     const { startDate, endDate, currency = 'USD' } = req.query;
     const userId = req.user._id;
 
-    // Construir filtro de fecha
-    const matchFilter = { userId, currency: currency.toUpperCase() };
-    if (startDate || endDate) {
-      matchFilter.recoveredAt = {};
-      if (startDate) {
-        matchFilter.recoveredAt.$gte = new Date(startDate);
-      }
-      if (endDate) {
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999);
-        matchFilter.recoveredAt.$lte = end;
-      }
-    }
+    const matchFilter = recoveryFilter(userId, {startDate,endDate,currency});
 
     // Agregación por mes
     const monthlyData = await Recovery.aggregate([
@@ -108,8 +85,8 @@ router.get('/by-month', async (req, res) => {
       {
         $group: {
           _id: {
-            year: { $year: '$recoveredAt' },
-            month: { $month: '$recoveredAt' }
+            year: { $year: {date:'$recoveredAt',timezone:TIMEZONE} },
+            month: { $month: {date:'$recoveredAt',timezone:TIMEZONE} }
           },
           totalAmount: { $sum: '$amount' },
           count: { $sum: 1 }
@@ -119,7 +96,7 @@ router.get('/by-month', async (req, res) => {
     ]);
 
     // Formatear datos para el gráfico
-    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const formattedData = monthlyData.map(item => ({
       month: `${monthNames[item._id.month - 1]} ${item._id.year}`,
       year: item._id.year,
@@ -136,12 +113,15 @@ router.get('/by-month', async (req, res) => {
     });
   } catch (error) {
     console.error('Error obteniendo datos por mes:', error);
-    res.status(500).json({
+    res.status(error.statusCode||500).json({
       success: false,
-      error: 'Error al obtener datos mensuales'
+      error: error.statusCode?error.message:'Could not load monthly recoveries.'
     });
   }
 });
+
+// Read-only drill-down, always scoped to the signed-in user and applied dates.
+router.get('/recoveries',async(req,res)=>{try{res.set('Cache-Control','no-store').json(await recoveryHistory(Recovery,req.user._id,req.query));}catch(error){console.error('Recovery history:',error.name);res.status(error.statusCode||500).json({success:false,error:error.statusCode?error.message:'Could not load this month’s payments. Please try again.'});}});
 
 // @route   POST /api/stats/record-recovery
 // @desc    Registrar una recuperación exitosa (uso interno)

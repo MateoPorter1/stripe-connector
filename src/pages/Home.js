@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import { LuHouse, LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuChartBarBig, LuInbox } from 'react-icons/lu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import {statsRequest} from '../services/api';
 import './Home.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const monthKey=row=>`${row.year}-${String(row.monthNumber).padStart(2,'0')}`;
+const money=(cents,currency)=>new Intl.NumberFormat('en-US',{style:'currency',currency}).format(cents/100);
+const collectedDate=date=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'}).format(new Date(date));
 
 function Home() {
   const [summary, setSummary] = useState(null);
@@ -14,96 +17,58 @@ function Home() {
   const [endDate, setEndDate] = useState('');
   const [selectedCurrency] = useState('USD');
 
-  const fetchData = React.useCallback(async (start = null, end = null) => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
+  const [error,setError]=useState('');
+  const [appliedRange,setAppliedRange]=useState({start:null,end:null});
+  const [selectedMonth,setSelectedMonth]=useState(null);
+  const [history,setHistory]=useState(null);
+  const [historyLoading,setHistoryLoading]=useState(false);
+  const [historyError,setHistoryError]=useState('');
+  const dataController=useRef(null),historyController=useRef(null),historySection=useRef(null);
 
-      // Construir query params
-      let summaryUrl = `${API_URL}/stats/summary`;
-      let monthlyUrl = `${API_URL}/stats/by-month?currency=${selectedCurrency}`;
+  const fetchData = React.useCallback(async (start=null,end=null)=>{
+    dataController.current?.abort();historyController.current?.abort();
+    const controller=new AbortController();dataController.current=controller;
+    setLoading(true);setError('');setSelectedMonth(null);setHistory(null);setHistoryError('');setHistoryLoading(false);
+    const params=new URLSearchParams();if(start)params.set('startDate',start);if(end)params.set('endDate',end);
+    const monthlyParams=new URLSearchParams(params);monthlyParams.set('currency',selectedCurrency);
+    try{
+      const [totals,monthly]=await Promise.all([statsRequest(`/summary?${params}`,{signal:controller.signal}),statsRequest(`/by-month?${monthlyParams}`,{signal:controller.signal})]);
+      if(controller.signal.aborted)return;
+      setSummary(totals.summary);setMonthlyData(monthly.data||[]);setAppliedRange({start,end});
+    }catch(err){if(!controller.signal.aborted){setError(err.message);setSummary(null);setMonthlyData([]);}}
+    finally{if(!controller.signal.aborted)setLoading(false);}
+  },[selectedCurrency]);
+  useEffect(()=>{fetchData();return()=>{dataController.current?.abort();historyController.current?.abort();};},[fetchData]);
+  useEffect(()=>{if(selectedMonth)historySection.current?.scrollIntoView?.({behavior:'smooth',block:'start'});},[selectedMonth]);
 
-      if (start) {
-        summaryUrl += `?startDate=${start}`;
-        monthlyUrl += `&startDate=${start}`;
-      }
-      if (end) {
-        summaryUrl += start ? `&endDate=${end}` : `?endDate=${end}`;
-        monthlyUrl += `&endDate=${end}`;
-      }
-
-      // Fetch summary
-      const summaryResponse = await fetch(summaryUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      // Fetch monthly data
-      const monthlyResponse = await fetch(monthlyUrl, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (summaryResponse.ok) {
-        const summaryData = await summaryResponse.json();
-        setSummary(summaryData.summary);
-      }
-
-      if (monthlyResponse.ok) {
-        const monthlyDataResult = await monthlyResponse.json();
-        setMonthlyData(monthlyDataResult.data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [selectedCurrency]);
-
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const loadHistory=async(month,cursor=null)=>{
+    historyController.current?.abort();const controller=new AbortController();historyController.current=controller;
+    const key=monthKey(month);setSelectedMonth(month);setHistoryLoading(true);setHistoryError('');if(!cursor)setHistory(null);
+    const params=new URLSearchParams({month:key,currency:selectedCurrency});
+    if(appliedRange.start)params.set('startDate',appliedRange.start);if(appliedRange.end)params.set('endDate',appliedRange.end);if(cursor)params.set('cursor',cursor);
+    try{
+      const data=await statsRequest(`/recoveries?${params}`,{signal:controller.signal});
+      if(controller.signal.aborted)return;
+      setHistory(previous=>({...data,recoveries:cursor?[...new Map([...(previous?.recoveries||[]),...data.recoveries].map(row=>[row._id,row])).values()]:data.recoveries}));
+    }catch(err){if(!controller.signal.aborted)setHistoryError(err.message);}
+    finally{if(!controller.signal.aborted)setHistoryLoading(false);}
+  };
 
   const handleApplyFilter = () => {
     fetchData(startDate, endDate);
   };
 
   const handleQuickFilter = (type) => {
-    const today = new Date();
-    let start, end;
-
-    switch (type) {
-      case 'this-month':
-        start = new Date(today.getFullYear(), today.getMonth(), 1);
-        end = today;
-        break;
-      case 'last-3-months':
-        start = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-        end = today;
-        break;
-      case 'this-year':
-        start = new Date(today.getFullYear(), 0, 1);
-        end = today;
-        break;
-      case 'all-time':
-        start = null;
-        end = null;
-        setStartDate('');
-        setEndDate('');
-        fetchData(null, null);
-        return;
-      default:
-        return;
+    const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+    const date=new Date(`${today}T12:00:00Z`);let start=null,end=today;
+    switch(type){
+      case 'this-month':start=today.slice(0,7)+'-01';break;
+      case 'last-3-months':start=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()-3,1,12)).toISOString().slice(0,10);break;
+      case 'this-year':start=today.slice(0,4)+'-01-01';break;
+      case 'all-time':end=null;break;
+      default:return;
     }
-
-    if (start) setStartDate(start.toISOString().split('T')[0]);
-    if (end) setEndDate(end.toISOString().split('T')[0]);
-    fetchData(start?.toISOString().split('T')[0], end?.toISOString().split('T')[0]);
+    setStartDate(start||'');setEndDate(end||'');fetchData(start,end);
   };
 
   const formatCurrency = (amount, currency) => {
@@ -186,8 +151,9 @@ function Home() {
           <div className="date-filter-section">
             <div className="date-inputs">
               <div className="date-input-group">
-                <label>From:</label>
+                <label htmlFor="recoveryFrom">From:</label>
                 <input
+                  id="recoveryFrom"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
@@ -195,8 +161,9 @@ function Home() {
                 />
               </div>
               <div className="date-input-group">
-                <label>To:</label>
+                <label htmlFor="recoveryThrough">To:</label>
                 <input
+                  id="recoveryThrough"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
@@ -209,6 +176,7 @@ function Home() {
             </div>
           </div>
 
+          {error&&<p className="error-message" role="alert">{error}</p>}
           {/* Scorecards */}
           <div className="scorecards-grid">
             <div className="scorecard scorecard-primary">
@@ -258,6 +226,7 @@ function Home() {
           <div className="chart-section">
             <h2 className="chart-title"><LuChartBarBig style={{ display: 'inline', marginRight: '8px' }} /> Monthly Recovery</h2>
 
+            <p className="history-help">Click a bar or a month below to see every recorded payment. Dates use New York time.</p>
             {monthlyData.length === 0 ? (
               <div className="empty-chart-state">
                 <p className="empty-icon"><LuInbox size={64} /></p>
@@ -270,6 +239,7 @@ function Home() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e8fdf0" />
                   <XAxis
                     dataKey="month"
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#1a5a3e" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:14,fontWeight:600}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
                     stroke="#1a5a3e"
                     style={{ fontSize: '14px', fontWeight: '600' }}
                   />
@@ -292,6 +262,8 @@ function Home() {
                   />
                   <Bar
                     dataKey="amount"
+                    onClick={(_entry,index)=>monthlyData[index]&&loadHistory(monthlyData[index])}
+                    cursor="pointer"
                     fill="#ffe066"
                     stroke="#1a5a3e"
                     strokeWidth={2}
@@ -302,6 +274,23 @@ function Home() {
               </ResponsiveContainer>
             )}
           </div>
+          {monthlyData.length>0&&<div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} className="quick-filter-btn" aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><strong>{month.month}</strong><span>{month.count} payments · {money(Math.round(month.amount*100),selectedCurrency)}</span></button>)}</div>}
+          {selectedMonth&&<section className="profile-section recovery-history" ref={historySection} aria-label="People charged this month" aria-busy={historyLoading}>
+            <div className="workspace-heading"><div><h2>People charged — {selectedMonth.month}</h2><p>Successful collections recorded by this app, within your applied date filter.</p></div><button className="quick-filter-btn" onClick={()=>loadHistory(selectedMonth)} disabled={historyLoading}>Refresh this month</button></div>
+            {history&&<p className="history-total">{history.totalCount} payments · {history.customerCount} customers · <strong>{money(history.totalAmount,history.currency)} {history.currency}</strong></p>}
+            {historyLoading&&<p role="status">Loading payment history…</p>}
+            {historyError&&<p role="alert" className="error-message">{historyError}</p>}
+            {history&&!historyLoading&&!history.totalCount&&<p>No recorded collections match this month and date range.</p>}
+            {history?.recoveries?.length>0&&<div className="table-container"><table className="transactions-table"><thead><tr><th>Customer</th><th>Collected (New York)</th><th>Amount</th><th>Card used</th><th>Invoice / run</th><th>Payment</th></tr></thead><tbody>{history.recoveries.map(row=><tr key={row._id}>
+              <td>{row.customerId?<a href={`https://dashboard.stripe.com/customers/${row.customerId}`} target="_blank" rel="noreferrer">{row.customerEmail||row.customerId}</a>:(row.customerEmail||'Customer not recorded')}</td>
+              <td>{collectedDate(row.recoveredAt)}</td><td className="amount">{money(row.amount,row.currency)} <small>{row.currency}</small></td>
+              <td>{row.paymentMethodDetails?.last4?<>{row.paymentMethodDetails.brand||'Card'} •••• {row.paymentMethodDetails.last4}</>:'Not recorded'}</td>
+              <td>{row.invoiceId?<><a href={`https://dashboard.stripe.com/invoices/${row.invoiceId}`} target="_blank" rel="noreferrer">{row.invoiceId}</a>{row.subscriptionId&&<p className="recovery-reason"><a href={`https://dashboard.stripe.com/subscriptions/${row.subscriptionId}`} target="_blank" rel="noreferrer">{row.subscriptionId}</a></p>}{row.retryBatchId&&<p className="recovery-reason">Run: {row.retryBatchId}</p>}</>:<span className="recovery-reason">Not recorded for this earlier payment</span>}</td>
+              <td>{row.paymentIntentId?<a href={`https://dashboard.stripe.com/payments/${row.paymentIntentId}`} target="_blank" rel="noreferrer">View Stripe payment<span className="history-reference">{row.paymentIntentId}</span></a>:'Payment reference not recorded'}</td>
+            </tr>)}</tbody></table></div>}
+            {history?.hasMore&&<button className="quick-filter-btn history-more" onClick={()=>loadHistory(selectedMonth,history.nextCursor)} disabled={historyLoading}>Load more payments</button>}
+            {history&&<p className="history-help">Showing {history.recoveries.length} of {history.totalCount} payments. Earlier records may lack invoice or card details; the Stripe payment remains the source for those details.</p>}
+          </section>}
         </div>
       </div>
     </div>

@@ -179,3 +179,19 @@ export async function paymentBatchRequest(path, { signal, ...options } = {}) {
     throw new Error(controller.signal.aborted?'The request took too long. Refresh the run status before starting again.':error.message);
   }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
 }
+
+export async function statsRequest(path,{signal}={}) {
+  const controller=new AbortController(),abort=()=>controller.abort();
+  if(signal?.aborted)abort();
+  signal?.addEventListener('abort',abort,{once:true});
+  const timer=setTimeout(abort,30000);
+  try{
+    const response=await fetch(`${API_URL}/stats${path}`,{headers:getAuthHeader(),signal:controller.signal});
+    const data=await response.json();
+    if(!response.ok||!data.success)throw new Error(data.error||'Could not load recovery history.');
+    return data;
+  }catch(error){
+    if(signal?.aborted)throw error;
+    throw new Error(controller.signal.aborted?'The server took too long. Please try again.':error.message);
+  }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}

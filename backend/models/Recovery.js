@@ -44,6 +44,9 @@ const recoverySchema = new mongoose.Schema({
     default: Date.now,
     index: true
   },
+  invoiceId: String,
+  subscriptionId: String,
+  retryBatchId: { type: mongoose.Schema.Types.ObjectId, ref: 'RetryBatch' },
   originalFailedDate: {
     type: Date,
     default: null

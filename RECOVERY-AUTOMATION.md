@@ -20,6 +20,12 @@ After a completed filter, the authenticated GET /api/payment-batches/ready check
 
 A confirmed paid item turns its entire invoice row green and updates its displayed balance to zero. Successfully collected rows stay in the recovery queue for that run, including after reapplying the same dates. Historical paid invoices are also green in All failure history. A decline, processing state or unconfirmed result never receives the paid styling.
 
+## Monthly collection traceability
+
+The first-page monthly chart, its month labels and the month buttons open an authenticated, read-only list of that month's recorded recoveries. It intersects the selected month with the applied From/To dates and USD chart currency. Summary dates, grouping and payment timestamps consistently use America/New_York. The API scopes every record and aggregate to the authenticated user; a date/id cursor supports complete pagination with deterministic ordering.
+
+The list shows customer, collection timestamp, actual collected amount, card brand/last four digits and links to the original Stripe payment. New manual collection records additionally retain the original invoice, subscription and retry run references. Missing historical invoice/card data is explicitly labelled as not recorded; old records are not fabricated or rewritten. Viewing history never invokes payment collection.
+
 ## Verification
 
 Run `node --test backend/tests/*.test.js`, `CI=true npm test -- --watchAll=false --runInBand`, and `npm run build`.

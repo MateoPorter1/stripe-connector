@@ -50,7 +50,7 @@ async function processBatch(batch,stripe){
           recordPaid:async({invoice,method,amount})=>{
             const paymentIntentId=idOf(invoice.payment_intent);
             if(paymentIntentId&&amount>0)await Recovery.updateOne({userId:batch.userId,paymentIntentId},{$setOnInsert:{
-              userId:batch.userId,paymentIntentId,customerId:idOf(invoice.customer),customerEmail:invoice.customer_email||'',amount,currency:invoice.currency,
+              userId:batch.userId,paymentIntentId,invoiceId:invoice.id,subscriptionId:idOf(invoice.subscription||invoice.parent?.subscription_details?.subscription),retryBatchId:batch._id,customerId:idOf(invoice.customer),customerEmail:invoice.customer_email||'',amount,currency:invoice.currency,
               paymentMethodUsed:method.id,paymentMethodDetails:{brand:method.card.brand,last4:method.card.last4},recoveredAt:new Date(),originalFailedDate:new Date(invoice.created*1000)
             }},{upsert:true});
           }});

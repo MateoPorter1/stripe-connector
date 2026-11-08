@@ -617,3 +617,13 @@ button:disabled{opacity:.6}
 .transactions-table tbody tr.payment-row-paid td{background-color:#dff3e5;border-bottom-color:#b5d9bf}
 .transactions-table tbody tr.payment-row-paid .badge{background:#c5e8cf;color:#164c2b;border-color:#428455}
 .saved-card-count strong{font-size:1.15rem;font-variant-numeric:tabular-nums}
+.history-help{font-size:12px;color:var(--muted);line-height:1.7;margin:14px 0 20px}
+.history-months{display:flex;flex-wrap:wrap;gap:14px;margin:22px 0 30px}
+.history-months button{text-align:left;min-width:155px;padding:14px 18px}
+.history-months button strong,.history-months button span{display:block}
+.history-months button span{font-size:11px;color:var(--muted);margin-top:6px}
+.history-months button[aria-pressed=true]{background:#e9edff;color:var(--blue)}
+.recovery-history{scroll-margin-top:24px;margin-top:24px}
+.recovery-history h2{font-size:24px}.recovery-history .workspace-heading p{font-size:13px;color:var(--muted);margin-top:10px}
+.history-total{margin:16px 0 22px}.history-reference{display:block;font-size:10px;overflow-wrap:anywhere;color:var(--muted);margin-top:7px}
+.recovery-history td{overflow-wrap:anywhere;max-width:260px}.history-more{margin-top:20px}
