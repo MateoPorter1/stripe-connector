@@ -13,19 +13,19 @@ function Sidebar() {
     {
       path: '/home',
       icon: LuHouse,
-      label: 'Earlier recoveries',
-      description: 'Previous app attempts'
+      label: 'Overview',
+      description: 'Collections and payment history'
     },
     {
       path: '/dashboard',
       icon: LuCreditCard,
-      label: 'Retry payments',
+      label: 'Recovery queue',
       description: 'Filter and run once'
     },
     {
       path: '/profile',
       icon: LuUser,
-      label: 'My Profile',
+      label: 'Stripe & settings',
       description: 'Settings and API'
     }
   ];
@@ -56,9 +56,9 @@ function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2 className="sidebar-title">Revenue recovery</h2>
+        <h2 className="sidebar-title"><span className="brand-symbol" aria-hidden="true">r.</span><span className="brand-name">Revenue recovery</span></h2>
         <div className="user-info-sidebar">
-          <div className="user-name">{user?.name || user?.email}</div>
+          <span className="user-avatar" aria-hidden="true">{(user?.name||user?.email||'W').slice(0,1).toUpperCase()}</span><div><div className="user-name">{user?.name || user?.email}</div>
           <div className={`user-plan plan-${user?.plan || 'free'}`}>
             {user?.plan === 'premium' ? (
               <>
@@ -69,7 +69,7 @@ function Sidebar() {
                 <LuCircle size={12} /> Free
               </>
             )}
-          </div>
+          </div></div>
         </div>
       </div>
 

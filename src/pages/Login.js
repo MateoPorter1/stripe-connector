@@ -31,10 +31,10 @@ function Login() {
   return (
     <div className="auth-container">
       <aside className="recovery-intro">
-        <a className="recovery-brand" href="/">↺ Revenue recovery</a>
-        <div><h2>A failed payment shouldn’t be the end of the story.</h2><p>Find the customers who need attention. Understand what failed. Get back to recovering revenue.</p>
-        <div className="recovery-flow"><span>Payment fails</span><span>Review the cause</span><span>Take the next step</span></div></div>
-        <p>Your recovery work starts here.</p>
+        <a className="recovery-brand" href="/">Revenue recovery</a>
+        <div><h2>A clearer path to collected revenue.</h2><p>Review failed subscription payments, retry saved cards, and follow every collection back to Stripe.</p>
+        <div className="recovery-flow"><span>Review failures</span><span>Start a run</span><span>Trace every result</span></div></div>
+        <p>Your workspace for payment recovery.</p>
       </aside><div className="auth-box">
         <h1>Welcome back</h1>
         <p className="auth-subtitle">Sign in to your recovery workspace.</p>

@@ -56,15 +56,15 @@ function Profile() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message || '✅ API key saved successfully' });
+        setMessage({ type: 'success', text: data.message || 'API key saved successfully' });
         setHasConfiguredStripe(true);
         setStripeApiKey('');
         setShowKey(false);
       } else {
-        setMessage({ type: 'error', text: data.error || '❌ Error saving API key' });
+        setMessage({ type: 'error', text: data.error || 'Error saving API key' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: '❌ Connection error. Please try again.' });
+      setMessage({ type: 'error', text: 'Connection error. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -91,14 +91,14 @@ function Profile() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage({ type: 'success', text: data.message || '✅ API key deleted successfully' });
+        setMessage({ type: 'success', text: data.message || 'API key deleted successfully' });
         setHasConfiguredStripe(false);
         setStripeApiKey('');
       } else {
-        setMessage({ type: 'error', text: data.error || '❌ Error deleting API key' });
+        setMessage({ type: 'error', text: data.error || 'Error deleting API key' });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: '❌ Connection error. Please try again.' });
+      setMessage({ type: 'error', text: 'Connection error. Please try again.' });
     } finally {
       setLoading(false);
     }
@@ -110,13 +110,13 @@ function Profile() {
       <div className="profile-content">
         <div className="profile-container">
           <div className="profile-header">
-            <h1><LuUser style={{ display: 'inline', marginRight: '8px' }} /> My Profile</h1>
-            <p>Manage your information and Stripe configuration</p>
+            <h1>Workspace settings</h1>
+            <p>Manage your account and Stripe connection</p>
           </div>
 
           {/* Información del usuario */}
           <div className="profile-section">
-            <h2 className="section-title"><LuClipboard style={{ display: 'inline', marginRight: '8px' }} /> Personal Information</h2>
+            <h2 className="section-title"><LuClipboard style={{ display: 'inline', marginRight: '8px' }} /> Account details</h2>
             <div className="info-grid">
               <div className="info-item">
                 <label>Name</label>
@@ -147,7 +147,7 @@ function Profile() {
 
           {/* Configuración de Stripe */}
           <div className="profile-section">
-            <h2 className="section-title"><LuKey style={{ display: 'inline', marginRight: '8px' }} /> Stripe Configuration</h2>
+            <h2 className="section-title"><LuKey style={{ display: 'inline', marginRight: '8px' }} /> Stripe connection</h2>
 
             <div className="stripe-status">
               <div className="status-indicator">
@@ -169,8 +169,8 @@ function Profile() {
               </div>
             )}
 
-            <div className="stripe-info-box">
-              <h3><LuInfo style={{ display: 'inline', marginRight: '8px' }} /> Where do I find my API key?</h3>
+            <details className="stripe-info-box">
+              <summary><LuInfo style={{ display: 'inline', marginRight: '8px' }} /> Where do I find my API key?</summary>
               <ol>
                 <li>Go to your <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">Stripe Dashboard</a></li>
                 <li>In the sidebar, look for "Developers" → "API keys"</li>
@@ -178,9 +178,9 @@ function Profile() {
                 <li>Paste it in the field below</li>
               </ol>
               <div className="warning-box">
-                <LuTriangleAlert style={{ display: 'inline', marginRight: '8px' }} /> <strong>Important:</strong> Never share your API key with anyone. It will be securely saved in your profile.
+                <LuTriangleAlert style={{ display: 'inline', marginRight: '8px' }} /> <strong>Important:</strong> Never share your API key with anyone. You can remove it from this workspace or revoke it in Stripe.
               </div>
-            </div>
+            </details>
 
             <form onSubmit={handleSaveApiKey} className="api-key-form">
               <div className="form-group-profile">
@@ -191,6 +191,7 @@ function Profile() {
                 <div className="input-with-toggle">
                   <input
                     id="stripeApiKey"
+                    autoComplete="off" spellCheck={false}
                     type={showKey ? 'text' : 'password'}
                     value={stripeApiKey}
                     onChange={(e) => setStripeApiKey(e.target.value)}
@@ -201,6 +202,7 @@ function Profile() {
                   <button
                     type="button"
                     onClick={() => setShowKey(!showKey)}
+                    aria-label={showKey ? 'Hide API key' : 'Show API key'}
                     className="toggle-visibility-btn"
                   >
                     {showKey ? <LuEyeOff /> : <LuEye />}

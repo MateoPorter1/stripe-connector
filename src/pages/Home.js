@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
-import { LuHouse, LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuChartBarBig, LuInbox } from 'react-icons/lu';
+import { LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuChartBarBig, LuInbox } from 'react-icons/lu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import {statsRequest} from '../services/api';
 import './Home.css';
@@ -126,8 +126,8 @@ function Home() {
           {/* Header */}
           <div className="home-header">
             <div>
-              <h1><LuHouse style={{ display: 'inline', marginRight: '8px' }} /> Recovery Dashboard</h1>
-              <p>Monitor how much you've recovered with Stripe Connector</p>
+              <h1>Recovery overview</h1>
+              <p>Collected revenue and the people behind every payment.</p>
             </div>
           </div>
 
@@ -234,41 +234,41 @@ function Home() {
                 <p>Recover your first payment to see statistics here</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e8fdf0" />
+                  <CartesianGrid vertical={false} stroke="#e8eaec" />
                   <XAxis
                     dataKey="month"
-                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#1a5a3e" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:14,fontWeight:600}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
-                    stroke="#1a5a3e"
-                    style={{ fontSize: '14px', fontWeight: '600' }}
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#65717a" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
+                    stroke="#88939a"
+                    style={{ fontSize: '12px', fontWeight: '500' }}
                   />
                   <YAxis
-                    stroke="#1a5a3e"
-                    style={{ fontSize: '14px', fontWeight: '600' }}
+                    stroke="#88939a"
+                    style={{ fontSize: '12px', fontWeight: '500' }}
                     tickFormatter={(value) => `$${value}`}
                   />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#ffffff',
-                      border: '3px solid #1a5a3e',
-                      borderRadius: '15px',
-                      fontWeight: '600'
+                      border: '1px solid #e3e7e9',
+                      borderRadius: '8px',
+                      fontWeight: '500'
                     }}
                     formatter={(value) => [`$${value}`, 'Recovered']}
                   />
                   <Legend
-                    wrapperStyle={{ fontWeight: '700', fontSize: '14px' }}
+                    wrapperStyle={{ fontWeight: '500', fontSize: '12px' }}
                   />
                   <Bar
                     dataKey="amount"
                     onClick={(_entry,index)=>monthlyData[index]&&loadHistory(monthlyData[index])}
                     cursor="pointer"
-                    fill="#ffe066"
-                    stroke="#1a5a3e"
-                    strokeWidth={2}
-                    radius={[10, 10, 0, 0]}
-                    name="Recovered Amount"
+                    fill="#e47a4e"
+                    stroke="none"
+                    strokeWidth={0}
+                    radius={[4, 4, 0, 0]}
+                    name="Collected revenue"
                   />
                 </BarChart>
               </ResponsiveContainer>

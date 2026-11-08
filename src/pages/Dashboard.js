@@ -63,8 +63,7 @@ export default function Dashboard(){
   const totals=retryRows.reduce((all,row)=>({...all,[row.currency]:(all[row.currency]||0)+row.amount}),{});
   const finished=(run?.items||[]).filter(item=>!['pending','running'].includes(item.state)).length;
   return <div className="dashboard-layout"><Sidebar/><main className="dashboard-content"><div className="container">
-    <RecoveryBanner title="Choose the dates. Retry the payments." subtitle="One button starts one run. Each unpaid subscription invoice is handled in order, with one attempt per saved card until a payment succeeds."/>
-    <div className="workspace-heading"><div><h1>Failed subscription payments</h1><p>Filter failures first. You decide when a retry run starts.</p></div></div>
+    <RecoveryBanner title="Recovery queue" subtitle="One button starts one run. Each unpaid subscription invoice is handled in order, with one attempt per saved card until a payment succeeds."/>
     <section className="filter-section"><div className="date-filters">
       <div className="date-input-group"><label htmlFor="startDate">Failed from</label><input id="startDate" type="date" value={start} onChange={event=>setStart(event.target.value)} disabled={loading||running} className="date-input"/></div>
       <div className="date-input-group"><label htmlFor="endDate">Failed through</label><input id="endDate" type="date" value={end} onChange={event=>setEnd(event.target.value)} disabled={loading||running} className="date-input"/></div>
