@@ -14,6 +14,7 @@ function AppRoutes() {
     <Router>
       <AuthProvider>
         <Routes>
+          <Route path="/design-preview/queue" element={<Dashboard preview />} />
           <Route path="/design-preview" element={<Home preview />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />

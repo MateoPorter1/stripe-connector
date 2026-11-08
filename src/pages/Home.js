@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
-import { LuCalendar, LuArrowUpRight, LuInbox } from 'react-icons/lu';
+import PreviewNavigation from '../components/PreviewNavigation';
+import DateRangePicker from '../components/DateRangePicker';
+import { LuArrowUpRight, LuInbox } from 'react-icons/lu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {statsRequest} from '../services/api';
 import {studioDemoRequest} from './studioDemo';
@@ -56,23 +58,6 @@ function Home({preview=false}) {
     finally{if(!controller.signal.aborted)setHistoryLoading(false);}
   };
 
-  const handleApplyFilter = () => {
-    fetchData(startDate, endDate);
-  };
-
-  const handleQuickFilter = (type) => {
-    const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-    const date=new Date(`${today}T12:00:00Z`);let start=null,end=today;
-    switch(type){
-      case 'this-month':start=today.slice(0,7)+'-01';break;
-      case 'last-3-months':start=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth()-3,1,12)).toISOString().slice(0,10);break;
-      case 'this-year':start=today.slice(0,4)+'-01-01';break;
-      case 'all-time':end=null;break;
-      default:return;
-    }
-    setStartDate(start||'');setEndDate(end||'');fetchData(start,end);
-  };
-
   const formatCurrency = (amount, currency) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -109,7 +94,7 @@ function Home({preview=false}) {
   if (loading) {
     return (
       <div className="home-layout">
-        {preview?<aside className="sidebar studio-preview-sidebar"><div className="sidebar-header"><h2 className="sidebar-title"><span className="brand-symbol">r.</span><span className="brand-name">Revenue recovery</span></h2><p className="preview-note">Design preview<br/>Fictional demo data</p></div><nav className="sidebar-nav"><span className="nav-item active">Overview</span><a className="nav-item" href="https://stripe-connector-psi.vercel.app/dashboard">Recovery queue ↗</a></nav></aside>:<Sidebar />}
+        {preview?<PreviewNavigation/>:<Sidebar /> }
         <div className="home-content">
           <div className="loading-state">
             <div className="spinner-large"></div>
@@ -122,57 +107,11 @@ function Home({preview=false}) {
 
   return (
     <div className="home-layout">
-      {preview?<aside className="sidebar studio-preview-sidebar"><div className="sidebar-header"><h2 className="sidebar-title"><span className="brand-symbol">r.</span><span className="brand-name">Revenue recovery</span></h2><p className="preview-note">Design preview<br/>Fictional demo data</p></div><nav className="sidebar-nav"><span className="nav-item active">Overview</span><a className="nav-item" href="https://stripe-connector-psi.vercel.app/dashboard">Recovery queue ↗</a></nav></aside>:<Sidebar />}
+      {preview?<PreviewNavigation/>:<Sidebar /> }
       <div className="home-content">
         <div className="home-container overview-workspace studio-workspace">
-          <header className="overview-masthead"><div><span className="workspace-location">{preview?'Design preview / Demo data':'Revenue recovery'}</span><h1>Recovery overview</h1></div><a className="open-queue" href={preview?'https://stripe-connector-psi.vercel.app/dashboard':'/dashboard'}>Open recovery queue <LuArrowUpRight/></a></header>
-          <div className="overview-filterbar">
-          {/* Quick Filters */}
-          <div className="quick-filters">
-            <button onClick={() => handleQuickFilter('this-month')} className="quick-filter-btn">
-              This Month
-            </button>
-            <button onClick={() => handleQuickFilter('last-3-months')} className="quick-filter-btn">
-              Last 3 Months
-            </button>
-            <button onClick={() => handleQuickFilter('this-year')} className="quick-filter-btn">
-              This Year
-            </button>
-            <button onClick={() => handleQuickFilter('all-time')} className="quick-filter-btn">
-              All Time
-            </button>
-          </div>
-
-          {/* Date Filter */}
-          <div className="date-filter-section">
-            <div className="date-inputs">
-              <div className="date-input-group">
-                <label htmlFor="recoveryFrom">From:</label>
-                <input
-                  id="recoveryFrom"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="date-input"
-                />
-              </div>
-              <div className="date-input-group">
-                <label htmlFor="recoveryThrough">To:</label>
-                <input
-                  id="recoveryThrough"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="date-input"
-                />
-              </div>
-              <button onClick={handleApplyFilter} className="apply-filter-btn">
-                <LuCalendar /> Apply Filter
-              </button>
-            </div>
-          </div>
-
-          </div>
+          <header className="overview-masthead"><div><span className="workspace-location">{preview?'Design preview / Demo data':'Revenue recovery'}</span><h1>Recovery overview</h1></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>Open recovery queue <LuArrowUpRight/></a></header>
+          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/></div>
           {error&&<p className="error-message" role="alert">{error}</p>}
           <div className="overview-analysis">
           {/* Chart Section */}
@@ -190,8 +129,8 @@ function Home({preview=false}) {
             ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                  <defs><pattern id="collection-stripes" patternUnits="userSpaceOnUse" width="6" height="6"><rect width="6" height="6" fill="#f5a67d"/><path d="M0 6L6 0" stroke="#ffc5a5" strokeWidth="1"/></pattern></defs>
-                  <CartesianGrid vertical={false} stroke="#354249" strokeDasharray="3 6" />
+                  <defs><pattern id="collection-stripes" patternUnits="userSpaceOnUse" width="6" height="6"><rect width="6" height="6" fill="#ad92e3"/><path d="M0 6L6 0" stroke="#c3aced" strokeWidth="1"/></pattern></defs>
+                  <CartesianGrid vertical={false} stroke="#49434f" strokeDasharray="3 6" />
                   <XAxis
                     dataKey="month"
                     tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#b6c2c8" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
@@ -228,7 +167,7 @@ function Home({preview=false}) {
               </ResponsiveContainer>
             )}
           </div>
-          <aside className="studio-side"><section className="studio-facts" aria-label="Collection performance"><h2>The recovery picture</h2><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong><small>Successful collections</small></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong><small>Per recovered payment</small></div><div><span>Latest collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'No collections yet'}</strong></div></section><a className="studio-next" href={preview?'https://stripe-connector-psi.vercel.app/dashboard':'/dashboard'}><span>Keep revenue moving</span><strong>Review failed payments <LuArrowUpRight/></strong><p>Find unpaid invoices and start a recovery run.</p></a></aside></div>
+          <aside className="studio-side"><section className="studio-facts" aria-label="Collection performance"><h2>The recovery picture</h2><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong><small>Successful collections</small></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong><small>Per recovered payment</small></div><div><span>Latest collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'No collections yet'}</strong></div></section><a className="studio-next" href={preview?'/design-preview/queue':'/dashboard'}><span>Keep revenue moving</span><strong>Review failed payments <LuArrowUpRight/></strong><p>Find unpaid invoices and start a recovery run.</p></a></aside></div>
           <aside className="monthly-ledger studio-journal"><div className="analysis-heading"><div><h2>Recovery journal</h2><p>Open a month to see customers, amounts and payment details.</p></div></div><div className="ledger-columns"><span>Month / Payments</span><span>Collected</span></div><div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><span><strong>{month.month}</strong><small>{month.count} payments</small></span><span>{money(Math.round(month.amount*100),selectedCurrency)} <LuArrowUpRight/></span></button>)}</div><p className="ledger-footnote">Recorded collections only.<br/>All dates use New York time.</p></aside>
           {selectedMonth&&<section className="profile-section recovery-history" ref={historySection} aria-label="People charged this month" aria-busy={historyLoading}>
             <div className="workspace-heading"><div><h2>People charged — {selectedMonth.month}</h2><p>Successful collections recorded by this app, within your applied date filter.</p></div><button className="quick-filter-btn" onClick={()=>loadHistory(selectedMonth)} disabled={historyLoading}>Refresh this month</button></div>

@@ -7,14 +7,14 @@ jest.mock('../components/Sidebar',()=>()=>null);
 jest.mock('../services/api',()=>({statsRequest:jest.fn()}));
 jest.mock('recharts',()=>{
   const React=require('react');
-  return {ResponsiveContainer:({children})=><div>{children}</div>,BarChart:({children,data})=><div>{React.Children.map(children,child=>React.isValidElement(child)?React.cloneElement(child,{data}):child)}</div>,
+  return {ResponsiveContainer:({children})=><div>{children}</div>,BarChart:({children,data})=><div>{React.Children.map(children,child=>React.isValidElement(child)?child.type==='defs'?<svg>{child}</svg>:React.cloneElement(child,{data}):child)}</div>,
     Bar:({onClick,data})=><button onClick={()=>onClick(data[0],0)}>Chart bar</button>,XAxis:()=>null,YAxis:()=>null,CartesianGrid:()=>null,Tooltip:()=>null,Legend:()=>null};
 });
 const months=[{month:'Nov 2026',year:2026,monthNumber:11,amount:40,count:3},{month:'Oct 2026',year:2026,monthNumber:10,amount:15,count:1}];
 const payment=(id,email='person@example.invalid')=>({_id:id,customerId:'cus_'+id,customerEmail:email,amount:1000,currency:'USD',recoveredAt:'2026-11-08T19:00:00.000Z',paymentIntentId:'pi_'+id,paymentMethodDetails:{brand:'visa',last4:'4242'},invoiceId:'in_'+id,subscriptionId:'sub_'+id,retryBatchId:'batch_'+id});
 const result=(recoveries,extra={})=>({success:true,recoveries,totalCount:recoveries.length,customerCount:recoveries.length,totalAmount:recoveries.length*1000,currency:'USD',nextCursor:null,hasMore:false,...extra});
 let root,container,historyHandler;
-const button=label=>[...container.querySelectorAll('button')].find(item=>item.textContent.includes(label));
+const button=label=>[...document.querySelectorAll('button')].find(item=>item.textContent.includes(label));
 beforeEach(()=>{
   global.IS_REACT_ACT_ENVIRONMENT=true;historyHandler=jest.fn(async()=>result([payment('one')]));
   statsRequest.mockReset();statsRequest.mockImplementation(async(path,options)=>{
@@ -34,9 +34,9 @@ test('clicking a month reveals people, amounts, dates, cards and original Stripe
   expect(statsRequest.mock.calls.every(call=>!call[1]?.method||call[1].method==='GET')).toBe(true);
 });
 test('chart bars use the same drill-down and history uses the applied filter, not unsubmitted edits',async()=>{
-  await act(async()=>root.render(<Home/>));await act(async()=>button('This Month').click());
+  await act(async()=>root.render(<Home/>));await act(async()=>button('Date range').click());await act(async()=>button('Month to date').click());await act(async()=>button('Apply').click());
   const monthlyCall=statsRequest.mock.calls.filter(call=>call[0].startsWith('/by-month')).at(-1)[0];const applied=new URLSearchParams(monthlyCall.split('?')[1]);
-  await act(async()=>Simulate.change(container.querySelector('#recoveryFrom'),{target:{value:'2020-01-01'}}));
+  await act(async()=>button('Date range').click());await act(async()=>Simulate.change(document.querySelector('.range-fields input'),{target:{value:'2020-01-01'}}));await act(async()=>button('Cancel').click());
   await act(async()=>button('Chart bar').click());const detail=new URLSearchParams(historyHandler.mock.calls[0][0].split('?')[1]);
   expect(detail.get('month')).toBe('2026-11');expect(detail.get('currency')).toBe('USD');expect(detail.get('startDate')).toBe(applied.get('startDate'));expect(detail.get('startDate')).not.toBe('2020-01-01');expect(detail.get('endDate')).toBe(applied.get('endDate'));
 });

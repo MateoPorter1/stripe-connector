@@ -1,0 +1,4 @@
+import React from 'react';
+import {useLocation} from 'react-router-dom';
+import {LuHouse,LuCreditCard} from 'react-icons/lu';
+export default function PreviewNavigation(){const {pathname}=useLocation();return <aside className="sidebar preview-navigation"><div className="sidebar-header"><h2 className="sidebar-title"><span className="brand-symbol">r.</span><span className="brand-name">Recovery</span></h2></div><nav className="sidebar-nav"><a aria-label="Overview" className={`nav-item ${pathname==='/design-preview'?'active':''}`} href="/design-preview"><LuHouse/><span>Overview</span></a><a aria-label="Recovery queue" className={`nav-item ${pathname.endsWith('/queue')?'active':''}`} href="/design-preview/queue"><LuCreditCard/><span>Recovery queue</span></a></nav><span className="preview-nav-label">Demo workspace</span></aside>;}

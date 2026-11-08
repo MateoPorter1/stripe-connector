@@ -11,3 +11,12 @@ export const studioDemoRequest = async path => {
   const recoveries=Array.from({length:count},(_,i)=>({_id:`demo-${month}-${i}`,customerEmail:`customer${i+1}@example.com`,amount:base+(i===count-1?total-base*count:0),currency:'USD',recoveredAt:`${month}-03T15:10:00Z`,paymentMethodDetails:{brand:'visa',last4:'4242'}}));
   return {recoveries,totalCount:count,customerCount:count,totalAmount:total,currency:'USD',hasMore:false};
 };
+
+export const studioQueueRows=[
+ {id:'demo-1',number:'INV-1042',email:'avery@example.com',currency:'usd',amount:4800,cardCount:3,eligibleCardCount:3,displayStatus:'open',selectionToken:'demo',lastFailure:1793961600,failedPayments:['demo-charge-1'],payments:[{id:'demo-charge-1',state:'failed'}],reason:'Insufficient funds'},
+ {id:'demo-2',number:'INV-1041',email:'northline@example.com',currency:'usd',amount:9600,cardCount:2,eligibleCardCount:2,displayStatus:'open',selectionToken:'demo',lastFailure:1793875200,failedPayments:['demo-charge-2'],payments:[{id:'demo-charge-2',state:'failed'}],reason:'Card declined'},
+ {id:'demo-3',number:'INV-1039',email:'field@example.com',currency:'usd',amount:0,cardCount:1,eligibleCardCount:1,displayStatus:'paid',selectionToken:null,lastFailure:1793788800,failedPayments:['demo-charge-3'],payments:[{id:'demo-charge-3',state:'failed'}],reason:'Previously declined'},
+ {id:'demo-4',number:'INV-1038',email:'morrow@example.com',currency:'usd',amount:1500,cardCount:2,eligibleCardCount:2,displayStatus:'open',selectionToken:'demo',lastFailure:1793702400,failedPayments:['demo-charge-4'],payments:[{id:'demo-charge-4',state:'failed'}],reason:'Card declined'},
+ {id:'demo-5',number:'INV-1037',email:'atlas@example.com',currency:'usd',amount:4000,cardCount:1,eligibleCardCount:0,displayStatus:'open',selectionToken:null,lastFailure:1793616000,failedPayments:['demo-charge-5'],payments:[{id:'demo-charge-5',state:'blocked'}],reason:'Expired card',retryNote:'No eligible saved cards'},
+];
+export const studioQueueRequest=async(path,options)=>{if(options?.method&&options.method!=='GET')throw new Error('Collections are disabled in the design preview.');if(path.startsWith('/failed')){const params=new URLSearchParams(path.split('?')[1]);return {invoices:studioQueueRows.filter(row=>{const date=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York'}).format(new Date(row.lastFailure*1000));return date>=params.get('startDate')&&date<=params.get('endDate');}),totalFetched:5,nextCursor:null};}if(path==='/ready')return {ready:true};return {batch:null,attempts:[]};};
