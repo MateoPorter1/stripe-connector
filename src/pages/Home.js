@@ -3,13 +3,15 @@ import Sidebar from '../components/Sidebar';
 import { LuCalendar, LuArrowUpRight, LuInbox } from 'react-icons/lu';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {statsRequest} from '../services/api';
+import {studioDemoRequest} from './studioDemo';
 import './Home.css';
 
 const monthKey=row=>`${row.year}-${String(row.monthNumber).padStart(2,'0')}`;
 const money=(cents,currency)=>new Intl.NumberFormat('en-US',{style:'currency',currency}).format(cents/100);
 const collectedDate=date=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'}).format(new Date(date));
 
-function Home() {
+function Home({preview=false}) {
+  const request=preview?studioDemoRequest:statsRequest;
   const [summary, setSummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,12 +34,12 @@ function Home() {
     const params=new URLSearchParams();if(start)params.set('startDate',start);if(end)params.set('endDate',end);
     const monthlyParams=new URLSearchParams(params);monthlyParams.set('currency',selectedCurrency);
     try{
-      const [totals,monthly]=await Promise.all([statsRequest(`/summary?${params}`,{signal:controller.signal}),statsRequest(`/by-month?${monthlyParams}`,{signal:controller.signal})]);
+      const [totals,monthly]=await Promise.all([request(`/summary?${params}`,{signal:controller.signal}),request(`/by-month?${monthlyParams}`,{signal:controller.signal})]);
       if(controller.signal.aborted)return;
       setSummary(totals.summary);setMonthlyData(monthly.data||[]);setAppliedRange({start,end});
     }catch(err){if(!controller.signal.aborted){setError(err.message);setSummary(null);setMonthlyData([]);}}
     finally{if(!controller.signal.aborted)setLoading(false);}
-  },[selectedCurrency]);
+  },[selectedCurrency,request]);
   useEffect(()=>{fetchData();return()=>{dataController.current?.abort();historyController.current?.abort();};},[fetchData]);
   useEffect(()=>{if(selectedMonth)historySection.current?.scrollIntoView?.({behavior:'smooth',block:'start'});},[selectedMonth]);
 
@@ -47,7 +49,7 @@ function Home() {
     const params=new URLSearchParams({month:key,currency:selectedCurrency});
     if(appliedRange.start)params.set('startDate',appliedRange.start);if(appliedRange.end)params.set('endDate',appliedRange.end);if(cursor)params.set('cursor',cursor);
     try{
-      const data=await statsRequest(`/recoveries?${params}`,{signal:controller.signal});
+      const data=await request(`/recoveries?${params}`,{signal:controller.signal});
       if(controller.signal.aborted)return;
       setHistory(previous=>({...data,recoveries:cursor?[...new Map([...(previous?.recoveries||[]),...data.recoveries].map(row=>[row._id,row])).values()]:data.recoveries}));
     }catch(err){if(!controller.signal.aborted)setHistoryError(err.message);}
@@ -107,7 +109,7 @@ function Home() {
   if (loading) {
     return (
       <div className="home-layout">
-        <Sidebar />
+        {preview?<aside className="sidebar studio-preview-sidebar"><div className="sidebar-header"><h2 className="sidebar-title"><span className="brand-symbol">r.</span><span className="brand-name">Revenue recovery</span></h2><p className="preview-note">Design preview<br/>Fictional demo data</p></div><nav className="sidebar-nav"><span className="nav-item active">Overview</span><a className="nav-item" href="https://stripe-connector-psi.vercel.app/dashboard">Recovery queue ↗</a></nav></aside>:<Sidebar />}
         <div className="home-content">
           <div className="loading-state">
             <div className="spinner-large"></div>
@@ -120,10 +122,10 @@ function Home() {
 
   return (
     <div className="home-layout">
-      <Sidebar />
+      {preview?<aside className="sidebar studio-preview-sidebar"><div className="sidebar-header"><h2 className="sidebar-title"><span className="brand-symbol">r.</span><span className="brand-name">Revenue recovery</span></h2><p className="preview-note">Design preview<br/>Fictional demo data</p></div><nav className="sidebar-nav"><span className="nav-item active">Overview</span><a className="nav-item" href="https://stripe-connector-psi.vercel.app/dashboard">Recovery queue ↗</a></nav></aside>:<Sidebar />}
       <div className="home-content">
-        <div className="home-container overview-workspace">
-          <header className="overview-masthead"><div><span className="workspace-location">Your workspace / Overview</span><h1>Collections, in focus.</h1></div><a className="open-queue" href="/dashboard">Open recovery queue <LuArrowUpRight/></a></header>
+        <div className="home-container overview-workspace studio-workspace">
+          <header className="overview-masthead"><div><span className="workspace-location">Revenue recovery</span><h1>Recovery overview</h1></div><a className="open-queue" href={preview?'https://stripe-connector-psi.vercel.app/dashboard':'/dashboard'}>Open recovery queue <LuArrowUpRight/></a></header>
           <div className="overview-filterbar">
           {/* Quick Filters */}
           <div className="quick-filters">
@@ -172,14 +174,11 @@ function Home() {
 
           </div>
           {error&&<p className="error-message" role="alert">{error}</p>}
-          <section className="collection-position" aria-label="Collection performance">
-            <div className="position-primary"><span>Revenue collected</span><strong>{formatCurrency(getMainCurrencyTotal(), selectedCurrency)}</strong><p>Successful payments recorded by this app</p></div>
-            <div className="position-facts"><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong></div><div><span>Latest collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'No collections yet'}</strong></div></div>
-          </section>
           <div className="overview-analysis">
           {/* Chart Section */}
-          <div className="chart-section">
-            <div className="analysis-heading"><div><h2>Collection performance</h2><p>Collected revenue by month</p></div><span>USD</span></div>
+          <div className="chart-section studio-performance">
+            <div className="studio-performance-total"><span>Revenue recovered</span><strong>{formatCurrency(getMainCurrencyTotal(), selectedCurrency)}</strong><p>Collected through this workspace</p></div>
+            <div className="analysis-heading"><div><h2>Monthly collections</h2></div><span>USD</span></div>
 
             
             {monthlyData.length === 0 ? (
@@ -189,17 +188,18 @@ function Home() {
                 <p>Recover your first payment to see statistics here</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={290}>
+              <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid vertical={false} stroke="#e8eaec" />
+                  <defs><pattern id="collection-stripes" patternUnits="userSpaceOnUse" width="6" height="6"><rect width="6" height="6" fill="#f5a67d"/><path d="M0 6L6 0" stroke="#ffc5a5" strokeWidth="1"/></pattern></defs>
+                  <CartesianGrid vertical={false} stroke="#354249" strokeDasharray="3 6" />
                   <XAxis
                     dataKey="month"
-                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#65717a" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
-                    stroke="#88939a"
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#b6c2c8" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
+                    stroke="#8d9ca4"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                   />
                   <YAxis
-                    stroke="#88939a"
+                    stroke="#8d9ca4"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                     tickFormatter={(value) => `$${value}`}
                   />
@@ -218,7 +218,7 @@ function Home() {
                     dataKey="amount"
                     onClick={(_entry,index)=>monthlyData[index]&&loadHistory(monthlyData[index])}
                     cursor="pointer"
-                    fill="#e47a4e"
+                    fill="url(#collection-stripes)"
                     stroke="none"
                     strokeWidth={0}
                     radius={[4, 4, 0, 0]}
@@ -228,8 +228,8 @@ function Home() {
               </ResponsiveContainer>
             )}
           </div>
-          <aside className="monthly-ledger"><div className="analysis-heading"><div><h2>Collection ledger</h2><p>Choose a month to see who paid</p></div></div><div className="ledger-columns"><span>Month / Payments</span><span>Collected</span></div><div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><span><strong>{month.month}</strong><small>{month.count} payments</small></span><span>{money(Math.round(month.amount*100),selectedCurrency)} <LuArrowUpRight/></span></button>)}</div><p className="ledger-footnote">Recorded collections only.<br/>All dates use New York time.</p></aside>
-          </div>
+          <aside className="studio-side"><section className="studio-facts" aria-label="Collection performance"><h2>The recovery picture</h2><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong><small>Successful collections</small></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong><small>Per recovered payment</small></div><div><span>Latest collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'No collections yet'}</strong></div></section><a className="studio-next" href={preview?'https://stripe-connector-psi.vercel.app/dashboard':'/dashboard'}><span>Keep revenue moving</span><strong>Review failed payments <LuArrowUpRight/></strong><p>Find unpaid invoices and start a recovery run.</p></a></aside></div>
+          <aside className="monthly-ledger studio-journal"><div className="analysis-heading"><div><h2>Recovery journal</h2><p>Every collection has a story. Open a month for the full payment trail.</p></div></div><div className="ledger-columns"><span>Month / Payments</span><span>Collected</span></div><div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><span><strong>{month.month}</strong><small>{month.count} payments</small></span><span>{money(Math.round(month.amount*100),selectedCurrency)} <LuArrowUpRight/></span></button>)}</div><p className="ledger-footnote">Recorded collections only.<br/>All dates use New York time.</p></aside>
           {selectedMonth&&<section className="profile-section recovery-history" ref={historySection} aria-label="People charged this month" aria-busy={historyLoading}>
             <div className="workspace-heading"><div><h2>People charged — {selectedMonth.month}</h2><p>Successful collections recorded by this app, within your applied date filter.</p></div><button className="quick-filter-btn" onClick={()=>loadHistory(selectedMonth)} disabled={historyLoading}>Refresh this month</button></div>
             {history&&<p className="history-total">{history.totalCount} payments · {history.customerCount} customers · <strong>{money(history.totalAmount,history.currency)} {history.currency}</strong></p>}
