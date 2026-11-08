@@ -162,3 +162,20 @@ export async function fallbackRequest(path = '', options = {}) {
   if (!response.ok || !data.success) throw new Error(data.error || 'Could not update card fallback.');
   return data;
 }
+
+export async function paymentBatchRequest(path, { signal, ...options } = {}) {
+  const controller = new AbortController();
+  const abort=()=>controller.abort();
+  if(signal?.aborted)abort();
+  signal?.addEventListener('abort',abort,{once:true});
+  const timer=setTimeout(abort,30000);
+  try{
+    const response=await fetch(`${API_URL}/payment-batches${path}`,{...options,headers:getAuthHeader(),signal:controller.signal});
+    const data=await response.json();
+    if(!response.ok||!data.success)throw new Error(data.error||'The request could not be completed.');
+    return data;
+  }catch(error){
+    if(signal?.aborted)throw error;
+    throw new Error(controller.signal.aborted?'The request took too long. Refresh the run status before starting again.':error.message);
+  }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}

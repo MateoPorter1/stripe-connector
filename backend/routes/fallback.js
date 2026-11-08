@@ -43,13 +43,7 @@ router.put('/', async (req, res) => {
       await User.updateOne({ _id: req.user._id }, { $set: { 'fallbackRecovery.enabled': false } });
       return res.json({ success: true, enabled: false });
     }
-    if (req.body.authorizeSavedCards !== true) return res.status(400).json({ error: 'Authorize automatic collection on eligible saved cards before enabling.' });
-    const { stripe } = await userClient(req.user._id);
-    const account = await stripe.accounts.retrieve();
-    if (req.body.accountId !== account.id) return res.status(400).json({ error: 'Preview and confirm the connected account before enabling.' });
-    await User.updateOne({ _id: req.user._id }, { $set: { 'fallbackRecovery.enabled': true, 'fallbackRecovery.accountId': account.id,
-      'fallbackRecovery.authorizedAt': new Date(), 'fallbackRecovery.cursor': null, 'fallbackRecovery.lastError': '' } });
-    res.json({ success: true, enabled: true });
+    return res.status(410).json({ error: 'Scheduled fallback is retired. Use the date-filtered, button-triggered retry flow.' });
   } catch { res.status(502).json({ error: 'Could not enable fallback. Check the connected Stripe key and try again.' }); }
 });
 module.exports = router;

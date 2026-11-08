@@ -1,23 +1,19 @@
-# Automatic saved-card fallback
+# Date-filtered subscription payment retries
 
-The backend worker pays the original open subscription invoice with alternate attached saved cards. It never creates a replacement PaymentIntent or a new invoice. Viewing the dashboard and preview do not collect money.
+Applying dates only reads Stripe. The date range uses failed charge dates in America/New_York, including both selected calendar days. Results contain currently open subscription invoices with unpaid balances and a failed charge in that range. Repeated failures for the same invoice are shown as one debt. Pagination must complete before a run can start.
 
-## Activation
+The account owner clicks **Retry filtered payments** to start one run of exactly the displayed invoice snapshot. The server signs the selection, binds it to the user, Stripe key and dates, and rechecks the outstanding debt before each attempt. Changed currencies or increased balances are skipped.
 
-Fallback defaults to paused for every user. The account owner previews the connected Stripe account, confirms authority to collect on the saved cards, then enables the global switch. Pausing stops new attempts; an already-submitted payment cannot be recalled. Changing or removing the Stripe key pauses fallback and requires reactivation.
+Invoices are processed sequentially. For each invoice, the first/default card is included, then the remaining saved cards attached to that customer. Expired cards and duplicate physical card fingerprints are excluded. Each eligible card gets at most one submission per invoice in that run. A successful payment stops that invoice immediately. A confirmed decline or authentication requirement moves to the next card. Exhausting all cards stops that invoice and proceeds to the next invoice.
 
-## Scope and stopping rules
+The tool pays the original invoice using Stripe invoices.pay; it never creates a replacement invoice or separate PaymentIntent. Unknown outcomes and processing payments stop that invoice for review instead of trying another card. Existing pending/uncertain attempts also prevent a new run from charging the same debt blindly.
 
-Only attempted, open subscription invoices with an outstanding balance, automatic collection enabled, and an active/past-due/unpaid expanded subscription are eligible. Canceled subscriptions, paused collection, expired cards, cards attached to another customer, and duplicate card fingerprints are excluded. The card that already failed in Stripe is remembered and skipped. The worker defers when Stripe's own next attempt is within ten minutes.
+There are no scheduled runs, startup workers, or automatic restarts. Only authenticated Start and Resume requests execute payments. Reloading the app reads progress. Stop prevents further submissions; a payment already submitted cannot be recalled. An interrupted run needs an explicit Resume click. Declined cards may be tried again only in a new, deliberately requested run after applying dates again.
 
-Each alternate card gets at most one tool submission per invoice. Attempts are recorded before submission. A unique account/invoice/method index and an account lease protect concurrent workers. A deterministic Stripe idempotency key is a second safeguard; permanent MongoDB history remains the safeguard after Stripe expires its keys. Only an explicit card decline with a confirmed retryable PaymentIntent state allows the next card. Processing, authentication, API errors, uncertain outcomes, and interrupted pending submissions stop that invoice for review.
-
-## Runtime
-
-The Express process checks five open invoices per enabled account per minute while awake, using a persistent pagination cursor. A GitHub Actions hourly public-health check wakes the existing free Render service. The scheduled workflow has no repository permissions, customer data, or secrets. GitHub cron is not an exact-time guarantee; public-repository schedules can be disabled after inactivity. An always-on host is preferable for continuous production operation. The worker does not require an open browser.
+A persisted attempt ledger, unique run/invoice/card index, account lease, runner fencing, and Stripe idempotency keys prevent duplicate submissions from repeated clicks or resumes. Attempts are recorded before Stripe submission. An interrupted pending submission is held for review. The original Stripe account's own configured retry policy is independent and has not been changed.
 
 ## Verification
 
 Run `node --test backend/tests/*.test.js`, `CI=true npm test -- --watchAll=false --runInBand`, and `npm run build`.
 
-Payment execution tests use mocked Stripe clients and an in-memory ledger. They do not charge live customers. The production preview is read-only. Pending/uncertain/action-required attempts are deliberately not reset automatically; inspect the original invoice in Stripe before resuming such debt through a future explicit reconciliation flow.
+All payment execution tests use fake Stripe clients and an in-memory ledger. They never charge customers.

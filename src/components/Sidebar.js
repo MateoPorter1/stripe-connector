@@ -19,8 +19,8 @@ function Sidebar() {
     {
       path: '/dashboard',
       icon: LuCreditCard,
-      label: 'Automatic recovery',
-      description: 'Subscription invoices'
+      label: 'Retry payments',
+      description: 'Filter and run once'
     },
     {
       path: '/profile',
