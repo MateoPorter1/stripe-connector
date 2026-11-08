@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
-import { LuCalendar, LuDollarSign, LuRefreshCw, LuTrendingUp, LuClock, LuChartBarBig, LuInbox } from 'react-icons/lu';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { LuCalendar, LuArrowUpRight, LuInbox } from 'react-icons/lu';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {statsRequest} from '../services/api';
 import './Home.css';
 
@@ -122,15 +122,9 @@ function Home() {
     <div className="home-layout">
       <Sidebar />
       <div className="home-content">
-        <div className="home-container">
-          {/* Header */}
-          <div className="home-header">
-            <div>
-              <h1>Recovery overview</h1>
-              <p>Collected revenue and the people behind every payment.</p>
-            </div>
-          </div>
-
+        <div className="home-container overview-workspace">
+          <header className="overview-masthead"><div><span className="workspace-location">Your workspace / Overview</span><h1>Collections, in focus.</h1></div><a className="open-queue" href="/dashboard">Open recovery queue <LuArrowUpRight/></a></header>
+          <div className="overview-filterbar">
           {/* Quick Filters */}
           <div className="quick-filters">
             <button onClick={() => handleQuickFilter('this-month')} className="quick-filter-btn">
@@ -176,57 +170,18 @@ function Home() {
             </div>
           </div>
 
-          {error&&<p className="error-message" role="alert">{error}</p>}
-          {/* Scorecards */}
-          <div className="scorecards-grid">
-            <div className="scorecard scorecard-primary">
-              <div className="scorecard-icon"><LuDollarSign size={28} /></div>
-              <div className="scorecard-content">
-                <div className="scorecard-value">
-                  {formatCurrency(getMainCurrencyTotal(), selectedCurrency)}
-                </div>
-                <div className="scorecard-label">Total Recovered</div>
-              </div>
-            </div>
-
-            <div className="scorecard scorecard-success">
-              <div className="scorecard-icon"><LuRefreshCw size={28} /></div>
-              <div className="scorecard-content">
-                <div className="scorecard-value">{getMainCurrencyCount()}</div>
-                <div className="scorecard-label">Recovered Payments</div>
-              </div>
-            </div>
-
-            <div className="scorecard scorecard-info">
-              <div className="scorecard-icon"><LuTrendingUp size={28} /></div>
-              <div className="scorecard-content">
-                <div className="scorecard-value">
-                  {getMainCurrencyCount() > 0
-                    ? formatCurrency(getMainCurrencyTotal() / getMainCurrencyCount(), selectedCurrency)
-                    : formatCurrency(0, selectedCurrency)}
-                </div>
-                <div className="scorecard-label">Average per Payment</div>
-              </div>
-            </div>
-
-            <div className="scorecard scorecard-warning">
-              <div className="scorecard-icon"><LuClock size={28} /></div>
-              <div className="scorecard-content">
-                <div className="scorecard-value">
-                  {summary?.lastRecovery
-                    ? formatLastRecoveryTime(summary.lastRecovery.date)
-                    : 'N/A'}
-                </div>
-                <div className="scorecard-label">Last Payment</div>
-              </div>
-            </div>
           </div>
-
+          {error&&<p className="error-message" role="alert">{error}</p>}
+          <section className="collection-position" aria-label="Collection performance">
+            <div className="position-primary"><span>Revenue collected</span><strong>{formatCurrency(getMainCurrencyTotal(), selectedCurrency)}</strong><p>Successful payments recorded by this app</p></div>
+            <div className="position-facts"><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong></div><div><span>Latest collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'No collections yet'}</strong></div></div>
+          </section>
+          <div className="overview-analysis">
           {/* Chart Section */}
           <div className="chart-section">
-            <h2 className="chart-title"><LuChartBarBig style={{ display: 'inline', marginRight: '8px' }} /> Monthly Recovery</h2>
+            <div className="analysis-heading"><div><h2>Collection performance</h2><p>Collected revenue by month</p></div><span>USD</span></div>
 
-            <p className="history-help">Click a bar or a month below to see every recorded payment. Dates use New York time.</p>
+            
             {monthlyData.length === 0 ? (
               <div className="empty-chart-state">
                 <p className="empty-icon"><LuInbox size={64} /></p>
@@ -234,8 +189,8 @@ function Home() {
                 <p>Recover your first payment to see statistics here</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={320}>
-                <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={290}>
+                <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                   <CartesianGrid vertical={false} stroke="#e8eaec" />
                   <XAxis
                     dataKey="month"
@@ -257,10 +212,9 @@ function Home() {
                     }}
                     formatter={(value) => [`$${value}`, 'Recovered']}
                   />
-                  <Legend
-                    wrapperStyle={{ fontWeight: '500', fontSize: '12px' }}
-                  />
                   <Bar
+                    isAnimationActive={false}
+                    maxBarSize={48}
                     dataKey="amount"
                     onClick={(_entry,index)=>monthlyData[index]&&loadHistory(monthlyData[index])}
                     cursor="pointer"
@@ -274,7 +228,8 @@ function Home() {
               </ResponsiveContainer>
             )}
           </div>
-          {monthlyData.length>0&&<div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} className="quick-filter-btn" aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><strong>{month.month}</strong><span>{month.count} payments · {money(Math.round(month.amount*100),selectedCurrency)}</span></button>)}</div>}
+          <aside className="monthly-ledger"><div className="analysis-heading"><div><h2>Collection ledger</h2><p>Choose a month to see who paid</p></div></div><div className="ledger-columns"><span>Month / Payments</span><span>Collected</span></div><div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><span><strong>{month.month}</strong><small>{month.count} payments</small></span><span>{money(Math.round(month.amount*100),selectedCurrency)} <LuArrowUpRight/></span></button>)}</div><p className="ledger-footnote">Recorded collections only.<br/>All dates use New York time.</p></aside>
+          </div>
           {selectedMonth&&<section className="profile-section recovery-history" ref={historySection} aria-label="People charged this month" aria-busy={historyLoading}>
             <div className="workspace-heading"><div><h2>People charged — {selectedMonth.month}</h2><p>Successful collections recorded by this app, within your applied date filter.</p></div><button className="quick-filter-btn" onClick={()=>loadHistory(selectedMonth)} disabled={historyLoading}>Refresh this month</button></div>
             {history&&<p className="history-total">{history.totalCount} payments · {history.customerCount} customers · <strong>{money(history.totalAmount,history.currency)} {history.currency}</strong></p>}
