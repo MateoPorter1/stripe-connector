@@ -143,13 +143,19 @@ function Home({preview=false}) {
                     tickFormatter={(value) => `$${value}`}
                   />
                   <Tooltip
+                    cursor={{fill:'#b28de8',fillOpacity:0.10,radius:8}}
                     contentStyle={{
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e3e7e9',
-                      borderRadius: '8px',
-                      fontWeight: '500'
+                      backgroundColor:'#302938',
+                      border:'1px solid #b28de845',
+                      borderRadius:12,
+                      color:'#f3ecfc',
+                      padding:'12px 16px',
+                      boxShadow:'0 10px 28px #00000040',
+                      fontSize:12
                     }}
-                    formatter={(value) => [`$${value}`, 'Recovered']}
+                    labelStyle={{color:'#c8b6df',marginBottom:7,fontWeight:500}}
+                    itemStyle={{color:'#f3ecfc',padding:0}}
+                    formatter={value=>[formatCurrency(value,selectedCurrency),'Recovered']}
                   />
                   <Bar
                     isAnimationActive={false}
