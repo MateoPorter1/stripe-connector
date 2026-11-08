@@ -12,6 +12,14 @@ There are no scheduled runs, startup workers, or automatic restarts. Only authen
 
 A persisted attempt ledger, unique run/invoice/card index, account lease, runner fencing, and Stripe idempotency keys prevent duplicate submissions from repeated clicks or resumes. Attempts are recorded before Stripe submission. An interrupted pending submission is held for review. The original Stripe account's own configured retry policy is independent and has not been changed.
 
+## Run preparation and table feedback
+
+The Saved credit cards column replaces invoice status. Counts are loaded automatically from the customer's saved card payment methods, including expired cards in the total. A separate eligible count excludes expired cards and duplicate physical fingerprints, matching the retry runner. Counts are paginated, fetched with limited concurrency, and cached for two minutes per user/Stripe-key/customer. Unavailable reads show Unavailable rather than a false zero. The runner always reads cards again when attempting collection.
+
+After a completed filter, the authenticated GET /api/payment-batches/ready checks the connected Stripe account and creates/verifies the collection and unique indexes required by the attempt ledger. It never calls a payment endpoint, starts a worker or launches a run. A failed readiness check keeps the collection button disabled.
+
+A confirmed paid item turns its entire invoice row green and updates its displayed balance to zero. Successfully collected rows stay in the recovery queue for that run, including after reapplying the same dates. Historical paid invoices are also green in All failure history. A decline, processing state or unconfirmed result never receives the paid styling.
+
 ## Verification
 
 Run `node --test backend/tests/*.test.js`, `CI=true npm test -- --watchAll=false --runInBand`, and `npm run build`.

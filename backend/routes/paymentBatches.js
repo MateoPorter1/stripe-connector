@@ -19,6 +19,7 @@ async function checkInterrupted(batch){
   return batch;
 }
 router.get('/failed',async(req,res)=>{try{const {stripe,keyHash}=await client(req.user._id);res.set('Cache-Control','no-store').json(await filteredFailuresPage(stripe,req.query,{userId:req.user._id,keyHash,secret:process.env.JWT_SECRET}));}catch(error){fail(res,error);}});
+router.get('/ready',async(req,res)=>{try{const {stripe}=await client(req.user._id);await prepareBatchStorage();const account=await stripe.accounts.retrieve();res.set('Cache-Control','no-store').json({success:true,ready:true,accountName:account.business_profile?.name||account.settings?.dashboard?.display_name||account.id});}catch(error){fail(res,error);}});
 router.get('/latest',async(req,res)=>{try{const batch=await checkInterrupted(await Batch.findOne({userId:req.user._id}).sort({createdAt:-1}));res.set('Cache-Control','no-store').json(batch?await batchPayload(batch):{success:true,batch:null,attempts:[]});}catch(error){fail(res,error);}});
 router.post('/start',async(req,res)=>{
   let batch,lease;

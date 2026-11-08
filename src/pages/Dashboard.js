@@ -5,11 +5,11 @@ import {paymentBatchRequest,formatCurrency,formatDate} from '../services/api';
 import './Dashboard.css';
 const day=offset=>{const date=new Date();date.setUTCDate(date.getUTCDate()+offset);return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);};
 const stateLabel={pending:'Waiting',running:'Trying saved cards',paid:'Paid',failed:'All eligible cards failed',skipped:'Skipped',review:'Needs review'};
-const invoiceLabel={open:'Unpaid',written_off:'Written off by Stripe',unavailable:'Invoice unavailable',paid:'Paid after failure',void:'Voided',blocked:'Blocked by Stripe',processing:'Processing',cancelled:'Cancelled'};
 const attemptLabel={pending:'Awaiting confirmed result',declined:'Declined',authentication_required:'Needs authentication',paid:'Paid',processing:'Payment processing',uncertain:'Uncertain — stopped'};
 export default function Dashboard(){
   const [start,setStart]=useState(()=>day(-7)),[end,setEnd]=useState(()=>day(0)),[range,setRange]=useState(null);
   const [rows,setRows]=useState([]),[loading,setLoading]=useState(false),[complete,setComplete]=useState(false),[checked,setChecked]=useState(0),[error,setError]=useState('');
+  const [ready,setReady]=useState(false);
   const [view,setView]=useState('unresolved');
   const [run,setRun]=useState(null),[attempts,setAttempts]=useState([]),[busy,setBusy]=useState(false),[usedSelection,setUsedSelection]=useState(false);
   const filterController=useRef(null),requestId=useRef(null),mounted=useRef(true);
@@ -21,7 +21,7 @@ export default function Dashboard(){
   const applyDates=async()=>{
     if(start>end){setError('The start date must come before the end date.');return;}
     filterController.current?.abort();const controller=new AbortController();filterController.current=controller;
-    const selected={start,end};setLoading(true);setError('');setComplete(false);setRows([]);setChecked(0);setRange(selected);setUsedSelection(false);requestId.current=null;
+    const selected={start,end};setLoading(true);setError('');setComplete(false);setReady(false);setRows([]);setChecked(0);setRange(selected);setUsedSelection(false);requestId.current=null;
     let cursor=null,phase='charges';const invoices=new Map();
     try{do{
       const params=new URLSearchParams({startDate:selected.start,endDate:selected.end,phase});if(cursor)params.set('cursor',cursor);
@@ -31,7 +31,10 @@ export default function Dashboard(){
       setRows([...invoices.values()].sort((a,b)=>b.lastFailure-a.lastFailure));setChecked(previous=>previous+data.totalFetched);
       if(data.hasMore&&(!data.nextCursor||data.nextCursor===cursor))throw new Error('The scan could not advance. Apply the dates again.');
       cursor=data.nextCursor;if(!cursor&&data.nextPhase){phase=data.nextPhase;cursor=null;}else if(!cursor){phase=null;}
-    }while(cursor||phase);setComplete(true);
+    }while(cursor||phase);
+    const readiness=await paymentBatchRequest('/ready',{signal:controller.signal});
+    if(controller.signal.aborted||!mounted.current)return;
+    setReady(readiness.ready===true);setComplete(true);
     }catch(err){if(!controller.signal.aborted&&mounted.current)setError(err.message);}
     finally{if(filterController.current===controller&&mounted.current)setLoading(false);}
   };
@@ -45,8 +48,12 @@ export default function Dashboard(){
     finally{if(mounted.current)setBusy(false);}
   };
   const controlRun=async(action)=>{setBusy(true);setError('');try{storeRun(await paymentBatchRequest(`/${run._id}/${action}`,{method:'POST',body:JSON.stringify({authorize:true})}));}catch(err){if(mounted.current)setError(err.message);}finally{if(mounted.current)setBusy(false);}};
-  const visibleRows=rows.filter(row=>view==='all'||row.displayStatus!=='paid');
-  const retryRows=visibleRows.filter(row=>row.selectionToken);
+  const itemMap=new Map((run?.items||[]).map(item=>[item.invoiceId,item]));
+  const sameRange=run&&range&&run.startDate===range.start&&run.endDate===range.end;
+  const collectedThisRun=row=>Boolean(sameRange&&itemMap.get(row.id)?.state==='paid');
+  const queueRows=rows.filter(row=>row.displayStatus!=='paid'||collectedThisRun(row));
+  const visibleRows=view==='all'?rows:queueRows;
+  const retryRows=visibleRows.filter(row=>row.selectionToken&&!collectedThisRun(row)&&row.displayStatus!=='paid');
   const paymentRecords=[...new Map(rows.flatMap(row=>row.payments||[]).map(payment=>[payment.id,payment])).values()];
   const failedCount=paymentRecords.filter(payment=>payment.state==='failed').length;
   const blockedCount=paymentRecords.filter(payment=>payment.state==='blocked').length;
@@ -54,8 +61,6 @@ export default function Dashboard(){
   const writtenOffCount=rows.filter(row=>row.displayStatus==='written_off').length;
   const unavailableCount=rows.filter(row=>row.displayStatus==='unavailable').length;
   const totals=retryRows.reduce((all,row)=>({...all,[row.currency]:(all[row.currency]||0)+row.amount}),{});
-  const itemMap=new Map((run?.items||[]).map(item=>[item.invoiceId,item]));
-  const sameRange=run&&range&&run.startDate===range.start&&run.endDate===range.end;
   const finished=(run?.items||[]).filter(item=>!['pending','running'].includes(item.state)).length;
   return <div className="dashboard-layout"><Sidebar/><main className="dashboard-content"><div className="container">
     <RecoveryBanner title="Choose the dates. Retry the payments." subtitle="One button starts one run. Each unpaid subscription invoice is handled in order, with one attempt per saved card until a payment succeeds."/>
@@ -64,11 +69,11 @@ export default function Dashboard(){
       <div className="date-input-group"><label htmlFor="startDate">Failed from</label><input id="startDate" type="date" value={start} onChange={event=>setStart(event.target.value)} disabled={loading||running} className="date-input"/></div>
       <div className="date-input-group"><label htmlFor="endDate">Failed through</label><input id="endDate" type="date" value={end} onChange={event=>setEnd(event.target.value)} disabled={loading||running} className="date-input"/></div>
       <button className="search-button" onClick={applyDates} disabled={loading||running||busy}>{loading?'Finding failed payments…':'Apply dates'}</button>
-      <button className="auth-button batch-start-button" onClick={startRun} disabled={!complete||!retryRows.length||retryRows.length>500||loading||running||busy||usedSelection}>Retry filtered payments{complete?` (${retryRows.length})`:''}</button>
+      <button className="auth-button batch-start-button" onClick={startRun} disabled={!complete||!ready||!retryRows.length||retryRows.length>500||loading||running||busy||usedSelection}>Retry filtered payments{complete?` (${retryRows.length})`:''}</button>
     </div><p className="scan-note">Failure dates use New York time. All subscription failures are kept, including written-off, blocked and unavailable invoices. Failed payments without a charge are checked too. Repeat attempts on one invoice appear in one row.</p>
-    <p className="scan-note">“Retry filtered payments” starts real collections only for rows marked Unpaid / Included in the retry run. Other rows stay visible for review. The first/default card is included. Each distinct eligible card gets one attempt in this run. There are no scheduled runs.</p></section>
+    <p className="scan-note">“Retry filtered payments” starts real collections only for rows marked Ready to retry. Other rows stay visible for review. The first/default card is included. Each distinct eligible card gets one attempt in this run. There are no scheduled runs.</p></section>
     {error&&<div className="error-message" role="alert">{error}</div>}
-    {range&&<p className="scan-progress" role="status">{loading?'Scanning payments — partial results below.':complete?'Filter complete.':'Filter incomplete. Apply dates again before retrying.'} {checked.toLocaleString()} payments checked · {range.start} through {range.end}.</p>}
+    {range&&<p className="scan-progress" role="status">{loading?'Scanning payments — partial results below.':complete?(ready?'Filter complete. Ready for your run.':'Filter complete.'):'Filter incomplete. Apply dates again before retrying.'} {checked.toLocaleString()} payments checked · {range.start} through {range.end}.</p>}
     {retryRows.length>500&&<p className="error-message">More than 500 unpaid invoices matched. Narrow the dates before starting a run.</p>}
     {run&&<section className="profile-section batch-progress"><h2>Run: {run.status}</h2><p>{run.startDate} through {run.endDate} · {finished} of {run.items.length} invoices finished · {run.items.filter(item=>item.state==='paid').length} paid.</p>
       <p className="scan-note">This run contains a fixed invoice list. A restart never resumes charging by itself. Unknown payment outcomes are held for review.</p>
@@ -79,11 +84,11 @@ export default function Dashboard(){
       {run.lastError&&<p className="error-message">{run.lastError}</p>}
     </section>}
     {range&&<section className="profile-section failure-summary" aria-label="Failure counts"><h2>{failedCount} failed payments · {blockedCount} blocked</h2><p>These are distinct payments, like Stripe’s payment list. The table groups repeat attempts by invoice.</p><p>{writtenOffCount} written-off invoices · {unavailableCount} unavailable invoices · {paidCount} invoices paid after failure. Nothing is silently removed.</p>
-      <div className="failure-views" role="group" aria-label="Failure history views"><button className="quick-filter-btn" aria-pressed={view==='unresolved'} onClick={()=>setView('unresolved')}>Unresolved ({rows.length-paidCount})</button><button className="quick-filter-btn" aria-pressed={view==='all'} onClick={()=>setView('all')}>All failure history ({rows.length})</button></div></section>}
+      <div className="failure-views" role="group" aria-label="Failure history views"><button className="quick-filter-btn" aria-pressed={view==='unresolved'} onClick={()=>setView('unresolved')}>Recovery queue ({queueRows.length})</button><button className="quick-filter-btn" aria-pressed={view==='all'} onClick={()=>setView('all')}>All failure history ({rows.length})</button></div></section>}
     <div className="workspace-heading"><h2>{visibleRows.length} invoices / payment records · {retryRows.length} included in retry</h2><div>{Object.entries(totals).map(([currency,amount])=><span className="batch-currency" key={currency}>{formatCurrency(amount,currency)} {currency.toUpperCase()}</span>)}</div></div>
-    <div className="table-container"><table className="transactions-table"><thead><tr><th>Customer</th><th>Invoice</th><th>Balance / failed amount</th><th>Invoice status</th><th>Last failure in range</th><th>Failures in range</th><th>This run</th></tr></thead><tbody>
+    <div className="table-container"><table className="transactions-table"><thead><tr><th>Customer</th><th>Invoice</th><th>Balance / failed amount</th><th>Saved credit cards</th><th>Last failure in range</th><th>Failures in range</th><th>This run</th></tr></thead><tbody>
       {!visibleRows.length&&<tr><td colSpan="7"><div className="queue-empty"><h3>{loading?'Finding failed subscription payments…':complete?'No matching failures':'Choose a date range'}</h3><p>Applying dates only reads payments. Nothing is charged until you start a run.</p></div></td></tr>}
-      {visibleRows.map(row=>{const item=sameRange?itemMap.get(row.id):null;return <tr key={row.id}><td className="email">{row.email}</td><td>{row.number}<p className="recovery-reason"><a href={`https://dashboard.stripe.com/payments/${row.payments?.[0]?.id||row.id}`} target="_blank" rel="noreferrer">View in Stripe</a></p></td><td className="amount">{formatCurrency(row.amount??row.failedAmount,row.currency)} <small>{row.currency.toUpperCase()}</small>{row.amount===null&&<p className="recovery-reason">Failed amount; current balance unavailable</p>}</td><td><span className="badge">{invoiceLabel[row.displayStatus]||row.displayStatus||'Unpaid'}</span><p className="recovery-reason">{row.retryNote}</p></td><td>{formatDate(row.lastFailure)}</td><td>{row.failedPayments.length}<p className="recovery-reason">{row.reason}</p></td><td>{item?<><span className="badge">{stateLabel[item.state]||item.state}</span><p className="recovery-reason">{item.attempts} card attempts{item.reason?` · ${item.reason.replaceAll('_',' ')}`:''}</p></>:row.selectionToken?'Not run':'Not included in retry'}</td></tr>;})}
+      {visibleRows.map(row=>{const item=sameRange?itemMap.get(row.id):null;const paid=collectedThisRun(row)||row.displayStatus==='paid';return <tr key={row.id} className={paid?'payment-row-paid':undefined}><td className="email">{row.email}</td><td>{row.number}<p className="recovery-reason"><a href={`https://dashboard.stripe.com/payments/${row.payments?.[0]?.id||row.id}`} target="_blank" rel="noreferrer">View in Stripe</a></p></td><td className="amount">{formatCurrency(paid?0:(row.amount??row.failedAmount),row.currency)} <small>{row.currency.toUpperCase()}</small>{row.amount===null&&<p className="recovery-reason">Failed amount; current balance unavailable</p>}</td><td className="saved-card-count">{Number.isInteger(row.cardCount)?<><strong>{row.cardCount}</strong><span> saved</span>{row.eligibleCardCount!==row.cardCount&&<p className="recovery-reason">{row.eligibleCardCount} eligible for retry</p>}</>:<span title="The card count could not be loaded from Stripe">Unavailable</span>}</td><td>{formatDate(row.lastFailure)}</td><td>{row.failedPayments.length}<p className="recovery-reason">{row.reason}</p></td><td>{item?<><span className="badge">{stateLabel[item.state]||item.state}</span><p className="recovery-reason">{item.attempts} card attempts{item.reason?` · ${item.reason.replaceAll('_',' ')}`:''}</p></>:paid?<span className="badge">Paid</span>:row.selectionToken?'Ready to retry':<><span>Not included in retry</span><p className="recovery-reason">{row.retryNote}</p></>}</td></tr>;})}
     </tbody></table></div>
     {attempts.length>0&&<section className="profile-section batch-attempts"><h2>Card-by-card results for this run</h2><div className="table-container"><table className="transactions-table"><thead><tr><th>Invoice</th><th>Card</th><th>Amount</th><th>Result</th><th>Details</th></tr></thead><tbody>{attempts.map(attempt=><tr key={attempt._id}><td>{attempt.invoiceId}</td><td>{attempt.brand} •••• {attempt.last4}</td><td>{formatCurrency(attempt.amount,attempt.currency)}</td><td>{attemptLabel[attempt.status]||attempt.status}</td><td>{attempt.code?.replaceAll('_',' ')||'—'}</td></tr>)}</tbody></table></div></section>}
   </div></main></div>;

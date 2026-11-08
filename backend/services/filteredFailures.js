@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const {enrichCardCounts}=require('./customerCardCounts');
 const bad = message => Object.assign(new Error(message), { statusCode: 400 });
 function validDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) throw bad('Choose valid start and end dates.');
@@ -47,6 +48,7 @@ function failureRow({charge,payment,invoice,failedAt,query,scope}) {
     processing:'A payment is processing. Wait for its result.',cancelled:'Payment was cancelled. Review the invoice in Stripe.'};
   const row={id:invoiceId||payment.id,number:exists?(invoice.number||invoice.id):(invoiceId||payment.id),invoiceId:exists?invoice.id:null,
     email:(exists&&invoice.customer_email)||charge?.billing_details?.email||charge?.customer?.email||payment?.customer?.email||idOf(payment?.customer)||'Customer unavailable',
+    customerId:idOf(invoice?.customer)||idOf(charge?.customer)||idOf(payment?.customer)||null,
     subscription:idOf(subscription)||null,currency:invoice?.currency||payment?.currency||charge?.currency,
     amount:exists?invoice.amount_remaining:null,failedAmount:charge?.amount||payment?.amount||0,
     failedPayments:charge?[charge.id]:[payment.id],payments:[{id:idOf(payment)||charge.id,state:paymentState}],
@@ -90,7 +92,7 @@ async function filteredFailuresPage(stripe,query,scope) {
   }
   const cursor=page.has_more?page.data[page.data.length-1]?.id:null;
   if(page.has_more&&(!cursor||cursor===query.cursor))throw new Error('The payment scan could not advance.');
-  return {success:true,invoices:[...rows.values()],totalFetched:page.data.length,nextCursor:cursor||null,hasMore:Boolean(page.has_more),
+  return {success:true,invoices:await enrichCardCounts(stripe,[...rows.values()],scope),totalFetched:page.data.length,nextCursor:cursor||null,hasMore:Boolean(page.has_more),
     nextPhase:phase==='charges'&&!page.has_more?'payments':null};
 }
 function verifySelection(tokens,{userId,keyHash,secret,startDate,endDate}) {
