@@ -6,5 +6,8 @@ export const studioDemoRequest = async path => {
   if(path.startsWith('/summary'))return {summary:{totalsByCurrency:{USD:{totalAmount:Math.round(visible.reduce((n,m)=>n+m.amount,0)*100),count:visible.reduce((n,m)=>n+m.count,0)}},lastRecovery:{date:'2026-11-08T15:10:00Z'}}};
   if(path.startsWith('/by-month'))return {data:visible};
   const month=params.get('month')||'2026-11';
-  return {recoveries:[{_id:'demo-payment',customerEmail:'billing@example.com',amount:4800,currency:'USD',recoveredAt:`${month}-03T15:10:00Z`,paymentMethodDetails:{brand:'visa',last4:'4242'}}],totalCount:1,customerCount:1,totalAmount:4800,currency:'USD',hasMore:false};
+  const selected=visible.find(row=>`${row.year}-${String(row.monthNumber).padStart(2,'0')}`===month);
+  const count=selected?.count||0,total=Math.round((selected?.amount||0)*100),base=count?Math.floor(total/count):0;
+  const recoveries=Array.from({length:count},(_,i)=>({_id:`demo-${month}-${i}`,customerEmail:`customer${i+1}@example.com`,amount:base+(i===count-1?total-base*count:0),currency:'USD',recoveredAt:`${month}-03T15:10:00Z`,paymentMethodDetails:{brand:'visa',last4:'4242'}}));
+  return {recoveries,totalCount:count,customerCount:count,totalAmount:total,currency:'USD',hasMore:false};
 };
