@@ -12,6 +12,12 @@ const monthKey=row=>`${row.year}-${String(row.monthNumber).padStart(2,'0')}`;
 const money=(cents,currency)=>new Intl.NumberFormat('en-US',{style:'currency',currency}).format(cents/100);
 const collectedDate=date=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',dateStyle:'medium',timeStyle:'short'}).format(new Date(date));
 
+function CollectionTooltip({active,payload,label}) {
+  if(!active||!payload?.length)return null;
+  const month=payload[0].payload;
+  return <div className="collection-tooltip"><div><span className="collection-tooltip-dot"/>{label}</div><strong>{money(Math.round(month.amount*100),'USD')}</strong><span>{month.count} recovered payments</span></div>;
+}
+
 function Home({preview=false}) {
   const request=preview?studioDemoRequest:statsRequest;
   const [summary, setSummary] = useState(null);
@@ -116,7 +122,7 @@ function Home({preview=false}) {
           <div className="overview-analysis">
           {/* Chart Section */}
           <div className="chart-section studio-performance">
-            <div className="studio-performance-total"><span>Revenue recovered</span><strong>{formatCurrency(getMainCurrencyTotal(), selectedCurrency)}</strong><p>Collected through this workspace</p></div>
+            <div className="studio-performance-total"><span>Revenue recovered</span><span className="collection-currency">USD</span><strong>{formatCurrency(getMainCurrencyTotal(), selectedCurrency)}</strong><p>Collected through this workspace</p></div>
             <div className="analysis-heading"><div><h2>Monthly collections</h2></div><span>USD</span></div>
 
             
@@ -128,45 +134,38 @@ function Home({preview=false}) {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={monthlyData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                  <defs><pattern id="collection-stripes" patternUnits="userSpaceOnUse" width="6" height="6"><rect width="6" height="6" fill="#ad92e3"/><path d="M0 6L6 0" stroke="#c3aced" strokeWidth="1"/></pattern></defs>
-                  <CartesianGrid vertical={false} stroke="#49434f" strokeDasharray="3 6" />
+                <BarChart data={monthlyData} margin={{ top: 18, right: 10, left: 0, bottom: 5 }}>
+                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c4a7f2"/><stop offset="100%" stopColor="#8d6dbe"/></linearGradient></defs>
+                  <CartesianGrid vertical={false} stroke="#ffffff" strokeOpacity={0.07} />
                   <XAxis
                     dataKey="month"
-                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={18} textAnchor="middle" fill="#b6c2c8" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
-                    stroke="#8d9ca4"
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#a99fb8" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
+                    axisLine={false}
+                    tickLine={false}
+                    stroke="#9b91aa"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                   />
                   <YAxis
-                    stroke="#8d9ca4"
+                    axisLine={false}
+                    tickLine={false}
+                    stroke="#9b91aa"
                     style={{ fontSize: '12px', fontWeight: '500' }}
-                    tickFormatter={(value) => `$${value}`}
+                    width={48}
+                    tickCount={4}
+                    tickFormatter={value=>value>=1000?`$${Number((value/1000).toFixed(1))}k`:`$${value}`}
                   />
-                  <Tooltip
-                    cursor={{fill:'#b28de8',fillOpacity:0.10,radius:8}}
-                    contentStyle={{
-                      backgroundColor:'#302938',
-                      border:'1px solid #b28de845',
-                      borderRadius:12,
-                      color:'#f3ecfc',
-                      padding:'12px 16px',
-                      boxShadow:'0 10px 28px #00000040',
-                      fontSize:12
-                    }}
-                    labelStyle={{color:'#c8b6df',marginBottom:7,fontWeight:500}}
-                    itemStyle={{color:'#f3ecfc',padding:0}}
-                    formatter={value=>[formatCurrency(value,selectedCurrency),'Recovered']}
-                  />
+                  <Tooltip content={<CollectionTooltip/>} cursor={{fill:'#c3a6ee',fillOpacity:0.045,radius:10}} />
                   <Bar
                     isAnimationActive={false}
-                    maxBarSize={48}
+                    maxBarSize={40}
                     dataKey="amount"
                     onClick={(_entry,index)=>monthlyData[index]&&loadHistory(monthlyData[index])}
                     cursor="pointer"
-                    fill="url(#collection-stripes)"
+                    fill="url(#collection-fill)"
+                    activeBar={{fill:'#d2b9f7',stroke:'none'}}
                     stroke="none"
                     strokeWidth={0}
-                    radius={[4, 4, 0, 0]}
+                    radius={[7, 7, 3, 3]}
                     name="Collected revenue"
                   />
                 </BarChart>
