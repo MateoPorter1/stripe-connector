@@ -8,7 +8,7 @@ function PrivateRoute({ children }) {
   if (loading || sessionError) {
     return <main className="session-screen">
       <section className="auth-box session-box" aria-busy={loading}>
-        <p className="session-brand">↺ Revenue recovery</p>
+        <p className="session-brand">↺ Rebound</p>
         {loading ? <>
           <div className="spinner-large" aria-hidden="true" />
           <h1>Opening your workspace</h1>
