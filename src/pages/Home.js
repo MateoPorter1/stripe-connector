@@ -136,7 +136,7 @@ function Home({preview=false}) {
             ) : (
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={monthlyData} margin={{ top: 18, right: 10, left: 0, bottom: 5 }}>
-                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#eea56d"/><stop offset="100%" stopColor="#d37330"/></linearGradient></defs>
+                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ffac73"/><stop offset="100%" stopColor="#ff6b1f"/></linearGradient></defs>
                   <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeOpacity={0.07} />
                   <XAxis
                     dataKey="month"

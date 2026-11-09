@@ -7,7 +7,7 @@ References inspected: Linear's March 2026 interface refresh (https://linear.app/
 - Navigation: compact left rail; clear page location and primary action. Icon rail on phones.
 - Overview: open four-column financial summary, performance chart beside a dense monthly ledger. No invented trend comparisons.
 - Data: Inter and tabular figures, clear amount alignment, secondary text with readable contrast. Customer and invoice appear together to reduce table columns.
-- Accent: #be501f for explicit actions and selected controls; soft orange for calm selection. Green remains reserved for confirmed payments.
+- Accent: #ff6b1f with dark labels for explicit actions and selected controls; soft orange for calm selection. Green remains reserved for confirmed payments.
 - Dates: shared draft-only range panel with presets, calendars, manual entries inside the panel and explicit Apply. New York calendar dates and inclusive filters stay unchanged.
 - Preview: clearly labeled sample data, real collection actions disabled. Existing payment execution and traceability are preserved.
 
