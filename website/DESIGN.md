@@ -74,3 +74,7 @@ Built-in image tool, reference rebound-workshop-v1.webp. Production asset assets
 ## Warm neutral typography and trial action
 
 Replace the hero's green headline with warm charcoal #302b27 and supporting copy with brown-gray #70665d. Headline: Recover your failed Stripe payments. Self-hosted Manrope Latin variable font replaces Inter for site typography, with a heavier rounded-grotesk hero and comfortable line height. The ceramic logo remains unchanged. Header and primary hero/footer actions say Start free trial and link to the existing signup page; no trial duration is invented. The second hero button says See how it works and links to the local recovery example. Bright orange remains the primary action color, with generous rounded corners and horizontal arrows inspired by the reference's button proportions. Manrope is supplied by Google Fonts with its OFL license stored in assets/Manrope-OFL.txt.
+
+## Site-wide neutral typography
+
+Manrope is now explicit for all public-site text and form controls. Existing green/blue text declarations have been consolidated into charcoal #302b27 for headings and strong type, brown-gray #70665d for supporting copy, and warm ivory for text on dark panels. Calculator results use a charcoal background. Orange buttons and orange link accents are retained; payment success/failure badges retain their semantic colors. This applies to the full public website, not the authenticated Stripe app.
