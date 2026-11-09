@@ -11,17 +11,17 @@ const button=text=>[...document.querySelectorAll('button')].find(b=>b.textConten
 const applyRange=async()=>{await act(async()=>button('Date range').click());await act(async()=>button('Apply').click());};
 beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;paymentBatchRequest.mockReset();paymentBatchRequest.mockResolvedValue({success:true,ready:true});Object.defineProperty(global,'crypto',{configurable:true,value:{randomUUID:()=> '12345678-1234-1234-1234-123456789012'}});container=document.createElement('div');document.body.appendChild(container);root=createRoot(container);});
 afterEach(()=>{act(()=>root.unmount());container.remove();});
-test('opening page only reads status; applying dates never charges',async()=>{
+test('opening page automatically loads the last 15 New York days without charging',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null,attempts:[]}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:1,nextCursor:null});
-  await act(async()=>root.render(<Dashboard/>));expect(paymentBatchRequest.mock.calls.map(c=>c[0])).toEqual(['/latest']);
-  expect(button('Retry filtered').disabled).toBe(true);
-  await applyRange();
+  await act(async()=>root.render(<Dashboard/>));const params=new URLSearchParams(paymentBatchRequest.mock.calls[1][0].split('?')[1]);
+  const end=new Date(params.get('endDate')+'T12:00:00Z');const start=new Date(params.get('startDate')+'T12:00:00Z');
+  expect((end-start)/86400000).toBe(14);expect(button('Date range').textContent).toContain('Last 15 days');
   expect(paymentBatchRequest.mock.calls[1][0]).toMatch(/^\/failed\?startDate=/);expect(button('Retry filtered').disabled).toBe(false);
   expect(container.textContent).toContain('demo@example.invalid');expect(paymentBatchRequest.mock.calls.some(c=>c[1]?.method==='POST')).toBe(false);
 });
 test('one top button submits exactly the displayed, deduplicated snapshot',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:100,nextCursor:'ch_cursor',hasMore:true}).mockResolvedValueOnce({invoices:[invoice('in_1'),invoice('in_2')],totalFetched:2,nextCursor:null});
-  await act(async()=>root.render(<Dashboard/>));await applyRange();
+  await act(async()=>root.render(<Dashboard/>));
   expect(button('Retry filtered').textContent).toContain('(2)');
   paymentBatchRequest.mockResolvedValueOnce({batch:{_id:'batch_1',status:'completed',items:[],startDate:'a',endDate:'b'},attempts:[]});
   await act(async()=>button('Retry filtered').click());
@@ -31,7 +31,7 @@ test('one top button submits exactly the displayed, deduplicated snapshot',async
 });
 test('incomplete filtering cannot start a payment run',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:100,nextCursor:'ch_cursor',hasMore:true}).mockRejectedValueOnce(new Error('Stripe unavailable'));
-  await act(async()=>root.render(<Dashboard/>));await applyRange();
+  await act(async()=>root.render(<Dashboard/>));
   expect(container.textContent).toContain('Stripe unavailable');expect(button('Retry filtered').disabled).toBe(true);
 });
 test('keeps written-off and unavailable subscriptions visible, submits only payable rows',async()=>{
@@ -41,7 +41,7 @@ test('keeps written-off and unavailable subscriptions visible, submits only paya
   paymentBatchRequest.mockResolvedValueOnce({batch:null})
     .mockResolvedValueOnce({invoices:[invoice('in_1'),written,paid],totalFetched:100,nextCursor:null,nextPhase:'payments'})
     .mockResolvedValueOnce({invoices:[unavailable],totalFetched:100,nextCursor:null});
-  await act(async()=>root.render(<Dashboard/>));await applyRange();
+  await act(async()=>root.render(<Dashboard/>));
   expect(paymentBatchRequest.mock.calls[2][0]).toContain('phase=payments');expect(container.textContent).toContain('in_written');expect(container.textContent).toContain('pi_deleted');expect(container.textContent).not.toContain('in_paid');
   expect(button('Retry filtered').textContent).toContain('(1)');
   await act(async()=>button('All failure history').click());expect(container.textContent).toContain('in_paid');
@@ -51,7 +51,7 @@ test('keeps written-off and unavailable subscriptions visible, submits only paya
 });
 test('saved-card counts replace the invoice-status column without requiring a separate click',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:1,nextCursor:null});
-  await act(async()=>root.render(<Dashboard/>));await applyRange();
+  await act(async()=>root.render(<Dashboard/>));
   expect([...container.querySelectorAll('th')].map(th=>th.textContent)).toContain('Saved credit cards');
   expect([...container.querySelectorAll('th')].map(th=>th.textContent)).not.toContain('Invoice status');
   expect(container.querySelector('.saved-card-count').textContent).toContain('3 saved');
@@ -60,7 +60,7 @@ test('saved-card counts replace the invoice-status column without requiring a se
 });
 test('a confirmed successful collection turns the row green and stays visible after applying dates again',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:1,nextCursor:null});
-  await act(async()=>root.render(<Dashboard/>));await applyRange();
+  await act(async()=>root.render(<Dashboard/>));
   let dates;
   paymentBatchRequest.mockImplementationOnce(async(path,options)=>{
     const body=JSON.parse(options.body);dates=body;
@@ -76,7 +76,7 @@ test('a confirmed successful collection turns the row green and stays visible af
 });
 test('an unsuccessful readiness check cannot enable real collections',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:1,nextCursor:null}).mockRejectedValueOnce(new Error('The run is not ready.'));
-  await act(async()=>root.render(<Dashboard/>));await applyRange();
+  await act(async()=>root.render(<Dashboard/>));
   expect(button('Retry filtered').disabled).toBe(true);expect(container.textContent).toContain('The run is not ready.');
   expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
 });
@@ -89,7 +89,7 @@ test('design preview never reads live payment data or enables collections',async
 
 test('opening an invoice detail drawer is read-only and closing restores the table',async()=>{
  paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_details')],totalFetched:1,nextCursor:null});
- await act(async()=>root.render(<Dashboard/>));await applyRange();
+ await act(async()=>root.render(<Dashboard/>));
  await act(async()=>container.querySelector('.desk-customer-button').click());
  const dialog=document.querySelector('[role="dialog"]');expect(dialog).not.toBeNull();expect(dialog.textContent).toContain('demo@example.invalid');expect(dialog.textContent).toContain('Saved credit cards');expect(dialog.textContent).toContain('3');
  expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);

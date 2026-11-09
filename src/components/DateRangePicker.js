@@ -10,7 +10,7 @@ const monthStart=(value,offset=0)=>{const d=dateOf(value);return iso(new Date(Da
 const monthLabel=value=>new Intl.DateTimeFormat('en-US',{month:'long',year:'numeric',timeZone:'UTC'}).format(dateOf(value));
 export const rangePresets=(today=todayInNewYork(),allowAllTime=true)=>{
  const d=dateOf(today),year=d.getUTCFullYear(),quarter=Math.floor(d.getUTCMonth()/3)*3;
- return [['Today',today],['Last 7 days',shiftDays(today,-6)],['Last 4 weeks',shiftDays(today,-27)],['Last 6 months',monthStart(today,-5)],['Last 12 months',monthStart(today,-11)],['Month to date',monthStart(today)],['Quarter to date',iso(new Date(Date.UTC(year,quarter,1,12)))],['Year to date',`${year}-01-01`],...(allowAllTime?[['All time','']]:[])].map(([label,start])=>({label,start,end:start?today:''}));
+ return [['Today',today],['Last 7 days',shiftDays(today,-6)],['Last 15 days',shiftDays(today,-14)],['Last 4 weeks',shiftDays(today,-27)],['Last 6 months',monthStart(today,-5)],['Last 12 months',monthStart(today,-11)],['Month to date',monthStart(today)],['Quarter to date',iso(new Date(Date.UTC(year,quarter,1,12)))],['Year to date',`${year}-01-01`],...(allowAllTime?[['All time','']]:[])].map(([label,start])=>({label,start,end:start?today:''}));
 };
 const display=value=>new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(dateOf(value));
 export default function DateRangePicker({start='',end='',onApply,disabled=false,allowAllTime=true}){

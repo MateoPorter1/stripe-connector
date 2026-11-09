@@ -3,19 +3,19 @@ import Sidebar from '../components/Sidebar';
 import CustomerRecoveryDetails from '../components/CustomerRecoveryDetails';
 import BalanceFigure from '../components/BalanceFigure';
 import {LuArrowUpRight,LuPlay,LuCreditCard} from 'react-icons/lu';
-import DateRangePicker from '../components/DateRangePicker';
+import DateRangePicker,{rangePresets} from '../components/DateRangePicker';
 import PreviewNavigation from '../components/PreviewNavigation';
 import {studioQueueRequest,studioQueueRows} from './studioDemo';
 import {paymentBatchRequest,formatCurrency,formatDate} from '../services/api';
 import './Dashboard.css';
-const day=offset=>{const date=new Date();date.setUTCDate(date.getUTCDate()+offset);return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);};
 const stateLabel={pending:'Waiting',running:'Trying saved cards',paid:'Paid',failed:'All eligible cards failed',skipped:'Skipped',review:'Needs review'};
 const failureDay=timestamp=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric'}).format(new Date(timestamp*1000));
 const failureTime=timestamp=>new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}).format(new Date(timestamp*1000));
 const attemptLabel={pending:'Awaiting confirmed result',declined:'Declined',authentication_required:'Needs authentication',paid:'Paid',processing:'Payment processing',uncertain:'Uncertain — stopped'};
 export default function Dashboard({preview=false}){
   const request=preview?studioQueueRequest:paymentBatchRequest;
-  const [start,setStart]=useState(()=>day(-7)),[end,setEnd]=useState(()=>day(0)),[range,setRange]=useState(preview?{start:day(-7),end:day(0)}:null);
+  const [initialRange]=useState(()=>{const preset=rangePresets().find(item=>item.label==='Last 15 days');return {start:preset.start,end:preset.end};});
+  const [start,setStart]=useState(initialRange.start),[end,setEnd]=useState(initialRange.end),[range,setRange]=useState(initialRange);
   const [rows,setRows]=useState(preview?studioQueueRows:[]),[loading,setLoading]=useState(false),[complete,setComplete]=useState(preview),[checked,setChecked]=useState(preview?studioQueueRows.length:0),[error,setError]=useState('');
   const [ready,setReady]=useState(preview);
   const [view,setView]=useState('unresolved');
@@ -28,7 +28,7 @@ export default function Dashboard({preview=false}){
   const refreshRun=useCallback(async()=>{try{storeRun(await request('/latest'));}catch(err){if(mounted.current)setError(err.message);}},[storeRun,request]);
   useEffect(()=>{mounted.current=true;refreshRun();return()=>{mounted.current=false;filterController.current?.abort();};},[refreshRun]); // Status reads never start/resume a run.
   useEffect(()=>{if(!running)return;const timer=setInterval(refreshRun,3000);return()=>clearInterval(timer);},[running,refreshRun]);
-  const applyDates=async(selected={start,end})=>{
+  const applyDates=useCallback(async(selected)=>{
     if(selected.start>selected.end){setError('The start date must come before the end date.');return;}
     filterController.current?.abort();const controller=new AbortController();filterController.current=controller;
     setStart(selected.start);setEnd(selected.end);setLoading(true);setError('');setComplete(false);setReady(false);setRows([]);setChecked(0);setRange(selected);setUsedSelection(false);requestId.current=null;
@@ -47,7 +47,8 @@ export default function Dashboard({preview=false}){
     setReady(readiness.ready===true);setComplete(true);
     }catch(err){if(!controller.signal.aborted&&mounted.current)setError(err.message);}
     finally{if(filterController.current===controller&&mounted.current)setLoading(false);}
-  };
+  },[request]);
+  useEffect(()=>{if(!preview)applyDates(initialRange);},[preview,applyDates,initialRange]);
   const startRun=async()=>{
     if(preview)return;
     setBusy(true);setError('');
