@@ -64,3 +64,9 @@ Prompt: extract only the first approved orange ceramic rebound wordmark from the
 ## Complete public-site identity
 
 Every public page now uses the approved ceramic wordmark and a shared warm ivory / forest green / orange design system. Resource cards, topic filters, article layouts, contents navigation, calculator, product demonstration, CTAs and footer follow the homepage direction. Guides keep quiet reading surfaces and practical line lengths; the calculator keeps strong contrast and unchanged formulas. Browser favicon now uses a rounded orange r rather than the previous layers icon. The social preview uses the approved wordmark and studio artwork. The Stripe application is outside this marketing-site iteration.
+
+## Ceramic recovery demonstration
+
+Replace the CSS-drawn invoice, pale cards and dashed line with original rendered artwork in the hero's ceramic material language. The illustration shows an invoice and three saved cards connected by an orange conveyor ribbon. Labels and state text stay live HTML underneath. The existing demonstration button still advances the second card to paid and the third to not needed, and can replay without making any payment requests. Mobile uses a compact illustration above a readable two-column station list. Artwork always preserves its 3:1 aspect ratio.
+
+Built-in image tool, reference rebound-workshop-v1.webp. Production asset assets/rebound-recovery-sequence.webp. Prompt: exact hero ceramic materials and studio lighting; panoramic left-to-right invoice, blue saved card, turquoise saved card and butter-yellow saved card, all on a continuous orange sculpted ribbon, warm ivory background, no baked-in labels or statuses, no text or logos. Significant physical depth, gold chips and contact shadows.
