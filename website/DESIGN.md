@@ -48,3 +48,9 @@ Prompt: Preserve the existing transparent six-card wheel's geometry, positions, 
 ## Centered headline experiment
 
 Remove the wheel and its controls from the homepage. Place the existing headline at the center of the landscape, framed by the invoice on the left and the success dish on the right. Explanation and CTA sit directly below. A soft cream atmospheric gradient keeps the text readable. The wheel artwork is retained in source for comparison, but no wheel assets or wheel script are loaded by the homepage. Mobile uses a single centered column.
+
+## Original payment workshop backdrop
+
+Replace the outdoor green hills, trees and cyan sky with an original warm ivory studio still life. A ceramic invoice and blue/turquoise cards sit at left; a terracotta recovery ribbon leads along the bottom to an arch and payment-success tray at right. Empty center preserves the headline's focus. The rest of the page stays unchanged. On mobile the full artwork sits below the text instead of cropping away the product objects.
+
+Built-in image generation; production asset assets/rebound-workshop-v1.webp. Prompt: premium tactile miniature payment workshop, warm ivory studio and matte stone floor, empty central 52% for HTML text, invoice and blue/turquoise saved cards at left, orange conveyor ribbon along bottom to a sculpted arch and lime payment token in a cream success tray at right. Satin ceramic, fine stipple, strong natural contact shadows. No hills, trees, grass, sky, clouds, wheel, text or logos.
