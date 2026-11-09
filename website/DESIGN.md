@@ -37,3 +37,10 @@ Lighting uses a bundled studio environment for rounded specular highlights. Satu
 The procedural hills and WebGL clay approximation have been replaced with three original image-generated assets: a sculpted landscape, transparent six-card rotor, and ceramic support. Their strong directional lighting, ceramic surface detail, saturated colors and contact shadows are baked into the artwork. The independent rotor turns continuously inside a perspective plane; pointer response adds restrained parallax. This is layered rendered artwork, not a claim of a live 3D model. No WebGL or Three.js runtime is needed. Pause, reduced motion, offscreen and hidden-tab controls remain in place.
 
 Generated with the built-in image tool, then converted to WebP without visual edits. Prompts: landscape uses an empty central area, emerald sculpted hills, cyan textured sky, left invoice and right success dish; rotor uses six radial saved cards with gold chips on an ivory disc and tangerine rim; support uses a ceramic A-frame and fixed pointer. Source originals stay in the Codex generated-images folder; production assets are in website/assets/rebound-{landscape,rotor,support}-v3.webp.
+
+
+## Wheel color iteration
+
+Color-only edit of the wheel using the user's Clay screenshot as the palette reference. Cyan blue #169aca, golden orange #ed971c, turquoise #08a5a0, buttery yellow #f4ce79, lime #b1c84c, pink #e948b0, warm ivory #ede8c7. These are base-paint targets; highlights and shadows vary. The existing landscape, support, geometry, page colors and motion remain unchanged. Built-in image generation edit; asset assets/rebound-rotor-v4.webp.
+
+Prompt: Preserve the existing transparent six-card wheel's geometry, positions, chip details, texture, bevels, camera, lighting and alpha silhouette. Change only the surface colors to the Clay reference: cyan pipe blue, orange track, turquoise pencil support, buttery wooden-bar yellow, yellow-green braided beam, pink sphere and ivory funnel. Preserve realistic highlights and shadows instead of applying flat hex fills. No new shapes or background.
