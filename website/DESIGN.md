@@ -13,3 +13,9 @@ SEO: fully generated static HTML, one purpose per URL, canonical root domain, au
 The homepage now opens with an original tactile payment-recovery landscape: closed gate at the first card, an orange path through a second card and an open green gate. Pale sky and mint base lead into a large direct headline, then a familiar billing conversation and an interactive invoice/card sequence. Clay is the reference for clarity, craft and visual explanation; the artwork, copy and product narrative are Rebound-specific.
 
 The interactive example is entirely local, explicitly illustrative, and never calls a payment API. Its button advances a demonstration from declined first card to paid second card; it can be replayed. No time-based automatic motion. Resources and SEO page generation stay intact.
+
+## Upright card wheel
+
+Replace the fixed track with an actual rotating six-card wheel. A fixed pointer selects the card at the top, while each pastel card stays upright as it moves around the sculptural orange rim. Stand, invoice, soft sky, hills and fine grain carry forward the visual language of the hero artwork. The wheel is rendered in HTML/CSS so the movement is real and responsive, not a looping flat video.
+
+Each illustrative invoice has a declined card followed by a successful card. The wheel stops on success before the loop starts a new example invoice. This is a local demonstration, not random selection in the real product. Motion pauses on request, when the hero is offscreen or the tab is hidden. Reduced-motion preferences start the scene paused; a visitor can deliberately play it.
