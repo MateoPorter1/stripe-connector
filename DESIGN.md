@@ -11,3 +11,7 @@ Reference: https://lovable.dev/templates/apps/lifestyle/journal (working journal
 - Queue: invoice table alongside the explicit collection console. Saved-card counts and paid states stay visible.
 - Dates: one shared range button opens a draft-only dialog with presets, two desktop calendars, a single navigable mobile calendar, manual inputs inside the dialog, Clear, Cancel and Apply. Day calculations use calendar arithmetic; all filters use New York dates. Applying dates only reads payments.
 - Preview routes use explicitly labeled fictional data. Live collection handlers are disabled in previews and fixtures reject mutations. Production payment logic is unchanged.
+
+## Current color experiment
+
+The purple and warm backdrop have been retired. Neutral graphite panels sit over a soft blue-gray background, with teal as the default accent. The design preview includes Teal, Amber and Ice Blue buttons above the chart; the chart, hover state, tooltip, navigation, action and journal selections use shared accent variables. No payment behavior changes.

@@ -20,6 +20,7 @@ function CollectionTooltip({active,payload,label}) {
 
 function Home({preview=false}) {
   const request=preview?studioDemoRequest:statsRequest;
+  const [palette,setPalette]=useState('teal');
   const [summary, setSummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +100,7 @@ function Home({preview=false}) {
 
   if (loading) {
     return (
-      <div className="home-layout">
+      <div className="home-layout" data-palette={palette}>
         {preview?<PreviewNavigation/>:<Sidebar /> }
         <div className="home-content">
           <div className="loading-state">
@@ -112,12 +113,12 @@ function Home({preview=false}) {
   }
 
   return (
-    <div className="home-layout">
+    <div className="home-layout" data-palette={palette}>
       {preview?<PreviewNavigation/>:<Sidebar /> }
       <div className="home-content">
         <div className="home-container overview-workspace studio-workspace">
           <header className="overview-masthead"><div><span className="workspace-location">{preview?'Design preview / Demo data':'Revenue recovery'}</span><h1>Recovery overview</h1></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>Open recovery queue <LuArrowUpRight/></a></header>
-          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/></div>
+          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/>{preview&&<div className="palette-comparison" role="group" aria-label="Preview accent color"><span>Accent</span>{[['teal','Teal'],['amber','Amber'],['ice','Ice blue']].map(([id,label])=><button key={id} className={`palette-choice palette-${id}`} aria-pressed={palette===id} onClick={()=>setPalette(id)}><i aria-hidden="true"/>{label}</button>)}</div>}</div>
           {error&&<p className="error-message" role="alert">{error}</p>}
           <div className="overview-analysis">
           {/* Chart Section */}
@@ -135,26 +136,26 @@ function Home({preview=false}) {
             ) : (
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={monthlyData} margin={{ top: 18, right: 10, left: 0, bottom: 5 }}>
-                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#c4a7f2"/><stop offset="100%" stopColor="#8d6dbe"/></linearGradient></defs>
+                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-top)"/><stop offset="100%" stopColor="var(--chart-base)"/></linearGradient></defs>
                   <CartesianGrid vertical={false} stroke="#ffffff" strokeOpacity={0.07} />
                   <XAxis
                     dataKey="month"
-                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#a99fb8" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#9caab2" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
                     axisLine={false}
                     tickLine={false}
-                    stroke="#9b91aa"
+                    stroke="#95a4ae"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    stroke="#9b91aa"
+                    stroke="#95a4ae"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                     width={48}
                     tickCount={4}
                     tickFormatter={value=>value>=1000?`$${Number((value/1000).toFixed(1))}k`:`$${value}`}
                   />
-                  <Tooltip content={<CollectionTooltip/>} cursor={{fill:'#c3a6ee',fillOpacity:0.045,radius:10}} />
+                  <Tooltip content={<CollectionTooltip/>} cursor={{fill:'var(--chart-top)',fillOpacity:0.045,radius:10}} />
                   <Bar
                     isAnimationActive={false}
                     maxBarSize={40}
@@ -162,7 +163,7 @@ function Home({preview=false}) {
                     onClick={(_entry,index)=>monthlyData[index]&&loadHistory(monthlyData[index])}
                     cursor="pointer"
                     fill="url(#collection-fill)"
-                    activeBar={{fill:'#d2b9f7',stroke:'none'}}
+                    activeBar={{fill:'var(--chart-active)',stroke:'none'}}
                     stroke="none"
                     strokeWidth={0}
                     radius={[7, 7, 3, 3]}
