@@ -4,6 +4,7 @@ import './index.css';
 import AppRoutes from './AppRoutes';
 import './atelier.css';
 import './pages/Studio.css';
+import './pages/Light.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

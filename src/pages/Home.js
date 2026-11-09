@@ -137,19 +137,19 @@ function Home({preview=false}) {
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={monthlyData} margin={{ top: 18, right: 10, left: 0, bottom: 5 }}>
                   <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-top)"/><stop offset="100%" stopColor="var(--chart-base)"/></linearGradient></defs>
-                  <CartesianGrid vertical={false} stroke="#ffffff" strokeOpacity={0.07} />
+                  <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeOpacity={0.07} />
                   <XAxis
                     dataKey="month"
-                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#9caab2" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#6d7d86" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
                     axisLine={false}
                     tickLine={false}
-                    stroke="#95a4ae"
+                    stroke="#758994"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                   />
                   <YAxis
                     axisLine={false}
                     tickLine={false}
-                    stroke="#95a4ae"
+                    stroke="#758994"
                     style={{ fontSize: '12px', fontWeight: '500' }}
                     width={48}
                     tickCount={4}
