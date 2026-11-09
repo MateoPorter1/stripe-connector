@@ -54,3 +54,9 @@ Remove the wheel and its controls from the homepage. Place the existing headline
 Replace the outdoor green hills, trees and cyan sky with an original warm ivory studio still life. A ceramic invoice and blue/turquoise cards sit at left; a terracotta recovery ribbon leads along the bottom to an arch and payment-success tray at right. Empty center preserves the headline's focus. The rest of the page stays unchanged. On mobile the full artwork sits below the text instead of cropping away the product objects.
 
 Built-in image generation; production asset assets/rebound-workshop-v1.webp. Prompt: premium tactile miniature payment workshop, warm ivory studio and matte stone floor, empty central 52% for HTML text, invoice and blue/turquoise saved cards at left, orange conveyor ribbon along bottom to a sculpted arch and lime payment token in a cream success tray at right. Satin ceramic, fine stipple, strong natural contact shadows. No hills, trees, grass, sky, clouds, wheel, text or logos.
+
+## Approved ceramic wordmark
+
+User selected direction01 from the five-wordmark study. The website header and footer now use the orange ceramic lowercase rebound wordmark with no separate icon. A transparent asset was extracted using the built-in image editing tool, trimmed and converted to WebP for delivery. Production file: assets/rebound-wordmark-ceramic.webp. Organization structured data points to this wordmark. App branding is unchanged.
+
+Prompt: extract only the first approved orange ceramic rebound wordmark from the concept board, preserving its letterforms, spacing, texture, lighting and proportions; remove labels, other rows, backdrop and floor; transparent background including letter counters; no new icon or redesigned type.
