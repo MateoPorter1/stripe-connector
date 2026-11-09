@@ -19,3 +19,9 @@ The interactive example is entirely local, explicitly illustrative, and never ca
 Replace the fixed track with an actual rotating six-card wheel. A fixed pointer selects the card at the top, while each pastel card stays upright as it moves around the sculptural orange rim. Stand, invoice, soft sky, hills and fine grain carry forward the visual language of the hero artwork. The wheel is rendered in HTML/CSS so the movement is real and responsive, not a looping flat video.
 
 Each illustrative invoice has a declined card followed by a successful card. The wheel stops on success before the loop starts a new example invoice. This is a local demonstration, not random selection in the real product. Motion pauses on request, when the hero is offscreen or the tab is hidden. Reduced-motion preferences start the scene paused; a visitor can deliberately play it.
+
+## Sculptural depth and continuous page flow
+
+The wheel is now rendered in Three.js: actual extruded rounded cards and chip tiles, a thick rim, raised hub, freestanding supports, geometry-based hills, rough material bump maps, and fine surface grain. The assembly is angled about 28 degrees so the thickness reads immediately. Motion follows the existing local demonstration state and pauses with the existing control. A static illustration remains available if WebGL cannot render. The renderer is bundled locally; no runtime CDN is required.
+
+The homepage uses soft color transitions from sky to mint to warm white, fewer section rules, and broad rounded color fields. The layout and message flow continuously rather than as isolated stacked panels.
