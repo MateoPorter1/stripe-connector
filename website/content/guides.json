@@ -1,0 +1,142 @@
+[
+  {
+    "slug": "involuntary-churn",
+    "title": "Involuntary churn: when a failed payment costs you a customer",
+    "description": "Understand involuntary SaaS churn, separate it from cancellations, and build a practical workflow for recovering failed subscription payments.",
+    "topic": "Churn",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Involuntary churn is customer loss caused by a payment or billing failure rather than a deliberate cancellation. A customer who still wants your product can become unpaid because their subscription charge did not complete.",
+    "sections": [
+      {
+        "title": "A billing failure is a different problem from a cancellation",
+        "body": "<p>A customer who cancels because the product is not useful needs a different response from a customer whose card was declined. If both disappear into one churn number, your team loses the ability to diagnose either problem.</p><p>Start by separating voluntary cancellations from payment-related losses. Then track the failed invoice, the remaining balance, the customer’s saved payment methods, and the eventual outcome. A failed attempt is an event; a lost customer is an outcome. They are not interchangeable.</p>"
+      },
+      {
+        "title": "Where delinquent churn fits",
+        "body": "<p>You may also see teams call this delinquent churn or payment-related churn. Define the label before reporting it: a delinquent account has an overdue payment, but it may still recover before the customer is lost. Treating every overdue account as churn immediately can overstate the problem.</p><p>Track a progression from failed payment to overdue invoice, then to recovery or unresolved customer loss. That gives your finance and customer teams the same operational view without treating the first decline as the end of the relationship.</p>"
+      },
+      {
+        "title": "Measure the customer and the money separately",
+        "body": "<p>For customer churn, divide customers lost through billing failures during a period by customers at the start of that period. For revenue exposure, add the outstanding recurring invoice balances you are trying to recover. Keep the time period and population consistent.</p><p>Do not count every failed card attempt as a separate customer or a new invoice. If one invoice has four unsuccessful attempts, it is still one debt. Likewise, an invoice that eventually gets paid belongs in failure history but should no longer count as unpaid revenue.</p><p>Our <a href='/tools/churn-calculator'>recovery opportunity calculator</a> models a simple scenario from your own assumptions. It does not predict recovery performance or customer lifetime value.</p>"
+      },
+      {
+        "title": "Build a recovery workflow around the actual invoice",
+        "body": "<ol><li>Find subscription payment failures in a clear date range.</li><li>Check whether each original invoice still has an unpaid balance.</li><li>Review the saved cards and their eligibility for another attempt.</li><li>Start a controlled recovery run and stop for each invoice when it is paid.</li><li>Separate payments collected from unresolved failures and outcomes that need review.</li></ol><p>This workflow makes recovery accountable. It also avoids inflating results by calling an already-paid invoice a new recovery.</p>"
+      },
+      {
+        "title": "Use communication when a charge alone cannot solve it",
+        "body": "<p>Some failures need a new card, customer authentication, or a conversation about the account. More retries are not a substitute for those actions. Keep your customer-facing billing messages clear: what failed, what remains due, and how to update the payment method.</p><p>Rebound focuses on a specific part of this process: an operator starts a run against eligible unpaid subscription invoices, and the tool tries eligible saved cards in sequence. It does not claim to eliminate every source of churn.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: automatic payment retries",
+        "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+      ]
+    ]
+  },
+  {
+    "slug": "stripe-failed-payments",
+    "title": "How to review and recover failed Stripe subscription payments",
+    "description": "A practical guide to reviewing failed Stripe payments, matching them to unpaid invoices, checking saved cards, and tracing recovery outcomes.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Start with failed subscription payment attempts, then check the current status and balance of the original invoice. Use eligible saved cards to retry unpaid invoices, and confirm the outcome against the invoice and payment records.",
+    "sections": [
+      {
+        "title": "Start with a date range you can explain",
+        "body": "<p>Decide whether you are asking which payments failed during a period or which invoices remain unpaid today. These are different views. An invoice can fail in one month and be paid in another; an old failure can remain visible even after its debt is resolved.</p><p>Use one timezone consistently. Rebound’s collection filters use New York calendar dates, and the app starts with the last 15 days including today. The list loads automatically, so changing the dates is optional.</p>"
+      },
+      {
+        "title": "Read failures without multiplying the debt",
+        "body": "<p>Review the customer, the invoice reference, the amount still due, and the saved cards. Multiple failed attempts can belong to the same invoice. Group those attempts before calculating the total you intend to collect.</p><p>The reason attached to a failed attempt tells you what happened at that moment. The invoice’s current state tells you whether there is still a balance to collect. Keep both pieces of information visible.</p>"
+      },
+      {
+        "title": "Check which invoice states are payable",
+        "body": "<p>Do not treat every failed payment record as permission to collect. Some invoices are already paid or voided. Others may have an unresolved payment outcome that needs attention before another attempt.</p><p>A written-off invoice is not the same as a voided invoice. Stripe documents a payment transition for uncollectible invoices; voided invoices are cancelled. Rebound includes written-off subscription invoices in manual recovery when otherwise eligible, while keeping voided invoices excluded. See our <a href='/resources/uncollectible-vs-void-invoices'>invoice status guide</a>.</p>"
+      },
+      {
+        "title": "Run recovery and verify the result",
+        "body": "<p>In Rebound, review the loaded list and click Start recovery to begin real collection attempts. Each eligible saved physical card is tried at most once per invoice in that run. The tool stops trying that invoice when it is paid, when the eligible cards are exhausted, or when an uncertain outcome needs review.</p><p>After a run, inspect the invoice-level result and card-attempt history. A successful outcome should link back to the original Stripe invoice. Keep a record of the amount collected, which invoice was paid, and when the result was confirmed.</p><p>Coordinate this process with any retry policy you already run in Stripe or another tool. Looking at a failure list should never itself trigger a charge.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: invoice status transitions",
+        "https://docs.stripe.com/invoicing/integration/workflow-transitions"
+      ],
+      [
+        "Stripe: payment retries",
+        "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+      ]
+    ]
+  },
+  {
+    "slug": "dunning-vs-card-fallback",
+    "title": "Dunning, payment retries, and saved-card fallback: what’s the difference?",
+    "description": "Learn how dunning messages, timed payment retries, and saved-card fallback address different parts of subscription revenue recovery.",
+    "topic": "Revenue recovery",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Dunning is the broader process of following up on overdue payments. Timed retries decide when to attempt collection again. Saved-card fallback tries another eligible card when an attempt fails. These solve different parts of a billing failure.",
+    "sections": [
+      {
+        "title": "Dunning is the recovery conversation",
+        "body": "<p>A useful dunning process tells a customer that something went wrong and gives them a way to resolve it. That might mean updating a card, completing authentication, or clarifying an invoice. The message should identify the problem without assuming the customer wanted to cancel.</p><p>The operational side matters too: decide who reviews unresolved accounts, when access changes, and how your team records the outcome. Sending emails without checking whether the invoice has since been paid creates a confusing customer experience.</p>"
+      },
+      {
+        "title": "Timed retries answer when to try again",
+        "body": "<p>A temporary failure can resolve later, so another attempt at a different time may help. Stripe’s Smart Retries is a timing-based recovery feature. Stripe also documents a payment-method priority order for subscription retries.</p><p>Updating the customer default is not always the same as updating the subscription default. Check which payment method your billing configuration actually uses. Read the current <a href='https://docs.stripe.com/billing/revenue-recovery/smart-retries'>Stripe retry documentation</a> before changing a policy.</p>"
+      },
+      {
+        "title": "Card fallback answers which saved card to try",
+        "body": "<p>Consider an unpaid subscription invoice for $96. The customer has three saved cards. The first attempt fails. A fallback workflow can move to another eligible card instead of requiring an operator to open the account and repeat the same steps by hand.</p><p>Rebound uses a manual-start workflow: choose a date range, review the unpaid invoices, and start recovery. It tries eligible saved cards once each per invoice in that run and stops when payment succeeds. This example describes the workflow, not a promise that the second card will work.</p>"
+      },
+      {
+        "title": "Choose the response that matches the failure",
+        "body": "<ul><li><strong>A temporary funding problem:</strong> review the timing and retry policy.</li><li><strong>A different eligible card is already saved:</strong> consider a controlled fallback attempt.</li><li><strong>Authentication or a new method is required:</strong> involve the customer.</li><li><strong>The result of a charge is unknown:</strong> verify the outcome before attempting another payment.</li></ul><p>Use the original invoice as the shared reference across these actions. That makes it easier to coordinate tools and distinguish one debt from its many attempts.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: Smart Retries and payment-method ordering",
+        "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+      ]
+    ]
+  },
+  {
+    "slug": "uncollectible-vs-void-invoices",
+    "title": "Uncollectible vs. void Stripe invoices: can you still recover the payment?",
+    "description": "Understand the difference between written-off and voided Stripe invoices, and what each state means for a subscription recovery workflow.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Uncollectible means an invoice has been written off, and Stripe supports paying that original invoice. Void means the invoice has been cancelled. A recovery workflow must distinguish these states rather than treating both as an ordinary failed charge.",
+    "sections": [
+      {
+        "title": "A failure reason and an invoice status tell different stories",
+        "body": "<p>A card decline describes an unsuccessful attempt to collect. An invoice status describes the invoice itself. Looking back at a year of failures, you may see a decline attached to an invoice that is now paid, written off, or voided.</p><p>This is why a date-filtered failure report and a list of invoices you can collect today can contain different totals. Always check the current remaining balance as well as the original failure.</p>"
+      },
+      {
+        "title": "Uncollectible invoices can still be paid",
+        "body": "<p>An uncollectible invoice represents debt that was written off. Stripe’s documented workflow includes a transition from uncollectible to paid when payment succeeds. If an attempt fails, it remains uncollectible.</p><p>In Rebound, the written-off status alone does not exclude a subscription invoice from a manual run. The invoice must still pass the other eligibility checks. Its remaining balance and payment outcome are checked before a collection attempt.</p><p>This allows you to review older unpaid subscription debt without creating a new, unrelated charge simply to reproduce the invoice amount.</p>"
+      },
+      {
+        "title": "A voided invoice is cancelled",
+        "body": "<p>A voided invoice should not be treated as active debt in the retry list. Rebound keeps it visible where it is part of failure history, but does not include it in a recovery run.</p><p>If the invoice was cancelled incorrectly or the amount needs changing, review the billing record in Stripe and decide what the correct invoice should be. Do not use a retry tool to bypass an invoice cancellation.</p>"
+      },
+      {
+        "title": "Use a clear review checklist",
+        "body": "<ol><li>Find the original invoice and verify the customer and subscription.</li><li>Check the current invoice status and remaining amount.</li><li>Check whether a payment is still processing or its result is uncertain.</li><li>Review the saved cards and their eligibility.</li><li>Start collection only for the intended invoices and keep the resulting Stripe references.</li></ol><p>Rebound’s list separates invoice history from inclusion in a recovery run. A row being visible does not mean a charge is happening, and opening the list does not start collection.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: invoice transitions and payment endpoints",
+        "https://docs.stripe.com/invoicing/integration/workflow-transitions"
+      ]
+    ]
+  }
+]
