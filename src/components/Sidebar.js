@@ -1,107 +1,27 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { LuHouse, LuCreditCard, LuUser, LuShield, LuLogOut, LuStar, LuCircle, LuLayers } from 'react-icons/lu';
+import React,{useEffect,useRef,useState} from 'react';
+import {Link,useLocation,useNavigate} from 'react-router-dom';
+import {useAuth} from '../context/AuthContext';
+import {LuLayers,LuChevronDown,LuUser,LuShield,LuLogOut} from 'react-icons/lu';
 import './Sidebar.css';
 
-function Sidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, logout } = useAuth();
-
-  const menuItems = [
-    {
-      path: '/home',
-      icon: LuHouse,
-      label: 'Overview',
-      description: 'Collections and payment history'
-    },
-    {
-      path: '/dashboard',
-      icon: LuCreditCard,
-      label: 'Recovery queue',
-      description: 'Filter and run once'
-    },
-    {
-      path: '/profile',
-      icon: LuUser,
-      label: 'Stripe & settings',
-      description: 'Settings and API'
-    }
-  ];
-
-  // Only show admin panel if user is admin
-  if (user?.role === 'admin') {
-    menuItems.push({
-      path: '/admin',
-      icon: LuShield,
-      label: 'Admin Panel',
-      description: 'User management'
-    });
-  }
-
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
-  const isActive = (path) => {
-    return location.pathname === path;
-  };
-
-  return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <h2 className="sidebar-title"><span className="brand-symbol" aria-hidden="true"><LuLayers/></span><span className="brand-name">Recovery</span></h2>
-        <div className="user-info-sidebar">
-          <span className="user-avatar" aria-hidden="true">{(user?.name||user?.email||'W').slice(0,1).toUpperCase()}</span><div><div className="user-name">{user?.name || user?.email}</div>
-          <div className={`user-plan plan-${user?.plan || 'free'}`}>
-            {user?.plan === 'premium' ? (
-              <>
-                <LuStar size={12} /> Premium
-              </>
-            ) : (
-              <>
-                <LuCircle size={12} /> Free
-              </>
-            )}
-          </div></div>
-        </div>
-      </div>
-
-      <nav className="sidebar-nav">
-        {menuItems.map((item) => {
-          const IconComponent = item.icon;
-          return (
-            <button
-              key={item.path}
-              onClick={() => handleNavigation(item.path)}
-              aria-label={item.label}
-              aria-current={isActive(item.path) ? 'page' : undefined}
-              className={`nav-item ${isActive(item.path) ? 'active' : ''}`}
-            >
-              <span className="nav-icon"><IconComponent /></span>
-              <div className="nav-content">
-                <div className="nav-label">{item.label}</div>
-                <div className="nav-description">{item.description}</div>
-              </div>
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="sidebar-footer">
-        <button onClick={handleLogout} className="logout-btn" aria-label="Sign out">
-          <span className="nav-icon"><LuLogOut /></span>
-          <span>Sign out</span>
-        </button>
-      </div>
-    </div>
-  );
+// The live workspace uses the same horizontal navigation as the approved preview.
+export default function Sidebar(){
+ const {user,logout}=useAuth(),{pathname}=useLocation(),navigate=useNavigate();
+ const [open,setOpen]=useState(false);const menu=useRef(null),trigger=useRef(null);
+ useEffect(()=>{
+  if(!open)return;
+  const outside=event=>{if(!menu.current?.contains(event.target))setOpen(false);};
+  const key=event=>{if(event.key==='Escape'){setOpen(false);trigger.current?.focus();}};
+  document.addEventListener('mousedown',outside);document.addEventListener('keydown',key);
+  return()=>{document.removeEventListener('mousedown',outside);document.removeEventListener('keydown',key);};
+ },[open]);
+ const go=path=>{setOpen(false);navigate(path);};
+ return <header className="desk-navigation live-navigation">
+  <Link to="/dashboard" className="desk-brand" aria-label="Recovery home"><LuLayers/>recovery<span> / </span></Link>
+  <nav aria-label="Workspace navigation"><Link to="/dashboard" aria-current={pathname==='/dashboard'?'page':undefined}>Collections</Link><Link to="/home" aria-current={pathname==='/home'?'page':undefined}>Insights</Link></nav>
+  <div className="live-account-menu" ref={menu}>
+   <button ref={trigger} className="live-account-trigger" aria-label="Account menu" aria-expanded={open} aria-controls="workspace-account-actions" onClick={()=>setOpen(value=>!value)}><span className="desk-account">{(user?.name||user?.email||'W').slice(0,1).toUpperCase()}</span><span className="account-display-name">{user?.name||'My workspace'}</span><LuChevronDown/></button>
+   {open&&<div className="live-account-actions" id="workspace-account-actions"><div className="live-account-identity"><strong>{user?.name||'My workspace'}</strong><small>{user?.email}</small></div><button onClick={()=>go('/profile')}><LuUser/>Stripe & settings</button>{user?.role==='admin'&&<button onClick={()=>go('/admin')}><LuShield/>Admin panel</button>}<button className="account-sign-out" onClick={()=>{logout();go('/login');}}><LuLogOut/>Sign out</button></div>}
+  </div>
+ </header>;
 }
-
-export default Sidebar;

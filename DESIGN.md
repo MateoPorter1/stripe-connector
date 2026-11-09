@@ -1,10 +1,10 @@
 # Revenue recovery product interface
 
-Current direction: white workspace, restrained orange actions, neutral gray navigation, self-hosted Inter typography.
+Implemented direction: full-width Collections desk with a white workspace, vivid #ff6b1f accents, neutral navigation and self-hosted Inter typography.
 
 References inspected: Linear's March 2026 interface refresh (https://linear.app/now/behind-the-latest-design-refresh), Mercury Insights (https://mercury.com/insights), Ramp product overview (https://ramp.com/products). Apply their general principles of predictable action placement, subdued navigation and readable financial data without copying branding or layouts.
 
-- Navigation: compact left rail; clear page location and primary action. Icon rail on phones.
+- Navigation: approved horizontal product bar, Collections and Insights as primary destinations, and account menu for Stripe settings, admin access and sign-out.
 - Overview: open four-column financial summary, performance chart beside a dense monthly ledger. No invented trend comparisons.
 - Data: Inter and tabular figures, clear amount alignment, secondary text with readable contrast. Customer and invoice appear together to reduce table columns.
 - Accent: #ff6b1f with dark labels for explicit actions and selected controls; soft orange for calm selection. Green remains reserved for confirmed payments.
