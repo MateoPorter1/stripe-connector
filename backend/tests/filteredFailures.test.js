@@ -19,7 +19,7 @@ test('filter actual failed charge dates, deduplicate debt, keep paid history, ex
   assert.throws(()=>verifySelection(tokens,{...scope,userId:'other'}));assert.throws(()=>verifySelection(tokens,{...scope,keyHash:'other'}));assert.throws(()=>verifySelection(tokens,{...scope,endDate:'2026-11-02'}));
   assert.throws(()=>jwt.verify(tokens[0],scope.secret),'selection tokens cannot authenticate as a login token');
 });
-test('written-off, blocked and unavailable invoices remain visible but cannot authorize collection',async()=>{
+test('written-off invoices authorize collection while blocked and unavailable invoices do not',async()=>{
   const base={id:'in_1',subscription:'sub_1',status:'open',amount_remaining:4000,currency:'usd'};
   const data=[
     {id:'ch_written',status:'failed',created:100,invoice:{...base,status:'uncollectible'},payment_intent:{id:'pi_written',status:'requires_payment_method'}},
@@ -29,7 +29,7 @@ test('written-off, blocked and unavailable invoices remain visible but cannot au
   ];
   const page=await filteredFailuresPage({charges:{list:async()=>({data,has_more:false})}},scope,scope);
   assert.deepEqual(page.invoices.map(row=>row.displayStatus),['written_off','blocked','unavailable']);
-  assert(page.invoices.every(row=>!row.selectionToken&&!row.retryable));assert.equal(page.invoices[2].amount,null);assert.equal(page.nextPhase,'payments');
+  assert(page.invoices[0].selectionToken&&page.invoices[0].retryable);assert(page.invoices.slice(1).every(row=>!row.selectionToken&&!row.retryable));assert.equal(page.invoices[2].amount,null);assert.equal(page.nextPhase,'payments');
 });
 test('cancelled failed-invoice payments without charges are included using the failure date',async()=>{
   const bounds=dateBounds(scope.startDate,scope.endDate);let params;

@@ -44,3 +44,13 @@ test('duplicate physical cards are tried once even with separate method ids',asy
   const s=setup(['declined','declined']);s.cards[2].card.fingerprint=s.cards[0].card.fingerprint;
   assert.equal((await retryInvoiceOnce(s.args)).attempts,2);assert.equal(s.calls.length,2);
 });
+
+test('written-off debt retries each card once and stops on success',async()=>{
+  const s=setup(['declined','paid']);s.setInvoice({status:'uncollectible'});
+  const result=await retryInvoiceOnce(s.args);
+  assert.equal(result.state,'paid');assert.equal(s.calls.length,2);assert.equal(s.paid[0].amount,4000);
+});
+test('voided invoices never charge despite a remaining amount',async()=>{
+  const s=setup(['paid']);s.setInvoice({status:'void'});
+  assert.equal((await retryInvoiceOnce(s.args)).state,'skipped');assert.equal(s.calls.length,0);
+});

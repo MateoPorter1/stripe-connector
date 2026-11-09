@@ -42,7 +42,7 @@ function failureRow({charge,payment,invoice,failedAt,query,scope}) {
   const state=!exists?'unavailable':invoice.status==='paid'||invoice.amount_remaining===0?'paid':
     invoice.status==='uncollectible'?'written_off':invoice.status==='void'?'void':paymentState==='blocked'?'blocked':
     paymentState==='processing'?'processing':payment?.status==='canceled'?'cancelled':invoice.status==='open'?'open':invoice.status;
-  const notes={open:'Included in the retry run.',written_off:'Stripe marked this invoice uncollectible. Review it in Stripe before collecting.',
+  const notes={open:'Included in the retry run.',written_off:'Included in the retry run despite Stripe marking it uncollectible.',
     unavailable:'Stripe cannot provide the original invoice. Kept visible; cannot be retried here.',
     paid:'Already paid. No further charge.',void:'Invoice was voided. No further charge.',blocked:'Stripe blocked this payment. Review it in Stripe.',
     processing:'A payment is processing. Wait for its result.',cancelled:'Payment was cancelled. Review the invoice in Stripe.'};
@@ -53,7 +53,7 @@ function failureRow({charge,payment,invoice,failedAt,query,scope}) {
     amount:exists?invoice.amount_remaining:null,failedAmount:charge?.amount||payment?.amount||0,
     failedPayments:charge?[charge.id]:[payment.id],payments:[{id:idOf(payment)||charge.id,state:paymentState}],
     lastFailure:failedAt,reason:charge?.failure_message||payment?.last_payment_error?.message||charge?.failure_code||'Invoice payment failed',
-    invoiceStatus:exists?invoice.status:'unavailable',displayStatus:state,retryNote:notes[state]||'Review this invoice in Stripe.',retryable:state==='open'};
+    invoiceStatus:exists?invoice.status:'unavailable',displayStatus:state,retryNote:notes[state]||'Review this invoice in Stripe.',retryable:['open','written_off'].includes(state)};
   if(row.retryable)row.selectionToken=jwt.sign({kind:'filtered-invoice',userId:String(scope.userId),keyHash:scope.keyHash,invoiceId:invoice.id,
     startDate:query.startDate,endDate:query.endDate,amount:invoice.amount_remaining,currency:invoice.currency},selectionSecret(scope.secret),{expiresIn:'30m'});
   return row;

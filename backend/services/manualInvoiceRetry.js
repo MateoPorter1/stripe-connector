@@ -2,7 +2,7 @@ const crypto=require('crypto');
 const {savedCards,idOf,invoiceExpand}=require('./cardFallback');
 function retryEligibility(invoice,item) {
   if(!(invoice.subscription||invoice.parent?.subscription_details?.subscription))return 'not_subscription';
-  if(invoice.status!=='open'||invoice.amount_remaining<=0)return 'already_paid_or_closed';
+  if(!['open','uncollectible'].includes(invoice.status)||invoice.amount_remaining<=0)return 'already_paid_or_closed';
   if(invoice.currency!==item.currency||invoice.amount_remaining>item.maxAmount)return 'invoice_amount_changed';
   const payment=invoice.payment_intent;
   if(!payment||typeof payment!=='object')return 'payment_state_unknown';
