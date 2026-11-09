@@ -78,3 +78,9 @@ Replace the hero's green headline with warm charcoal #302b27 and supporting copy
 ## Site-wide neutral typography
 
 Manrope is now explicit for all public-site text and form controls. Existing green/blue text declarations have been consolidated into charcoal #302b27 for headings and strong type, brown-gray #70665d for supporting copy, and warm ivory for text on dark panels. Calculator results use a charcoal background. Orange buttons and orange link accents are retained; payment success/failure badges retain their semantic colors. This applies to the full public website, not the authenticated Stripe app.
+
+## Porter Metrics customer proof
+
+User confirmed on November 9, 2026 that the first client, Porter Metrics, recovered $8,000 with Rebound during this year to date. Homepage now includes a short result beside the primary action and a dedicated named customer result below the hero. Date range January 1–November 9, 2026 is explicit; the result is labeled customer-reported. No recovery percentage, invoice count, customer quote, retention number, independent audit, or guarantee is asserted. The app session was signed out, so this result was not independently reconciled to Stripe in this iteration. The case is visually separate from the fictional $96 interactive example.
+
+A concise collection-controls section explains current implemented behavior (read-only scanning, deliberate run start, traceable original invoices) and links to the existing controls page. It does not claim security certifications, key encryption, Stripe partnership, or guaranteed recovery. Figures should be refreshed only with a confirmed result and updated period.
