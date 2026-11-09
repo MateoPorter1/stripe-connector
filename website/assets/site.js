@@ -8,23 +8,17 @@ if(calculator){const currency=new Intl.NumberFormat('en-US',{style:'currency',cu
 const example=document.querySelector('.recovery-theatre'),playExample=document.querySelector('[data-play-example]');
 playExample?.addEventListener('click',()=>{const paid=example.dataset.exampleStep!=='1';example.dataset.exampleStep=paid?'1':'0';document.querySelector('[data-invoice-status]').textContent=paid?'Paid':'Unpaid';document.querySelector('[data-second-card]').textContent=paid?'✓ Paid':'Ready to try';document.querySelector('[data-third-card]').textContent=paid?'Not needed':'Waiting';document.querySelector('[data-example-title]').textContent=paid?'The second card worked. The original invoice is paid.':'The first card failed. The invoice is still unpaid.';document.querySelector('[data-example-description]').textContent=paid?'Rebound stops here. The third card is not charged.':'There are two more saved cards. Rebound can try the next eligible one.';playExample.textContent=paid?'Replay example ↺':'Try the next card ↗';});
 
-// A local product illustration. This animation never reads or submits payment data.
+// A continuously moving illustration of the saved-card pool, never a payment request.
 const cardWheel=document.querySelector('[data-card-wheel]');
 if(cardWheel){
  const cards=[...cardWheel.querySelectorAll('[data-wheel-card]')],dots=[...cardWheel.querySelectorAll('[data-wheel-dot]')];
- const title=cardWheel.querySelector('[data-wheel-title]'),message=cardWheel.querySelector('[data-wheel-message]'),invoice=cardWheel.querySelector('[data-wheel-invoice]'),toggle=cardWheel.querySelector('[data-wheel-toggle]');
+ const title=cardWheel.querySelector('[data-wheel-title]'),message=cardWheel.querySelector('[data-wheel-message]'),toggle=cardWheel.querySelector('[data-wheel-toggle]');
  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
- let index=0,turn=0,attempt=0,timer=null,nextStep=null,due=0,remaining=1100,visible=true,userPaused=reducedMotion.matches,paused=false;
- function render(){cards.forEach((card,i)=>{card.dataset.active=String(i===index);dots[i].dataset.active=String(i===index)});}
- function schedule(callback,delay){clearTimeout(timer);nextStep=callback;remaining=delay;if(!paused){due=performance.now()+delay;timer=setTimeout(()=>{timer=null;nextStep=null;callback()},delay)}}
- function reconcile(){const shouldPause=userPaused||document.hidden||!visible;if(shouldPause!==paused){paused=shouldPause;if(paused){if(timer){remaining=Math.max(0,due-performance.now());clearTimeout(timer);timer=null;}cardWheel.getAnimations?.({subtree:true}).forEach(animation=>animation.pause());}else{cardWheel.getAnimations?.({subtree:true}).forEach(animation=>animation.play());if(nextStep)schedule(nextStep,remaining);}}cardWheel.dataset.wheelPaused=String(paused);toggle.textContent=userPaused?'Play animation ▷':'Pause animation Ⅱ';toggle.setAttribute('aria-label',userPaused?'Play card wheel animation':'Pause card wheel animation');}
- function resetInvoice(){cards.forEach((card,i)=>{delete card.dataset.result;delete dots[i].dataset.result;card.querySelector('[data-card-result]').textContent='';});invoice.textContent='Unpaid';cardWheel.dataset.wheelState='trying';attempt=0;}
- function selectNext(newInvoice){if(newInvoice)resetInvoice();index=(index+1)%cards.length;turn++;cardWheel.style.setProperty('--wheel-angle',`${-turn*60}deg`);render();title.textContent=`Selecting saved card ${index+1}`;message.textContent='Moving to the next available card.';schedule(checkCard,1350);}
- function checkCard(){title.textContent=`Trying saved card ${index+1}`;message.textContent='One attempt. Then the next card if needed.';cardWheel.dataset.wheelState='trying';schedule(showResult,1100);}
- function showResult(){if(attempt===0){cards[index].dataset.result='declined';cards[index].querySelector('[data-card-result]').textContent='Declined';dots[index].dataset.result='declined';title.textContent=`Card ${index+1} declined`;message.textContent='The invoice is still unpaid. Try the next card.';attempt++;cardWheel.dataset.wheelState='declined';schedule(()=>selectNext(false),1150);}else{cards[index].dataset.result='paid';cards[index].querySelector('[data-card-result]').textContent='✓ Paid';dots[index].dataset.result='paid';invoice.textContent='Paid';title.textContent='Invoice paid';message.textContent='This card worked. No more attempts needed.';cardWheel.dataset.wheelState='paid';schedule(()=>selectNext(true),2800);}}
- toggle.addEventListener('click',()=>{userPaused=!userPaused;reconcile();});
- document.addEventListener('visibilitychange',reconcile);
- reducedMotion.addEventListener('change',event=>{if(event.matches)userPaused=true;reconcile();});
- if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;reconcile();},{threshold:.05}).observe(cardWheel);
- resetInvoice();render();reconcile();schedule(showResult,1100);
+ let userPaused=reducedMotion.matches,visible=true,last=performance.now(),elapsed=0,selected=-1;
+ function reconcile(){cardWheel.dataset.wheelPaused=String(userPaused||document.hidden||!visible);toggle.textContent=userPaused?'Play animation ▷':'Pause animation Ⅱ';toggle.setAttribute('aria-label',userPaused?'Play card wheel animation':'Pause card wheel animation');}
+ toggle.addEventListener('click',()=>{userPaused=!userPaused;reconcile()});document.addEventListener('visibilitychange',reconcile);
+ reducedMotion.addEventListener('change',e=>{if(e.matches)userPaused=true;reconcile()});
+ if('IntersectionObserver' in window)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;reconcile()},{threshold:.03}).observe(cardWheel);
+ function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000);last=now;if(cardWheel.dataset.wheelPaused!=='true')elapsed+=dt;const degrees=elapsed*12;cardWheel.style.setProperty('--wheel-angle',`${-degrees}deg`);cardWheel.dataset.motionTime=elapsed.toFixed(2);const index=Math.round(degrees/60)%6;if(index!==selected){selected=index;cards.forEach((card,i)=>{card.dataset.active=String(i===index);dots[i].dataset.active=String(i===index)});title.textContent=`Saved card ${index+1}`;message.textContent='Every eligible card gets a chance. Stop when paid.';}}
+ cardWheel.dataset.wheelState='pool';reconcile();requestAnimationFrame(animate);
 }

@@ -25,3 +25,15 @@ Each illustrative invoice has a declined card followed by a successful card. The
 The wheel is now rendered in Three.js: actual extruded rounded cards and chip tiles, a thick rim, raised hub, freestanding supports, geometry-based hills, rough material bump maps, and fine surface grain. The assembly is angled about 28 degrees so the thickness reads immediately. Motion follows the existing local demonstration state and pauses with the existing control. A static illustration remains available if WebGL cannot render. The renderer is bundled locally; no runtime CDN is required.
 
 The homepage uses soft color transitions from sky to mint to warm white, fewer section rules, and broad rounded color fields. The layout and message flow continuously rather than as isolated stacked panels.
+
+## Continuous kinetic centerpiece
+
+The hero now uses a larger perspective-camera installation with continuous rotation, floating invoice motion, subtle cloud drift, a moving payment token and gentle pointer-responsive camera-plane tilt. The wheel illustrates the available saved-card pool; it no longer pauses for a simulated transaction. The separate interactive invoice example still explains stop-on-success behavior.
+
+Lighting uses a bundled studio environment for rounded specular highlights. Saturated cyan sky, emerald terrain and vivid orange lift the scene closer to the reference's lively miniature aesthetic. The hero message sits on the same deep-green color field, with a broad curved transition into the story content. Motion still pauses offscreen, on hidden tabs, on request, and by default for reduced-motion preferences.
+
+## Art-directed layered hero
+
+The procedural hills and WebGL clay approximation have been replaced with three original image-generated assets: a sculpted landscape, transparent six-card rotor, and ceramic support. Their strong directional lighting, ceramic surface detail, saturated colors and contact shadows are baked into the artwork. The independent rotor turns continuously inside a perspective plane; pointer response adds restrained parallax. This is layered rendered artwork, not a claim of a live 3D model. No WebGL or Three.js runtime is needed. Pause, reduced motion, offscreen and hidden-tab controls remain in place.
+
+Generated with the built-in image tool, then converted to WebP without visual edits. Prompts: landscape uses an empty central area, emerald sculpted hills, cyan textured sky, left invoice and right success dish; rotor uses six radial saved cards with gold chips on an ivory disc and tangerine rim; support uses a ceramic A-frame and fixed pointer. Source originals stay in the Codex generated-images folder; production assets are in website/assets/rebound-{landscape,rotor,support}-v3.webp.
