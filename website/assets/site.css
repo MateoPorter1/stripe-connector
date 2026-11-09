@@ -47,3 +47,4 @@
 @media(min-width:1101px){.art-installation{width:620px;height:620px;bottom:0}.art-landscape{object-fit:fill}}
 @media(min-width:1700px){.art-installation{width:700px;height:700px;bottom:0}}
 @media(max-width:700px){.art-installation{width:min(100vw,440px);height:auto;aspect-ratio:1;bottom:55px}}
+.art-directed-wheel .wheel-readout{display:none}
