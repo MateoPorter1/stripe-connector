@@ -20,7 +20,7 @@ function CollectionTooltip({active,payload,label}) {
 
 function Home({preview=false}) {
   const request=preview?studioDemoRequest:statsRequest;
-  const [palette,setPalette]=useState('teal');
+  const [palette,setPalette]=useState('orange');
   const [summary, setSummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +118,7 @@ function Home({preview=false}) {
       <div className="home-content">
         <div className="home-container overview-workspace studio-workspace">
           <header className="overview-masthead"><div><span className="workspace-location">{preview?'Design preview / Demo data':'Revenue recovery'}</span><h1>Recovery overview</h1></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>Open recovery queue <LuArrowUpRight/></a></header>
-          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/>{preview&&<div className="palette-comparison" role="group" aria-label="Preview accent color"><span>Accent</span>{[['teal','Teal'],['amber','Amber'],['ice','Ice blue']].map(([id,label])=><button key={id} className={`palette-choice palette-${id}`} aria-pressed={palette===id} onClick={()=>setPalette(id)}><i aria-hidden="true"/>{label}</button>)}</div>}</div>
+          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/>{preview&&<div className="palette-comparison" role="group" aria-label="Preview accent color"><span>Accent</span>{[['orange','Orange'],['teal','Teal'],['amber','Amber'],['ice','Ice blue']].map(([id,label])=><button key={id} className={`palette-choice palette-${id}`} aria-pressed={palette===id} onClick={()=>setPalette(id)}><i aria-hidden="true"/>{label}</button>)}</div>}</div>
           {error&&<p className="error-message" role="alert">{error}</p>}
           <div className="overview-analysis">
           {/* Chart Section */}
