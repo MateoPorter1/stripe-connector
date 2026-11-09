@@ -10,3 +10,7 @@ References inspected: Linear's March 2026 interface refresh (https://linear.app/
 - Accent: #be501f for explicit actions and selected controls; soft orange for calm selection. Green remains reserved for confirmed payments.
 - Dates: shared draft-only range panel with presets, calendars, manual entries inside the panel and explicit Apply. New York calendar dates and inclusive filters stay unchanged.
 - Preview: clearly labeled sample data, real collection actions disabled. Existing payment execution and traceability are preserved.
+
+## Collections desk alternative
+
+The preview now opens the operational collections screen, not a dashboard. A horizontal product bar switches between Collections and Insights. The collection amount and single retry action sit above a full-width invoice list. Customer buttons open a read-only detail drawer. Insights retains the analytical charts and month-to-payment traceability. All existing date selection and payment execution guards remain intact; the preview cannot collect real money.

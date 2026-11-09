@@ -6,6 +6,7 @@ import './atelier.css';
 import './pages/Studio.css';
 import './pages/Light.css';
 import './pages/Professional.css';
+import './pages/CollectionsDesk.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

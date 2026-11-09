@@ -83,6 +83,15 @@ test('an unsuccessful readiness check cannot enable real collections',async()=>{
 
 test('design preview never reads live payment data or enables collections',async()=>{
  await act(async()=>root.render(<MemoryRouter><Dashboard preview/></MemoryRouter>));
- expect(paymentBatchRequest).not.toHaveBeenCalled();expect(button('Retry filtered').disabled).toBe(true);expect(container.textContent).toContain('Demo only. Collection is disabled.');
+ expect(paymentBatchRequest).not.toHaveBeenCalled();expect(button('Retry filtered').disabled).toBe(true);expect(container.textContent).toContain('Preview workspace · Live collection disabled');
  await applyRange();expect(paymentBatchRequest).not.toHaveBeenCalled();expect(button('Retry filtered').disabled).toBe(true);
+});
+
+test('opening an invoice detail drawer is read-only and closing restores the table',async()=>{
+ paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_details')],totalFetched:1,nextCursor:null});
+ await act(async()=>root.render(<Dashboard/>));await applyRange();
+ await act(async()=>container.querySelector('.desk-customer-button').click());
+ const dialog=document.querySelector('[role="dialog"]');expect(dialog).not.toBeNull();expect(dialog.textContent).toContain('demo@example.invalid');expect(dialog.textContent).toContain('Saved credit cards');expect(dialog.textContent).toContain('3');
+ expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
+ await act(async()=>document.querySelector('[aria-label="Close invoice details"]').click());expect(document.querySelector('[role="dialog"]')).toBeNull();expect(container.querySelectorAll('tbody tr')).toHaveLength(1);
 });

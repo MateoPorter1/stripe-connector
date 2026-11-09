@@ -99,7 +99,7 @@ function Home({preview=false}) {
 
   if (loading) {
     return (
-      <div className="home-layout" data-palette="orange">
+      <div className={`home-layout ${preview?'desk-insights':''}`} data-palette="orange">
         {preview?<PreviewNavigation/>:<Sidebar /> }
         <div className="home-content">
           <div className="loading-state">
@@ -112,11 +112,11 @@ function Home({preview=false}) {
   }
 
   return (
-    <div className="home-layout" data-palette="orange">
+    <div className={`home-layout ${preview?'desk-insights':''}`} data-palette="orange">
       {preview?<PreviewNavigation/>:<Sidebar /> }
       <div className="home-content">
         <div className="home-container overview-workspace studio-workspace">
-          <header className="overview-masthead"><div><span className="workspace-location">{preview?'Demo workspace / Overview':'Workspace / Overview'}</span><h1>Revenue recovery</h1><p>Every recovered payment, in one place.</p></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>View recovery queue <LuArrowUpRight/></a></header>
+          <header className="overview-masthead"><div><span className="workspace-location">{preview?'Demo workspace / Insights':'Workspace / Overview'}</span><h1>{preview?'Collection insights':'Revenue recovery'}</h1><p>Every recovered payment, in one place.</p></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>View recovery queue <LuArrowUpRight/></a></header>
           <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/><span className="overview-data-note">{preview?'Sample data':'Recorded collections'} · USD</span></div>
           <section className="revenue-metrics" aria-label="Collection summary"><div className="revenue-metric-main"><span>Total recovered</span><strong>{formatCurrency(getMainCurrencyTotal(),selectedCurrency)}</strong><small>Collected through this workspace</small></div><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong><small>Successful collections</small></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong><small>Per recovered payment</small></div><div><span>Last collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'—'}</strong><small>New York time</small></div></section>
           {error&&<p className="error-message" role="alert">{error}</p>}
