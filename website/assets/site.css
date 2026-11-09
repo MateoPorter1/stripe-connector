@@ -87,3 +87,4 @@ body .menu-toggle,.marketing-inner .menu-toggle,body .filter-row button,.marketi
 body .filter-row button[aria-pressed=true],.marketing-inner .filter-row button[aria-pressed=true]{background:#ed5700;border-color:#aa3e00;color:#261b12;box-shadow:inset 0 0 0 1px #aa3e00}
 body .menu-toggle:hover,body .filter-row button:hover,.marketing-inner .filter-row button:hover{background:#ed5700;border-color:#ed5700;color:#261b12}
 body a:focus-visible,body button:focus-visible{outline:3px solid #a43c00;outline-offset:4px}
+.marketing-inner .article a.button,.marketing-inner .article a.button:hover{color:#261b12}
