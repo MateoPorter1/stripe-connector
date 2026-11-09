@@ -1,3 +1,14 @@
 /* Vivid orange accents. The workspace and its surfaces stay white. */
 :root{--accent:#ff6b1f;--accent-hover:#f45c0e;--accent-ink:#351b0e;--accent-label:#a64818;--accent-soft:#fff2e9;--accent-line:#ffd9bf;--chart-top:#ffab72;--chart-base:#ff6b1f;--chart-active:#ff853e}
 .desk-run-button,.open-queue,.run-launcher .auth-button{background:#ff6b1f;border-color:#f96112;color:#351b0e;font-weight:500;box-shadow:0 2px 4px #ff6b1f14,inset 0 1px #ffffff30}.desk-run-button:hover:not(:disabled),.open-queue:hover,.run-launcher .auth-button:hover:not(:disabled){background:#f95f10;border-color:#ec570b}.desk-brand>svg{color:#ff6b1f}.desk-navigation nav a[aria-current=page]:after{background:#ff6b1f}.brand-symbol{background:#ff6b1f;color:#351b0e}.nav-item.active{color:#aa4b1b;background:#fff2e9}.chart-series i,.collection-tooltip-dot{background:#ff6b1f}.collection-desk .ready-badge,.detail-outcome{background:#fff1e7;color:#a04a1b}.collection-desk .ready-badge:before{background:#ff792c}.detail-outcome.detail-paid{background:#eaf6ee;color:#417851}.plan-step{background:#ffddc6;border-color:#ff944e}.customer-detail-panel>footer a{color:#bc521b}.date-range-panel>footer .range-apply{background:#ff6b1f;color:#351b0e;border-color:#f96112}.calendar-days button.day-selected{background:#ff7a32;color:#351b0e}.calendar-days button.day-in-range{background:#fff0e5;color:#a64e1c}.range-presets button[aria-pressed=true]{color:#ae4c18;background:#fff0e5}.queue-table-bar .quick-filter-btn[aria-pressed=true]{border-bottom-color:#ff6b1f}.collection-tooltip{border-color:#f1d4bf}
+
+/* Keep date selection beside the action it controls. */
+.collection-desk .desk-run-action{max-width:none;flex-shrink:0}
+.desk-action-buttons{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.collection-desk .desk-action-buttons .date-range-trigger{min-height:47px;border:1px solid #ffb28a;background:#fff1e8;color:#a8410c;box-shadow:none}
+.collection-desk .desk-action-buttons .date-range-trigger strong{color:#a8410c}
+.collection-desk .desk-action-buttons .date-range-trigger:hover:not(:disabled){background:#ffe2d1;border-color:#ff6b1f}
+.collection-desk .desk-action-buttons .date-range-trigger:focus-visible{outline:3px solid #ffb28a;outline-offset:3px}
+.collection-desk .desk-action-buttons .date-range-trigger:disabled{opacity:.65}
+@media(max-width:1100px){.collection-desk .desk-collection-bar{flex-wrap:wrap}.collection-desk .desk-run-action{width:100%;margin-left:0}.desk-action-buttons{justify-content:flex-start}.collection-desk .desk-action-buttons .desk-run-button{width:auto}}
+@media(max-width:520px){.desk-action-buttons{display:grid;grid-template-columns:1fr}.collection-desk .desk-action-buttons .date-range-trigger,.collection-desk .desk-action-buttons .desk-run-button{width:100%;justify-content:center}}
