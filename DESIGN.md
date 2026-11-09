@@ -14,3 +14,5 @@ References inspected: Linear's March 2026 interface refresh (https://linear.app/
 ## Collections desk alternative
 
 The preview now opens the operational collections screen, not a dashboard. A horizontal product bar switches between Collections and Insights. The collection amount and single retry action sit above a full-width invoice list. Customer buttons open a read-only detail drawer. Insights retains the analytical charts and month-to-payment traceability. All existing date selection and payment execution guards remain intact; the preview cannot collect real money.
+
+Final polish retains the white/bright-orange identity. Amounts use exact currency parts with quieter cents; the selection graphic uses actual visible invoice counts. Row dates explicitly show New York time, and row actions reveal a floating invoice drawer. User-triggered transitions respect reduced-motion settings.
