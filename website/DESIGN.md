@@ -44,3 +44,7 @@ Generated with the built-in image tool, then converted to WebP without visual ed
 Color-only edit of the wheel using the user's Clay screenshot as the palette reference. Cyan blue #169aca, golden orange #ed971c, turquoise #08a5a0, buttery yellow #f4ce79, lime #b1c84c, pink #e948b0, warm ivory #ede8c7. These are base-paint targets; highlights and shadows vary. The existing landscape, support, geometry, page colors and motion remain unchanged. Built-in image generation edit; asset assets/rebound-rotor-v4.webp.
 
 Prompt: Preserve the existing transparent six-card wheel's geometry, positions, chip details, texture, bevels, camera, lighting and alpha silhouette. Change only the surface colors to the Clay reference: cyan pipe blue, orange track, turquoise pencil support, buttery wooden-bar yellow, yellow-green braided beam, pink sphere and ivory funnel. Preserve realistic highlights and shadows instead of applying flat hex fills. No new shapes or background.
+
+## Centered headline experiment
+
+Remove the wheel and its controls from the homepage. Place the existing headline at the center of the landscape, framed by the invoice on the left and the success dish on the right. Explanation and CTA sit directly below. A soft cream atmospheric gradient keeps the text readable. The wheel artwork is retained in source for comparison, but no wheel assets or wheel script are loaded by the homepage. Mobile uses a single centered column.
