@@ -9,6 +9,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState('');
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ function Login() {
     setError('');
     setLoading(true);
 
-    const result = await login(email, password);
+    const result = await login(email, password, setStatus);
 
     if (result.success) {
       navigate('/dashboard');
@@ -47,6 +48,7 @@ function Login() {
           </div>
         )}
 
+        {loading && <p role="status" aria-live="polite">{status} A server startup can take up to a minute. Keep this page open.</p>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -74,7 +76,7 @@ function Login() {
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? status || 'Connecting…' : 'Sign In'}
           </button>
         </form>
 

@@ -5,6 +5,7 @@ import { AuthProvider } from './AuthContext';
 import PrivateRoute from '../components/PrivateRoute';
 import { authFetch } from '../services/authFetch';
 
+jest.mock('../services/serverReady', () => ({ waitForServer: jest.fn().mockResolvedValue() }));
 jest.mock('../services/authFetch', () => ({ authFetch: jest.fn() }));
 let root, container;
 beforeEach(() => {

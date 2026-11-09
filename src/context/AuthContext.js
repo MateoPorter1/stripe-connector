@@ -1,3 +1,4 @@
+import { waitForServer } from '../services/serverReady';
 import { authFetch } from '../services/authFetch';
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
 
@@ -19,6 +20,8 @@ export const AuthProvider = ({ children }) => {
     setSessionError('');
     try {
       if (!savedToken) return;
+      await waitForServer(API_URL);
+      if (requestId !== sessionRequest.current) return;
       const response = await authFetch(`${API_URL}/auth/me`, {
         timeoutMs: 6000,
         headers: { Authorization: `Bearer ${savedToken}` }
@@ -48,8 +51,11 @@ export const AuthProvider = ({ children }) => {
     return () => { sessionRequest.current += 1; };
   }, [checkSession]);
 
-  const login = async (email, password) => {
+  const login = async (email, password, onStatus = () => {}) => {
     try {
+      onStatus('Connecting to server…');
+      await waitForServer(API_URL);
+      onStatus('Signing in…');
       const response = await authFetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
