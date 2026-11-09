@@ -57,3 +57,7 @@
 .marketing-home .headline-world{background:#f3e7d5}.headline-world:before{display:none}.headline-world:after{height:45px;background:linear-gradient(transparent,#f0e3cf)}.headline-landscape{object-fit:fill}.headline-hero>p{color:#3d5247}.headline-hero>small{color:#475b4e}
 @media(max-width:1000px) and (min-width:601px){.headline-world:before{display:block;background:linear-gradient(90deg,transparent,#f3e7d5b8 25%,#f3e7d5b8 75%,transparent)}}
 @media(max-width:600px){.marketing-home .headline-world{min-height:820px;background:linear-gradient(#f5ead9,#f0e1cb)}.headline-landscape{inset:auto 0 0;width:100%;height:auto;object-fit:contain}.headline-world:after{display:none}.headline-hero{padding-bottom:190px}.headline-hero>p{color:#3d5247}}
+/* Preserve the artwork's 3:1 proportions instead of stretching it to the hero height. */
+.headline-landscape{inset:auto auto 0 50%;transform:translateX(-50%);width:100%;height:auto;object-fit:contain;mask-image:linear-gradient(180deg,transparent,#000 13%)}
+.marketing-home .headline-world{background:#f3e7d5}
+@media(max-width:600px){.headline-landscape{inset:auto auto 0 50%;height:auto;mask-image:none}}
