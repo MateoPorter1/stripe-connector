@@ -7,7 +7,7 @@ jest.mock('../components/Sidebar',()=>()=>null);
 jest.mock('../services/api',()=>({...jest.requireActual('../services/api'),paymentBatchRequest:jest.fn()}));
 const invoice=id=>({id,number:id,email:'demo@example.invalid',currency:'usd',amount:4000,failedPayments:['ch_'+id],lastFailure:1800000000,reason:'Declined',selectionToken:'signed_'+id,cardCount:3,eligibleCardCount:2});
 let root,container;
-const button=text=>[...document.querySelectorAll('button')].find(b=>b.textContent.includes(text));
+const button=text=>text==='Retry filtered'?document.querySelector('.desk-run-button'):[...document.querySelectorAll('button')].find(b=>b.textContent.includes(text));
 const applyRange=async()=>{await act(async()=>button('Date range').click());await act(async()=>button('Apply').click());};
 beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;paymentBatchRequest.mockReset();paymentBatchRequest.mockResolvedValue({success:true,ready:true});Object.defineProperty(global,'crypto',{configurable:true,value:{randomUUID:()=> '12345678-1234-1234-1234-123456789012'}});container=document.createElement('div');document.body.appendChild(container);root=createRoot(container);});
 afterEach(()=>{act(()=>root.unmount());container.remove();});
@@ -107,5 +107,18 @@ test('an interrupted scan resumes at the failed page without losing rows or char
  expect(paymentBatchRequest.mock.calls[3][0]).toContain('cursor=ch_next');
  expect(container.textContent).toContain('in_first');expect(container.textContent).toContain('in_second');
  expect(container.textContent).toContain('110 payments checked');expect(button('Retry filtered').disabled).toBe(false);
+ expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
+});
+
+test('explains why recovery is disabled while scanning and what to do when ready',async()=>{
+ let finish;
+ paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockImplementationOnce(()=>new Promise(resolve=>{finish=resolve;}));
+ await act(async()=>root.render(<Dashboard/>));
+ expect(container.querySelector('.collection-next').textContent).toContain('Nothing is being charged');
+ expect(button('Retry filtered').textContent).toContain('Finding payments');expect(button('Retry filtered').disabled).toBe(true);
+ await act(async()=>finish({invoices:[invoice('in_guidance')],totalFetched:1,nextCursor:null}));
+ expect(container.querySelector('.collection-next').textContent).toContain('click Start recovery');
+ expect(button('Retry filtered').textContent).toContain('Start recovery (1)');
+ expect(container.textContent).toContain('Unpaid amount available to retry');
  expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
 });
