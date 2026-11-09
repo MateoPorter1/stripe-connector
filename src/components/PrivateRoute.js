@@ -12,7 +12,7 @@ function PrivateRoute({ children }) {
         {loading ? <>
           <div className="spinner-large" aria-hidden="true" />
           <h1>Opening your workspace</h1>
-          <p role="status">Checking your saved login. This should only take a few seconds.</p>
+          <p role="status">Connecting to your workspace and checking your saved login.</p>
         </> : <>
           <h1>Couldn’t reach your workspace</h1>
           <p role="alert">{sessionError}</p>

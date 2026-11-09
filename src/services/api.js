@@ -176,7 +176,7 @@ export async function paymentBatchRequest(path, { signal, ...options } = {}) {
     return data;
   }catch(error){
     if(signal?.aborted)throw error;
-    throw new Error(controller.signal.aborted?'The request took too long. Refresh the run status before starting again.':error.message);
+    throw new Error(controller.signal.aborted?(options.method==='POST'?'The request took too long. Refresh the run status before starting again.':'Loading timed out. Your partial results are preserved; resume the scan to continue.'):error.message);
   }finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
 }
 

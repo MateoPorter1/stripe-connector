@@ -95,3 +95,17 @@ test('opening an invoice detail drawer is read-only and closing restores the tab
  expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
  await act(async()=>document.querySelector('[aria-label="Close invoice details"]').click());expect(document.querySelector('[role="dialog"]')).toBeNull();expect(container.querySelectorAll('tbody tr')).toHaveLength(1);
 });
+
+test('an interrupted scan resumes at the failed page without losing rows or charging',async()=>{
+ paymentBatchRequest.mockResolvedValueOnce({batch:null})
+  .mockResolvedValueOnce({invoices:[invoice('in_first')],totalFetched:100,nextCursor:'ch_next',hasMore:true})
+  .mockRejectedValueOnce(new Error('Connection lost'));
+ await act(async()=>root.render(<Dashboard/>));
+ expect(container.textContent).toContain('in_first');expect(button('Retry filtered').disabled).toBe(true);
+ paymentBatchRequest.mockResolvedValueOnce({invoices:[invoice('in_second')],totalFetched:10,nextCursor:null});
+ await act(async()=>button('Resume scan').click());
+ expect(paymentBatchRequest.mock.calls[3][0]).toContain('cursor=ch_next');
+ expect(container.textContent).toContain('in_first');expect(container.textContent).toContain('in_second');
+ expect(container.textContent).toContain('110 payments checked');expect(button('Retry filtered').disabled).toBe(false);
+ expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
+});
