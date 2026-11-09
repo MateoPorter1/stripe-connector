@@ -1,7 +1,8 @@
+import RecoveryLogo from './RecoveryLogo';
 import React,{useEffect,useRef,useState} from 'react';
 import {Link,useLocation,useNavigate} from 'react-router-dom';
 import {useAuth} from '../context/AuthContext';
-import {LuLayers,LuChevronDown,LuUser,LuShield,LuLogOut} from 'react-icons/lu';
+import {LuChevronDown,LuUser,LuShield,LuLogOut} from 'react-icons/lu';
 import './Sidebar.css';
 
 // The live workspace uses the same horizontal navigation as the approved preview.
@@ -17,7 +18,7 @@ export default function Sidebar(){
  },[open]);
  const go=path=>{setOpen(false);navigate(path);};
  return <header className="desk-navigation live-navigation">
-  <Link to="/dashboard" className="desk-brand" aria-label="Recovery home"><LuLayers/>recovery<span> / </span></Link>
+  <Link to="/dashboard" className="desk-brand" aria-label="Recovery home"><RecoveryLogo/><span> / </span></Link>
   <nav aria-label="Workspace navigation"><Link to="/dashboard" aria-current={pathname==='/dashboard'?'page':undefined}>Collections</Link><Link to="/home" aria-current={pathname==='/home'?'page':undefined}>Insights</Link></nav>
   <div className="live-account-menu" ref={menu}>
    <button ref={trigger} className="live-account-trigger" aria-label="Account menu" aria-expanded={open} aria-controls="workspace-account-actions" onClick={()=>setOpen(value=>!value)}><span className="desk-account">{(user?.name||user?.email||'W').slice(0,1).toUpperCase()}</span><span className="account-display-name">{user?.name||'My workspace'}</span><LuChevronDown/></button>
