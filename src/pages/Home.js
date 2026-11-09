@@ -20,7 +20,6 @@ function CollectionTooltip({active,payload,label}) {
 
 function Home({preview=false}) {
   const request=preview?studioDemoRequest:statsRequest;
-  const [palette,setPalette]=useState('orange');
   const [summary, setSummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +99,7 @@ function Home({preview=false}) {
 
   if (loading) {
     return (
-      <div className="home-layout" data-palette={palette}>
+      <div className="home-layout" data-palette="orange">
         {preview?<PreviewNavigation/>:<Sidebar /> }
         <div className="home-content">
           <div className="loading-state">
@@ -113,18 +112,19 @@ function Home({preview=false}) {
   }
 
   return (
-    <div className="home-layout" data-palette={palette}>
+    <div className="home-layout" data-palette="orange">
       {preview?<PreviewNavigation/>:<Sidebar /> }
       <div className="home-content">
         <div className="home-container overview-workspace studio-workspace">
-          <header className="overview-masthead"><div><span className="workspace-location">{preview?'Design preview / Demo data':'Revenue recovery'}</span><h1>Recovery overview</h1></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>Open recovery queue <LuArrowUpRight/></a></header>
-          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/>{preview&&<div className="palette-comparison" role="group" aria-label="Preview accent color"><span>Accent</span>{[['orange','Orange'],['teal','Teal'],['amber','Amber'],['ice','Ice blue']].map(([id,label])=><button key={id} className={`palette-choice palette-${id}`} aria-pressed={palette===id} onClick={()=>setPalette(id)}><i aria-hidden="true"/>{label}</button>)}</div>}</div>
+          <header className="overview-masthead"><div><span className="workspace-location">{preview?'Demo workspace / Overview':'Workspace / Overview'}</span><h1>Revenue recovery</h1><p>Every recovered payment, in one place.</p></div><a className="open-queue" href={preview?'/design-preview/queue':'/dashboard'}>View recovery queue <LuArrowUpRight/></a></header>
+          <div className="overview-filterbar"><DateRangePicker start={startDate} end={endDate} onApply={range=>{setStartDate(range.start);setEndDate(range.end);fetchData(range.start,range.end);}}/><span className="overview-data-note">{preview?'Sample data':'Recorded collections'} · USD</span></div>
+          <section className="revenue-metrics" aria-label="Collection summary"><div className="revenue-metric-main"><span>Total recovered</span><strong>{formatCurrency(getMainCurrencyTotal(),selectedCurrency)}</strong><small>Collected through this workspace</small></div><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong><small>Successful collections</small></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong><small>Per recovered payment</small></div><div><span>Last collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'—'}</strong><small>New York time</small></div></section>
           {error&&<p className="error-message" role="alert">{error}</p>}
           <div className="overview-analysis">
           {/* Chart Section */}
           <div className="chart-section studio-performance">
-            <div className="studio-performance-total"><span>Revenue recovered</span><span className="collection-currency">USD</span><strong>{formatCurrency(getMainCurrencyTotal(), selectedCurrency)}</strong><p>Collected through this workspace</p></div>
-            <div className="analysis-heading"><div><h2>Monthly collections</h2></div><span>USD</span></div>
+
+            <div className="analysis-heading"><div><h2>Recovery performance</h2><p>Collected revenue by month</p></div><span className="chart-series"><i/>Recovered</span></div>
 
             
             {monthlyData.length === 0 ? (
@@ -134,13 +134,13 @@ function Home({preview=false}) {
                 <p>Recover your first payment to see statistics here</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={monthlyData} margin={{ top: 18, right: 10, left: 0, bottom: 5 }}>
-                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-top)"/><stop offset="100%" stopColor="var(--chart-base)"/></linearGradient></defs>
+                  <defs><linearGradient id="collection-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#eea56d"/><stop offset="100%" stopColor="#d37330"/></linearGradient></defs>
                   <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeOpacity={0.07} />
                   <XAxis
                     dataKey="month"
-                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#6d7d86" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:12,fontWeight:500}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
+                    tick={({x,y,payload})=>{const month=monthlyData.find(item=>item.month===payload.value);return <text x={x} y={y} dy={20} textAnchor="middle" fill="#6d7d86" role="button" tabIndex={0} aria-label={`View payments for ${payload.value}`} style={{cursor:'pointer',fontSize:11,fontWeight:400}} onClick={()=>month&&loadHistory(month)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();if(month)loadHistory(month);}}}>{payload.value}</text>;}}
                     axisLine={false}
                     tickLine={false}
                     stroke="#758994"
@@ -173,8 +173,8 @@ function Home({preview=false}) {
               </ResponsiveContainer>
             )}
           </div>
-          <aside className="studio-side"><section className="studio-facts" aria-label="Collection performance"><h2>The recovery picture</h2><div><span>Recovered payments</span><strong>{getMainCurrencyCount()}</strong><small>Successful collections</small></div><div><span>Average payment</span><strong>{formatCurrency(getMainCurrencyCount()?getMainCurrencyTotal()/getMainCurrencyCount():0,selectedCurrency)}</strong><small>Per recovered payment</small></div><div><span>Latest collection</span><strong>{summary?.lastRecovery?formatLastRecoveryTime(summary.lastRecovery.date):'No collections yet'}</strong></div></section><a className="studio-next" href={preview?'/design-preview/queue':'/dashboard'}><span>Keep revenue moving</span><strong>Review failed payments <LuArrowUpRight/></strong><p>Find unpaid invoices and start a recovery run.</p></a></aside></div>
-          <aside className="monthly-ledger studio-journal"><div className="analysis-heading"><div><h2>Recovery journal</h2><p>Open a month to see customers, amounts and payment details.</p></div></div><div className="ledger-columns"><span>Month / Payments</span><span>Collected</span></div><div className="history-months" role="group" aria-label="Choose a recovery month">{monthlyData.map(month=><button key={monthKey(month)} aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><span><strong>{month.month}</strong><small>{month.count} payments</small></span><span>{money(Math.round(month.amount*100),selectedCurrency)} <LuArrowUpRight/></span></button>)}</div><p className="ledger-footnote">Recorded collections only.<br/>All dates use New York time.</p></aside>
+          <aside className="monthly-ledger professional-ledger"><div className="analysis-heading"><div><h2>Collection ledger</h2><p>Open a month to see who paid</p></div><span>{monthlyData.length} months</span></div><div className="ledger-columns"><span>Period / Payments</span><span>Collected</span></div><div className="history-months" role="group" aria-label="Choose a recovery month">{[...monthlyData].reverse().map(month=><button key={monthKey(month)} aria-pressed={selectedMonth&&monthKey(selectedMonth)===monthKey(month)} onClick={()=>loadHistory(month)}><span><strong>{month.month}</strong><small>{month.count} payments</small></span><span>{money(Math.round(month.amount*100),selectedCurrency)} <LuArrowUpRight/></span></button>)}</div><p className="ledger-footnote">Each month links to its recorded payments.</p></aside>
+          </div>
           {selectedMonth&&<section className="profile-section recovery-history" ref={historySection} aria-label="People charged this month" aria-busy={historyLoading}>
             <div className="workspace-heading"><div><h2>People charged — {selectedMonth.month}</h2><p>Successful collections recorded by this app, within your applied date filter.</p></div><button className="quick-filter-btn" onClick={()=>loadHistory(selectedMonth)} disabled={historyLoading}>Refresh this month</button></div>
             {history&&<p className="history-total">{history.totalCount} payments · {history.customerCount} customers · <strong>{money(history.totalAmount,history.currency)} {history.currency}</strong></p>}

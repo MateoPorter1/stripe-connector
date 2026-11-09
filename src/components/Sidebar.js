@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LuHouse, LuCreditCard, LuUser, LuShield, LuLogOut, LuStar, LuCircle } from 'react-icons/lu';
+import { LuHouse, LuCreditCard, LuUser, LuShield, LuLogOut, LuStar, LuCircle, LuLayers } from 'react-icons/lu';
 import './Sidebar.css';
 
 function Sidebar() {
@@ -56,7 +56,7 @@ function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <h2 className="sidebar-title"><span className="brand-symbol" aria-hidden="true">r.</span><span className="brand-name">Revenue recovery</span></h2>
+        <h2 className="sidebar-title"><span className="brand-symbol" aria-hidden="true"><LuLayers/></span><span className="brand-name">Recovery</span></h2>
         <div className="user-info-sidebar">
           <span className="user-avatar" aria-hidden="true">{(user?.name||user?.email||'W').slice(0,1).toUpperCase()}</span><div><div className="user-name">{user?.name || user?.email}</div>
           <div className={`user-plan plan-${user?.plan || 'free'}`}>

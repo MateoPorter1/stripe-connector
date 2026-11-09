@@ -1,17 +1,12 @@
-# Revenue recovery — journal direction
+# Revenue recovery product interface
 
-Reference: https://lovable.dev/templates/apps/lifestyle/journal (working journal and Insights screens inspected).
+Current direction: white workspace, restrained orange actions, neutral gray navigation, self-hosted Inter typography.
 
-- Backdrop: fixed, soft brown/lilac radial gradients fading into a dark charcoal top. No raster background or copied assets.
-- Surfaces: #24232a floating panels, subtle translucent borders, restrained shadows, 15–18px corners.
-- Type: Avenir Next/system sans, modest headings, readable financial tables and tabular amounts.
-- Accent: #ab86eb purple for explicit actions, selections and chart bars. Green only for confirmed paid rows.
-- Navigation: a compact floating horizontal bar with icon navigation on phones.
-- Overview: collection-performance panel, supporting figures, and clickable monthly journal cards. Each month still opens the complete paginated payment trail.
-- Queue: invoice table alongside the explicit collection console. Saved-card counts and paid states stay visible.
-- Dates: one shared range button opens a draft-only dialog with presets, two desktop calendars, a single navigable mobile calendar, manual inputs inside the dialog, Clear, Cancel and Apply. Day calculations use calendar arithmetic; all filters use New York dates. Applying dates only reads payments.
-- Preview routes use explicitly labeled fictional data. Live collection handlers are disabled in previews and fixtures reject mutations. Production payment logic is unchanged.
+References inspected: Linear's March 2026 interface refresh (https://linear.app/now/behind-the-latest-design-refresh), Mercury Insights (https://mercury.com/insights), Ramp product overview (https://ramp.com/products). Apply their general principles of predictable action placement, subdued navigation and readable financial data without copying branding or layouts.
 
-## Current color experiment
-
-The purple and warm backdrop have been retired. Neutral graphite panels sit over a soft blue-gray background, with teal as the default accent. The design preview includes Teal, Amber and Ice Blue buttons above the chart; the chart, hover state, tooltip, navigation, action and journal selections use shared accent variables. No payment behavior changes.
+- Navigation: compact left rail; clear page location and primary action. Icon rail on phones.
+- Overview: open four-column financial summary, performance chart beside a dense monthly ledger. No invented trend comparisons.
+- Data: Inter and tabular figures, clear amount alignment, secondary text with readable contrast. Customer and invoice appear together to reduce table columns.
+- Accent: #be501f for explicit actions and selected controls; soft orange for calm selection. Green remains reserved for confirmed payments.
+- Dates: shared draft-only range panel with presets, calendars, manual entries inside the panel and explicit Apply. New York calendar dates and inclusive filters stay unchanged.
+- Preview: clearly labeled sample data, real collection actions disabled. Existing payment execution and traceability are preserved.
