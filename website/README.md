@@ -5,7 +5,7 @@ Application: https://app.reboundmrr.com
 
 ## Build and check
 
-Run `npm run build` followed by `npm run check` from this folder. This static builder produces complete HTML pages in `dist/`. No browser JavaScript is required to read any product page or guide. JavaScript enhances the menu, topic filters, calculator, and illustrative 3D wheel. Three.js is bundled locally by esbuild; the wheel pauses offscreen and respects reduced-motion preferences. WebGL failures retain the static illustration.
+Run `npm run build` followed by `npm run check` from this folder. This static builder produces complete HTML pages in `dist/`. No browser JavaScript is required to read any product page or guide. JavaScript enhances the menu, topic filters, calculator, and local illustrative card-recovery example. The approved ceramic wordmark is shared by every page; the studio hero preserves the artwork’s natural aspect ratio.
 
 ## Publishing a guide
 

@@ -60,3 +60,7 @@ Built-in image generation; production asset assets/rebound-workshop-v1.webp. Pro
 User selected direction01 from the five-wordmark study. The website header and footer now use the orange ceramic lowercase rebound wordmark with no separate icon. A transparent asset was extracted using the built-in image editing tool, trimmed and converted to WebP for delivery. Production file: assets/rebound-wordmark-ceramic.webp. Organization structured data points to this wordmark. App branding is unchanged.
 
 Prompt: extract only the first approved orange ceramic rebound wordmark from the concept board, preserving its letterforms, spacing, texture, lighting and proportions; remove labels, other rows, backdrop and floor; transparent background including letter counters; no new icon or redesigned type.
+
+## Complete public-site identity
+
+Every public page now uses the approved ceramic wordmark and a shared warm ivory / forest green / orange design system. Resource cards, topic filters, article layouts, contents navigation, calculator, product demonstration, CTAs and footer follow the homepage direction. Guides keep quiet reading surfaces and practical line lengths; the calculator keeps strong contrast and unchanged formulas. Browser favicon now uses a rounded orange r rather than the previous layers icon. The social preview uses the approved wordmark and studio artwork. The Stripe application is outside this marketing-site iteration.
