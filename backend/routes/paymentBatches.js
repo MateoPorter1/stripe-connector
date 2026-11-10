@@ -10,7 +10,8 @@ const {filteredFailuresPage,verifySelection,keyVersion}=require('../services/fil
 const {prepareBatchStorage,takeLease,batchPayload,launchBatch}=require('../services/paymentBatchRunner');
 const {assertRetryAccess}=require('../services/billingRuntime');
 const router=express.Router();router.use(auth);
-async function client(userId){const user=await User.findById(userId).select('+stripeApiKey');if(!user?.stripeApiKey)throw Object.assign(new Error('Connect Stripe in My Profile first.'),{statusCode:400});return {user,stripe:new Stripe(user.stripeApiKey),keyHash:keyVersion(user.stripeApiKey)};}
+const {connectedStripe}=require('../services/stripeAppConnection');
+async function client(userId){return connectedStripe(userId);}
 function fail(res,error){console.error('Payment batch API:',error.type||error.name);res.status(error.statusCode||502).json({success:false,error:error.statusCode?error.message:'Could not complete this request. Refresh the run status before trying again.'});}
 async function checkInterrupted(batch){
   if(batch&&['running','stopping'].includes(batch.status)){

@@ -9,12 +9,16 @@ import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 import Billing from './pages/Billing';
+import StripeInstall from './pages/StripeInstall';
+import StripeCallback from './pages/StripeCallback';
 
 function AppRoutes() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
+          <Route path="/stripe/install" element={<StripeInstall />} />
+          <Route path="/stripe/callback" element={<StripeCallback />} />
           <Route path="/design-preview/billing" element={<Billing preview />} />
           <Route path="/billing" element={<PrivateRoute><Billing /></PrivateRoute>} />
           <Route path="/design-preview/queue" element={<Dashboard preview />} />

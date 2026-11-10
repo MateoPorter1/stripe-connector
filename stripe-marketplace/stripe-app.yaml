@@ -1,0 +1,31 @@
+$schema: https://stripe.com/stripe-app/v2.0.0/schema
+id: com.reboundmrr.rebound
+name: Rebound
+version: 0.1.0
+icon: ./assets/rebound-icon.png
+declarations:
+    distribution_type: public
+    stripe_api_access:
+        permissions:
+            - permission: customer_read
+              purpose: Show the customers associated with failed subscription invoices.
+            - permission: subscription_read
+              purpose: Verify subscription details and default payment methods on failed invoices.
+            - permission: invoice_write
+              purpose: Read invoice balances and attempt payment of existing eligible subscription invoices only when the user starts a recovery run. Stripe bundles invoice reads and payment actions with broader invoice write access; Rebound does not create or void invoices.
+            - permission: payment_method_read
+              purpose: Count and select eligible saved cards without editing or detaching them.
+            - permission: payment_intent_read
+              purpose: Read payment outcomes and avoid attempts on invoices already processing or paid.
+            - permission: charge_read
+              purpose: Find failed payments within the user's selected date range.
+            - permission: event_read
+              purpose: Receive app install and uninstall notifications so disconnected accounts stop working in Rebound.
+    stripe_api_access_type: oauth
+    sandbox_install_compatible: true
+    post_install_action:
+        type: external
+        url: https://app.reboundmrr.com/stripe/install
+    allowed_redirect_uris:
+        - https://app.reboundmrr.com/stripe/callback
+extensions: []

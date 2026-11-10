@@ -25,7 +25,7 @@ function Login() {
     const result = await login(email, password, setStatus);
 
     if (result.success) {
-      navigate(['month','year'].includes(params.get('interval'))?'/billing?interval='+params.get('interval'):'/dashboard');
+      navigate(params.get('next')==='stripe-install'?'/stripe/install':['month','year'].includes(params.get('interval'))?'/billing?interval='+params.get('interval'):'/dashboard');
     } else {
       setError(result.error);
     }

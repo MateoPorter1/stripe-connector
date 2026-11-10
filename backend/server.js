@@ -8,8 +8,10 @@ const app = express();
 // Middleware
 app.use(cors());
 const billingRoutes = require('./routes/billing').createBillingRoutes();
+const stripeAppRoutes = require('./routes/stripeApp').createStripeAppRoutes();
 // Signature verification must receive the original bytes, before express.json.
 app.post('/api/billing/webhook', express.raw({ type: 'application/json', limit: '1mb' }), billingRoutes.webhook);
+app.post('/api/stripe-app/webhook/:mode', express.raw({ type: 'application/json', limit: '1mb' }), stripeAppRoutes.webhook);
 app.use(express.json({ limit: '1mb' }));
 
 // Fail promptly instead of buffering database requests during outages.
@@ -46,6 +48,7 @@ app.use('/api', (req, res, next) => {
 
 // Routes
 app.use('/api/billing', billingRoutes.router);
+app.use('/api/stripe-app', stripeAppRoutes.router);
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/stripe', require('./routes/stripe'));
 app.use('/api/fallback', require('./routes/fallback'));

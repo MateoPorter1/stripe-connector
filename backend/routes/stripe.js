@@ -5,20 +5,11 @@ const auth = require('../middleware/auth');
 const User = require('../models/User');
 const { getSubscriptionRecoveryPage } = require('../services/subscriptionRecovery');
 const { getFailedPaymentsPage } = require('../services/failedPayments');
+const { connectedStripe } = require('../services/stripeAppConnection');
 
 // Helper function para obtener el cliente Stripe del usuario
 const getUserStripeClient = async (userId) => {
-  const user = await User.findById(userId).select('+stripeApiKey');
-
-  if (!user) {
-    throw Object.assign(new Error('Account not found. Please sign in again.'), { statusCode: 400 });
-  }
-
-  if (!user.stripeApiKey) {
-    throw Object.assign(new Error('Connect Stripe in My Profile before loading payments.'), { statusCode: 400 });
-  }
-
-  return new Stripe(user.stripeApiKey);
+  return (await connectedStripe(userId)).stripe;
 };
 
 // @route   GET /api/stripe/failed-transactions

@@ -6,6 +6,7 @@ const Recovery=require('../models/Recovery');
 const User=require('../models/User');
 const {retryInvoiceOnce}=require('./manualInvoiceRetry');
 const {keyVersion}=require('./filteredFailures');
+const {connectionFingerprint}=require('./stripeAppConnection');
 const {idOf}=require('./cardFallback');
 const {assertRetryAccess}=require('./billingRuntime');
 let prepared;
@@ -29,8 +30,8 @@ async function processBatch(batch,stripe){
   try{
     const allowed=async()=>{
       const current=await Batch.exists({_id:batch._id,status:'running',runnerId});
-      const user=await User.findById(batch.userId).select('+stripeApiKey');
-      if(!current||!user?.stripeApiKey||keyVersion(user.stripeApiKey)!==batch.keyHash)return false;
+      if(!current)return false;
+      try { if(await connectionFingerprint(batch.userId)!==batch.keyHash)return false; } catch { return false; }
       await assertRetryAccess(batch.userId);
       const lease=await Lease.updateOne({_id:batch.accountId,owner:runnerId,until:{$gt:new Date()}},{$set:{until:new Date(Date.now()+120000)}});
       return lease.matchedCount===1;

@@ -41,7 +41,7 @@ function Signup() {
     const result = await signup(name, email, password);
 
     if (result.success) {
-      navigate(params.get('interval')==='year'?'/billing?interval=year':'/billing?interval=month');
+      navigate(params.get('next')==='stripe-install'?'/stripe/install':params.get('interval')==='year'?'/billing?interval=year':'/billing?interval=month');
     } else {
       setError(result.error);
     }

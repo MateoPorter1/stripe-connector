@@ -1,0 +1,10 @@
+packages:
+  - extensions/*
+  - custom-objects
+
+overrides:
+  vite: ^6.0.0
+
+allowBuilds:
+  core-js-pure: false
+  esbuild: false

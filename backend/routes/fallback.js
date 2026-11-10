@@ -7,9 +7,7 @@ const { eligibility, alternateCards, savedCards, invoiceExpand, idOf } = require
 const router = express.Router();
 router.use(auth);
 async function userClient(userId) {
-  const user = await User.findById(userId).select('+stripeApiKey');
-  if (!user?.stripeApiKey) throw new Error('Connect Stripe in My Profile first.');
-  return { user, stripe: new Stripe(user.stripeApiKey) };
+  return require('../services/stripeAppConnection').connectedStripe(userId);
 }
 router.get('/', async (req, res) => {
   try {
