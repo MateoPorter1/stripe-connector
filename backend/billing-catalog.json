@@ -7,5 +7,7 @@
   "amount": 5000,
   "currency": "usd",
   "interval": "month",
-  "trialDays": 14
+  "trialDays": 14,
+  "annualPrice": "price_1UaHyXEuNVUJyCmUgkpEEIXg",
+  "annualAmount": 50000
 }

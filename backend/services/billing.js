@@ -9,16 +9,22 @@ function billingConfig(env=process.env){
  const origin=new URL(env.BILLING_APP_ORIGIN||'http://localhost:3000');
  if(origin.protocol!=='https:'&&!(origin.protocol==='http:'&&['localhost','127.0.0.1'].includes(origin.hostname)))throw problem('Billing return address is not configured.',503);
  if(!/^acct_/.test(env.REBOUND_BILLING_ACCOUNT||'')||!/^price_/.test(env.REBOUND_BILLING_PRICE||'')||!env.REBOUND_BILLING_WEBHOOK_SECRET)throw problem('Subscription billing is not configured yet.',503);
- return {key:env.REBOUND_BILLING_KEY,account:env.REBOUND_BILLING_ACCOUNT,price:env.REBOUND_BILLING_PRICE,webhookSecret:env.REBOUND_BILLING_WEBHOOK_SECRET,portal:env.REBOUND_BILLING_PORTAL,origin:origin.origin,mode:env.BILLING_MODE,scope:`${env.BILLING_MODE}:${env.REBOUND_BILLING_ACCOUNT}`};
+ return {key:env.REBOUND_BILLING_KEY,account:env.REBOUND_BILLING_ACCOUNT,price:env.REBOUND_BILLING_PRICE,annualPrice:env.REBOUND_BILLING_ANNUAL_PRICE,webhookSecret:env.REBOUND_BILLING_WEBHOOK_SECRET,portal:env.REBOUND_BILLING_PORTAL,origin:origin.origin,mode:env.BILLING_MODE,scope:`${env.BILLING_MODE}:${env.REBOUND_BILLING_ACCOUNT}`};
 }
 function makeClient(config){return new Stripe(config.key,{timeout:15000,maxNetworkRetries:1});}
 function createBilling({stripe,Store,config}){
  let verified;
  async function catalog(){
   if(!verified)verified=(async()=>{
-   const [account,price]=await Promise.all([stripe.accounts.retrieve(),stripe.prices.retrieve(config.price,{expand:['product']})]);
-   if(account.id!==config.account||price.livemode!==(config.mode==='live')||!price.active||price.type!=='recurring'||price.recurring?.interval!=='month'||price.recurring?.interval_count!==1||price.unit_amount!==5000||price.currency!=='usd'||price.product?.active!==true)throw problem('The $50 monthly plan is unavailable.',503);
-   return {name:price.product.name,amount:price.unit_amount,currency:price.currency,interval:'month',trialDays:14};
+   const definitions=[{id:config.price,interval:'month',amount:5000},...(config.annualPrice?[{id:config.annualPrice,interval:'year',amount:50000}]:[])];
+   const [account,...prices]=await Promise.all([stripe.accounts.retrieve(),...definitions.map(d=>stripe.prices.retrieve(d.id,{expand:['product']}))]);
+   const product=prices[0]?.product?.id;
+   const options=prices.map((price,index)=>{
+    const d=definitions[index];
+    if(account.id!==config.account||price.id!==d.id||price.livemode!==(config.mode==='live')||!price.active||price.type!=='recurring'||price.recurring?.interval!==d.interval||price.recurring?.interval_count!==1||price.unit_amount!==d.amount||price.currency!=='usd'||price.product?.active!==true||price.product.id!==product)throw problem('The selected subscription plan is unavailable.',503);
+    return {name:price.product.name,amount:price.unit_amount,currency:price.currency,interval:d.interval,trialDays:14};
+   });
+   return {...options[0],options};
   })().catch(e=>{verified=null;throw e;});
   return verified;
  }
@@ -37,7 +43,7 @@ function createBilling({stripe,Store,config}){
   if(!row.customerId)return [];
   const list=await stripe.subscriptions.list({customer:row.customerId,status:'all',limit:100,expand:['data.latest_invoice']});
   if(list.has_more)throw problem('Billing needs a manual review before another subscription.',409);
-  return list.data.filter(s=>s.items.data.some(i=>i.price.id===config.price));
+  return list.data.filter(s=>s.items.data.some(i=>[config.price,config.annualPrice].filter(Boolean).includes(i.price.id)));
  }
  async function sync(row){
   const all=await subscriptions(row);
@@ -46,23 +52,32 @@ function createBilling({stripe,Store,config}){
   const trials=all.map(s=>s.trial_start).filter(Boolean);
   if(trials.length){const first=Math.min(...trials)*1000;row.trialStartedAt=new Date(Math.min(+(row.trialStartedAt||first),first));}
   row.trialEndsAt=sub?.status==='trialing'&&row.trialStartedAt?new Date(Math.min(sub.trial_end*1000,+row.trialStartedAt+14*86400000)):null;
+  const selectedPrice=sub?.items.data.find(i=>[config.price,config.annualPrice].filter(Boolean).includes(i.price.id))?.price.id;
+  row.interval=selectedPrice?(selectedPrice===config.annualPrice?'year':'month'):null;
   const invoice=sub?.latest_invoice;
   const lines=invoice&&typeof invoice==='object'&&invoice.status==='paid'?invoice.lines?.data||[]:[];
-  const ends=lines.filter(l=>l.price?.id===config.price||l.pricing?.price_details?.price===config.price).map(l=>l.period?.end||0);
+  const ends=lines.filter(l=>l.price?.id===selectedPrice||l.pricing?.price_details?.price===selectedPrice).map(l=>l.period?.end||0);
   row.paidThrough=ends.length?new Date(Math.max(...ends)*1000):null;
   row.subscriptionId=sub?.id;row.status=sub?.status||'none';row.cancelAtPeriodEnd=Boolean(sub?.cancel_at_period_end);
   const end=sub?.current_period_end||Math.max(0,...(sub?.items.data||[]).map(i=>i.current_period_end||0));
   row.currentPeriodEnd=end?new Date(end*1000):null;row.syncedAt=new Date();await row.save();
   return sorted;
  }
- function view(row,user){const {collectionAccess}=require('./billingAccess');return {mode:config.mode||'test',status:row.status||'none',cancelAtPeriodEnd:Boolean(row.cancelAtPeriodEnd),currentPeriodEnd:row.currentPeriodEnd||null,trialStartedAt:row.trialStartedAt||null,trialEndsAt:row.trialEndsAt||null,paidThrough:row.paidThrough||null,syncedAt:row.syncedAt||null,hasCustomer:Boolean(row.customerId),collectionBlocked:Boolean(row.collectionBlocked),access:collectionAccess(user||{},row,{mode:config.mode||'test'})};}
- async function status(userId,user){return locked(userId,async row=>{await catalog();await sync(row);return {plan:await catalog(),billing:view(row,user)};});}
- async function checkout(user){return locked(user._id,async row=>{
+ function view(row,user){const {collectionAccess}=require('./billingAccess');return {mode:config.mode||'test',status:row.status||'none',interval:row.interval||null,cancelAtPeriodEnd:Boolean(row.cancelAtPeriodEnd),currentPeriodEnd:row.currentPeriodEnd||null,trialStartedAt:row.trialStartedAt||null,trialEndsAt:row.trialEndsAt||null,paidThrough:row.paidThrough||null,syncedAt:row.syncedAt||null,hasCustomer:Boolean(row.customerId),collectionBlocked:Boolean(row.collectionBlocked),access:collectionAccess(user||{},row,{mode:config.mode||'test'})};}
+ async function plansFor(row){const catalogPlan=await catalog();return {plan:catalogPlan.options.find(p=>p.interval===row.interval)||catalogPlan.options[0],plans:catalogPlan.options};}
+ async function status(userId,user){return locked(userId,async row=>{await catalog();await sync(row);return {...await plansFor(row),billing:view(row,user)};});}
+ async function checkout(user,interval='month'){
+  if(!['month','year'].includes(interval))throw problem('Choose monthly or annual billing.');
+  if(interval==='year'&&!config.annualPrice)throw problem('Annual billing is not available yet.',503);
+  return locked(user._id,async row=>{
   await catalog();const all=await sync(row);
   if(all.some(s=>OPEN.has(s.status)))throw problem('A subscription already exists. Use Manage subscription instead.',409);
   if(row.checkoutId&&!row.checkoutId.startsWith('pending_')&&+row.checkoutExpiresAt>Date.now()){
    const existing=await stripe.checkout.sessions.retrieve(row.checkoutId);
-   if(existing.status==='open')return {url:existing.url};
+   if(existing.status==='open'){
+    if((row.checkoutInterval||existing.metadata?.billing_interval||'month')===interval)return {url:existing.url};
+    await stripe.checkout.sessions.expire(existing.id);
+   }
    if(existing.status==='complete'&&!all.length)throw problem('Your payment is being confirmed. Refresh billing before starting again.',409);
   }
   if(!row.customerId){
@@ -71,10 +86,11 @@ function createBilling({stripe,Store,config}){
    row.customerId=customer.id;await row.save();
   }
   // Session key is persisted before the API call, so timeouts cannot create duplicate checkouts.
+  if(row.checkoutId?.startsWith('pending_')&&(row.checkoutInterval||'month')!==interval)throw problem('Your previous checkout is still being confirmed. Retry the original billing option first.',409);
   const key=row.checkoutId?.startsWith('pending_')?row.checkoutId:`pending_${crypto.randomUUID()}`;
-  row.checkoutId=key;await row.save();
+  row.checkoutId=key;row.checkoutInterval=interval;await row.save();
   const marker=Array.from(crypto.createHash('sha256').update(key).digest().subarray(0,8),n=>String.fromCharCode(97+n%26)).join('');
-  const session=await stripe.checkout.sessions.create({mode:'subscription',customer:row.customerId,line_items:[{price:config.price,quantity:1}],client_reference_id:String(user._id),metadata:{rebound_user_id:String(user._id)},payment_method_collection:'always',subscription_data:{metadata:{rebound_user_id:String(user._id)},...(!row.trialStartedAt?{trial_period_days:14}:{}),trial_settings:{end_behavior:{missing_payment_method:'cancel'}}},integration_identifier:`rebound_billing_${marker}`,success_url:`${config.origin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${config.origin}/billing?checkout=cancelled`},{idempotencyKey:key});
+  const session=await stripe.checkout.sessions.create({mode:'subscription',customer:row.customerId,line_items:[{price:interval==='year'?config.annualPrice:config.price,quantity:1}],client_reference_id:String(user._id),metadata:{rebound_user_id:String(user._id),billing_interval:interval},payment_method_collection:'always',subscription_data:{metadata:{rebound_user_id:String(user._id)},...(!row.trialStartedAt?{trial_period_days:14}:{}),trial_settings:{end_behavior:{missing_payment_method:'cancel'}}},integration_identifier:`rebound_billing_${marker}`,success_url:`${config.origin}/billing?checkout=success&session_id={CHECKOUT_SESSION_ID}`,cancel_url:`${config.origin}/billing?checkout=cancelled&interval=${interval}`},{idempotencyKey:key});
   row.checkoutId=session.id;row.checkoutUrl=session.url;row.checkoutExpiresAt=new Date(session.expires_at*1000);await row.save();return {url:session.url};
  });}
  async function confirm(userId,sessionId){
@@ -82,7 +98,7 @@ function createBilling({stripe,Store,config}){
   return locked(userId,async row=>{
    await catalog();const session=await stripe.checkout.sessions.retrieve(sessionId);
    if(session.customer!==row.customerId||session.client_reference_id!==String(userId)||session.mode!=='subscription'||session.livemode!==(config.mode==='live'))throw problem('This checkout does not belong to your account.',403);
-   await sync(row);return {plan:await catalog(),billing:view(row)};
+   await sync(row);return {...await plansFor(row),billing:view(row)};
   });
  }
  async function portal(userId){return locked(userId,async row=>{

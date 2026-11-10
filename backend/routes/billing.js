@@ -19,7 +19,7 @@ function createBillingRoutes({Store=require('../models/BillingAccount'),auth=req
  const router=express.Router();router.use(auth);router.use((req,res,next)=>{res.set('Cache-Control','no-store');next();});
  router.get('/',async(req,res)=>{if(env.BILLING_ENABLED!=='true')return res.json({success:true,configured:false,mode:'test'});try{res.json({success:true,configured:true,...await setup().service.status(req.user._id,req.user)});}catch(e){failure(res,e);}});
  router.get('/access',async(req,res)=>{try{const access=await require('../services/billingRuntime').assertRetryAccess(req.user._id);res.json({success:true,access});}catch(e){if(e.statusCode===402)return res.json({success:true,access:{allowed:false,message:e.message,reason:e.code}});failure(res,e);}});
- router.post('/checkout',async(req,res)=>{try{res.json({success:true,...await setup().service.checkout(req.user)});}catch(e){failure(res,e);}});
+ router.post('/checkout',async(req,res)=>{try{res.json({success:true,...await setup().service.checkout(req.user,req.body.interval===undefined?'month':req.body.interval)});}catch(e){failure(res,e);}});
  router.post('/confirm',async(req,res)=>{try{res.json({success:true,...await setup().service.confirm(req.user._id,req.body.sessionId)});}catch(e){failure(res,e);}});
  router.post('/portal',async(req,res)=>{try{res.json({success:true,...await setup().service.portal(req.user._id)});}catch(e){failure(res,e);}});
  return {router,webhook};

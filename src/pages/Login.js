@@ -2,7 +2,7 @@ import { trackAuthPage } from '../services/analytics';
 import RecoveryLogo from '../components/RecoveryLogo';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import './Auth.css';
 
 function Login() {
@@ -15,6 +15,7 @@ function Login() {
   useEffect(() => { trackAuthPage('/login'); }, []);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [params]=useSearchParams();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +25,7 @@ function Login() {
     const result = await login(email, password, setStatus);
 
     if (result.success) {
-      navigate('/dashboard');
+      navigate(['month','year'].includes(params.get('interval'))?'/billing?interval='+params.get('interval'):'/dashboard');
     } else {
       setError(result.error);
     }
@@ -83,7 +84,7 @@ function Login() {
         </form>
 
         <p className="auth-link">
-          Don't have an account? <Link to="/signup">Sign up here</Link>
+          Don't have an account? <Link to={params.get('interval')==='year'?'/signup?interval=year':'/signup'}>Sign up here</Link>
         </p>
       </div>
     </div>

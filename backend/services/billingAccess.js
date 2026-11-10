@@ -8,6 +8,6 @@ function collectionAccess(user,row,{now=Date.now(),mode='live'}={}){
   if(now<end)return {allowed:true,reason:'trial',until:new Date(end),message:'Your 14-day trial is active.'};
  }
  if(row?.status==='active'&&row.paidThrough&&now<+new Date(row.paidThrough))return {allowed:true,reason:'paid',until:row.paidThrough,message:'Your paid subscription is active.'};
- return {allowed:false,reason:row?.status==='past_due'?'payment_failed':'subscription_required',message:row?.status==='past_due'?'Your subscription payment failed. Update billing to resume retries.':'Start your 14-day trial or subscribe for $50/month to retry payments.'};
+ return {allowed:false,reason:row?.status==='past_due'?'payment_failed':'subscription_required',message:row?.status==='past_due'?'Your subscription payment failed. Update billing to resume retries.':'Start your 14-day trial or subscribe for $50/month or $500/year to retry payments.'};
 }
 module.exports={collectionAccess};

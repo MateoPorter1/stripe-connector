@@ -1,6 +1,6 @@
 # Rebound subscriptions
 
-One plan: USD 50/month, one 14-day trial per Rebound user. Stripe Checkout collects a payment method before starting the trial. Cancellation and payment-method changes use Stripe Customer Portal.
+One plan: USD 50/month or USD 500/year (USD 100 annual savings), one 14-day trial per Rebound user. Stripe Checkout collects a payment method before starting the trial. Cancellation and payment-method changes use Stripe Customer Portal.
 
 Merchant billing is separate from customer recovery credentials. Only the dedicated Rebound key is used for Checkout, subscriptions and portal access. No key belongs in the frontend or this repository.
 
@@ -8,7 +8,8 @@ Required backend environment:
 - BILLING_ENABLED=true
 - BILLING_MODE=live (test for an isolated sandbox)
 - REBOUND_BILLING_ACCOUNT: Rebound merchant account
-- REBOUND_BILLING_PRICE: active USD 5000/month recurring price
+- REBOUND_BILLING_PRICE: active USD 5000 cents/month recurring price
+- REBOUND_BILLING_ANNUAL_PRICE: active USD 50000 cents/year recurring price on the same Rebound product
 - REBOUND_BILLING_PORTAL: portal configuration
 - REBOUND_BILLING_KEY: dedicated restricted server key
 - REBOUND_BILLING_WEBHOOK_SECRET: signing secret
@@ -24,3 +25,5 @@ Administrators manage subscribers at /admin: search, sync Stripe, block/restore 
 No automatic tax configuration has been applied. Tax registrations and commercial terms must be set by the business as applicable.
 
 Checks: node --test backend/tests/*.test.js; CI=true npm test -- --watchAll=false --runInBand; CI=true npm run build. Never run real invoice retries to test subscription gating.
+
+Checkout takes only a month/year interval; price IDs and amounts are server controlled. Switching an open checkout expires the previous session, and unresolved requests retain their original idempotency parameters. Both prices share one subscription guard and one trial history. The portal allows price changes, preserves trials, and schedules annual-to-monthly changes at period end. Stripe previews any proration before the customer confirms.

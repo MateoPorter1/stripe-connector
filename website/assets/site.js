@@ -24,3 +24,15 @@ if(cardWheel){
  function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000);last=now;if(cardWheel.dataset.wheelPaused!=='true')elapsed+=dt;const degrees=elapsed*12;cardWheel.style.setProperty('--wheel-angle',`${-degrees}deg`);cardWheel.dataset.motionTime=elapsed.toFixed(2);const index=Math.round(degrees/60)%6;if(index!==selected){selected=index;cards.forEach((card,i)=>{card.dataset.active=String(i===index);dots[i].dataset.active=String(i===index)});title.textContent=`Saved card ${index+1}`;message.textContent='Every eligible card gets a chance. Stop when paid.';}}
  cardWheel.dataset.wheelState='pool';reconcile();requestAnimationFrame(animate);
 }
+
+// Keep the selected billing interval visible through signup and Checkout.
+const pricingIntervals=[...document.querySelectorAll('[data-pricing-interval]')];
+pricingIntervals.forEach(button=>button.addEventListener('click',()=>{
+ const annual=button.dataset.pricingInterval==='year';
+ pricingIntervals.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+ document.querySelector('[data-pricing-amount]').textContent=annual?'$500':'$50';
+ document.querySelector('[data-pricing-period]').textContent=annual?'USD / year':'USD / month';
+ document.querySelector('[data-pricing-equivalent]').textContent=annual?'$41.67/month equivalent. Billed $500 once a year.':'Pay monthly. Same features, no annual commitment.';
+ document.querySelector('[data-pricing-terms]').textContent=annual?'Payment method required. Then $500 USD/year.':'Payment method required. Then $50 USD/month.';
+ document.querySelectorAll('[data-pricing-signup]').forEach(a=>{const url=new URL(a.href);url.searchParams.set('interval',annual?'year':'month');a.href=url.href;});
+}));

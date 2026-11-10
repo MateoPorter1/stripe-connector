@@ -2,13 +2,13 @@ const test=require('node:test');const assert=require('node:assert/strict');
 const {createBilling,billingConfig}=require('../services/billing');
 const Stripe=require('stripe-billing');const express=require('express');
 const {createBillingRoutes}=require('../routes/billing');
-function fixture(){
- const config={mode:'test',scope:'test:acct_rebound',account:'acct_rebound',price:'price_monthly',origin:'http://localhost:3000',webhookSecret:'whsec_fixture'};
+function fixture({annual=false}={}){
+ const config={mode:'test',scope:'test:acct_rebound',account:'acct_rebound',price:'price_monthly',...(annual?{annualPrice:'price_annual'}:{}),origin:'http://localhost:3000',webhookSecret:'whsec_fixture'};
  let rows=[],subs=[],sessions=new Map(),count=0,calls=[];
  function match(row,q){return Object.entries(q).every(([k,v])=>k==='$or'?v.some(x=>match(row,x)):v&&typeof v==='object'&&'$lte'in v?row[k]!=null&&+row[k]<=+v.$lte:row[k]==v);}
  function wrap(row){return Object.assign({...row}, {async save(){const dest=rows.find(x=>x._id===this._id);for(const [k,v]of Object.entries(this))if(typeof v!=='function')dest[k]=v;return this;}});}
  const Store={init:async()=>{},async findOne(q){const row=rows.find(x=>match(x,q));return row?wrap(row):null;},async findOneAndUpdate(q,u,o={}){let row=rows.find(x=>match(x,q));if(!row&&o.upsert){row={_id:String(++count),...u.$setOnInsert};rows.push(row);}if(!row)return null;if(u.$set)Object.assign(row,u.$set);return wrap(row);},async updateOne(q,u){const row=rows.find(x=>match(x,q));if(row&&u.$unset)for(const k of Object.keys(u.$unset))delete row[k];}};
- const stripe={accounts:{retrieve:async()=>({id:'acct_rebound'})},prices:{retrieve:async()=>({id:'price_monthly',livemode:false,active:true,type:'recurring',recurring:{interval:'month',interval_count:1},unit_amount:5000,currency:'usd',product:{name:'Rebound TEST',active:true}})},customers:{create:async(p,o)=>{calls.push(['customer',p,o]);return {id:'cus_ours'};}},subscriptions:{list:async()=>({data:subs,has_more:false})},checkout:{sessions:{create:async(p,o)=>{calls.push(['checkout',p,o]);const s={id:'cs_test_ABC',url:'https://checkout.stripe.com/c/pay/cs_test_ABC',expires_at:Math.floor(Date.now()/1000)+1800,status:'open',customer:p.customer,client_reference_id:p.client_reference_id,mode:'subscription',livemode:false};sessions.set(s.id,s);return s;},retrieve:async id=>{const s=sessions.get(id);if(!s)throw Error('missing');return s;}}},billingPortal:{sessions:{create:async p=>{calls.push(['portal',p]);return {url:'https://billing.stripe.com/p/session/test_x'};}}},webhooks:new Stripe('sk_test_fixture').webhooks};
+ const stripe={accounts:{retrieve:async()=>({id:'acct_rebound'})},prices:{retrieve:async(id)=>({id,livemode:false,active:true,type:'recurring',recurring:{interval:id==='price_annual'?'year':'month',interval_count:1},unit_amount:id==='price_annual'?50000:5000,currency:'usd',product:{id:'prod_fixture',name:'Rebound TEST',active:true}})},customers:{create:async(p,o)=>{calls.push(['customer',p,o]);return {id:'cus_ours'};}},subscriptions:{list:async()=>({data:subs,has_more:false})},checkout:{sessions:{create:async(p,o)=>{calls.push(['checkout',p,o]);const s={id:'cs_test_ABC',url:'https://checkout.stripe.com/c/pay/cs_test_ABC',expires_at:Math.floor(Date.now()/1000)+1800,status:'open',customer:p.customer,client_reference_id:p.client_reference_id,mode:'subscription',livemode:false};sessions.set(s.id,s);return s;},expire:async id=>{calls.push(['expire',id]);sessions.get(id).status='expired';return sessions.get(id);},retrieve:async id=>{const s=sessions.get(id);if(!s)throw Error('missing');return s;}}},billingPortal:{sessions:{create:async p=>{calls.push(['portal',p]);return {url:'https://billing.stripe.com/p/session/test_x'};}}},webhooks:new Stripe('sk_test_fixture').webhooks};
  return {config,Store,stripe,calls,rows,sessions,service:createBilling({config,Store,stripe}),setSubs(x){subs=x;}};
 }
 const user={_id:'user1',name:'Test user',email:'billing@example.com'};
@@ -74,4 +74,27 @@ test('live access requires an authoritative paid invoice for the configured pric
  const invoice={status:'paid',lines:{data:[{pricing:{price_details:{price:'price_monthly'}},period:{end:Math.floor(Date.now()/1000)+86400}}]}};
  f.setSubs([sub('active',{latest_invoice:invoice})]);assert.equal((await f.service.status('user1')).billing.access.allowed,true);
  f.setSubs([sub('active',{latest_invoice:{...invoice,status:'open'}})]);assert.equal((await f.service.status('user1')).billing.access.allowed,false);
+});
+
+
+test('annual checkout is $500/year, keeps the trial, and uses the server price',async()=>{
+ const f=fixture({annual:true});const result=await f.service.status('user1');assert.equal(result.plans.length,2);assert.equal(result.plans[1].amount,50000);
+ await f.service.checkout(user,'year');const c=f.calls.find(c=>c[0]==='checkout');assert.equal(c[1].line_items[0].price,'price_annual');assert.equal(c[1].subscription_data.trial_period_days,14);assert.equal(c[1].metadata.billing_interval,'year');assert.equal(f.rows[0].checkoutInterval,'year');
+});
+test('switching an open checkout expires the old session before creating another',async()=>{
+ const f=fixture({annual:true});await f.service.checkout(user,'month');await f.service.checkout(user,'year');assert.equal(f.calls.filter(c=>c[0]==='expire').length,1);assert.deepEqual(f.calls.filter(c=>c[0]==='checkout').map(c=>c[1].line_items[0].price),['price_monthly','price_annual']);
+});
+test('uncertain checkout cannot reuse an idempotency key with another price',async()=>{
+ const f=fixture({annual:true});f.stripe.checkout.sessions.create=async()=>{throw Error('timeout');};await assert.rejects(()=>f.service.checkout(user,'month'),/timeout/);const pending=f.rows[0].checkoutId;await assert.rejects(()=>f.service.checkout(user,'year'),e=>e.statusCode===409);assert.equal(f.rows[0].checkoutId,pending);
+});
+test('monthly and annual subscriptions share the same duplicate and trial protections',async()=>{
+ const f=fixture({annual:true});await f.service.checkout(user);f.setSubs([sub('trialing',{trial_start:1700000000,trial_end:1701209600})]);await assert.rejects(()=>f.service.checkout(user,'year'),/already exists/);
+ f.sessions.get('cs_test_ABC').status='complete';f.setSubs([sub('canceled',{trial_start:1700000000,trial_end:1701209600})]);await f.service.checkout(user,'year');assert.equal(f.calls.filter(c=>c[0]==='checkout').at(-1)[1].subscription_data.trial_period_days,undefined);
+});
+test('annual paid invoices preserve the full year of access and appear as annual',async()=>{
+ const f=fixture({annual:true});await f.service.checkout(user,'year');f.setSubs([sub('active',{items:{data:[{price:{id:'price_annual'},current_period_end:1900000000}]},latest_invoice:{status:'paid',lines:{data:[{pricing:{price_details:{price:'price_annual'}},period:{end:1900000000}}]}}})]);
+ const status=await f.service.status('user1');assert.equal(status.billing.interval,'year');assert.equal(status.plan.amount,50000);assert.equal(+status.billing.paidThrough,1900000000000);await assert.rejects(()=>f.service.checkout(user,'month'),/already exists/);
+});
+test('unsupported intervals and incorrect annual amounts cannot start checkout',async()=>{
+ const f=fixture({annual:true});await assert.rejects(()=>f.service.checkout(user,'week'),e=>e.statusCode===400);const original=f.stripe.prices.retrieve;f.stripe.prices.retrieve=async id=>({...await original(id),...(id==='price_annual'?{unit_amount:100}: {})});await assert.rejects(()=>f.service.checkout(user,'year'),e=>e.statusCode===503);assert.equal(f.calls.length,0);
 });

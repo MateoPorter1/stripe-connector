@@ -6,6 +6,8 @@ const schema = new mongoose.Schema({
   customerId: String,
   checkoutId: String,
   checkoutUrl: String,
+  checkoutInterval: {type:String,enum:['month','year']},
+  interval: {type:String,enum:['month','year',null]},
   checkoutExpiresAt: Date,
   subscriptionId: String,
   status: {type:String,default:'none'},
