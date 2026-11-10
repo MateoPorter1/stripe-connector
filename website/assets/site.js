@@ -34,5 +34,5 @@ pricingIntervals.forEach(button=>button.addEventListener('click',()=>{
  document.querySelector('[data-pricing-period]').textContent=annual?'USD / year':'USD / month';
  document.querySelector('[data-pricing-equivalent]').textContent=annual?'$41.67/month equivalent. Billed $500 once a year.':'Pay monthly. Same features, no annual commitment.';
  document.querySelector('[data-pricing-terms]').textContent=annual?'Payment method required. Then $500 USD/year.':'Payment method required. Then $50 USD/month.';
- document.querySelectorAll('[data-pricing-signup]').forEach(a=>{const url=new URL(a.href);url.searchParams.set('interval',annual?'year':'month');a.href=url.href;});
+ document.querySelectorAll('a[href*="app.reboundmrr.com/signup"]').forEach(a=>{const url=new URL(a.href);url.searchParams.set('interval',annual?'year':'month');a.href=url.href;});
 }));
