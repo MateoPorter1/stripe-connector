@@ -1,0 +1,1 @@
+run_reference,invoice_id,subscription_id,stripe_account_reference,mode,currency,attempted_at,stripe_request_id,request_endpoint,confirmed_amount_collected,outcome,attribution_status,evidence_reference,reviewer,reviewed_at,refund_or_dispute_adjustment,notes

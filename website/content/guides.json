@@ -385,7 +385,7 @@
     "description": "Understand retry timing, payment-method priority, and saved-card fallback. Use a decision checklist to coordinate Stripe recovery with an additional collection tool.",
     "topic": "Stripe payments",
     "published": "2026-11-09",
-    "updated": "2026-11-09",
+    "updated": "2026-11-10",
     "answer": "Stripe Smart Retries chooses when to retry eligible failed payments. Saved-card fallback chooses another eligible stored card to try. Compare timing, card selection, and reporting separately rather than assuming they are the same feature.",
     "sections": [
       {
@@ -407,6 +407,10 @@
       {
         "title": "Choose based on the unresolved problem",
         "body": "<p>If nobody has reviewed your current retry and email settings, start there. If the recurring problem is unpaid invoices where customers already have other eligible saved cards, inspect the <a href='/resources/stripe-retry-payment-different-card'>different-card workflow</a>. If authentication is required, use a customer-facing resolution path.</p><p>Evaluate tools with <a href='/resources/payment-recovery-metrics'>a fixed invoice cohort</a>. Compare actual confirmed collections, not a headline recovery percentage from a different business.</p>"
+      },
+      {
+        "title": "When the same card keeps returning",
+        "body": "<p>If a replacement exists but retries still target the old card, inspect the effective defaults before changing timing. The <a href=\"/resources/stripe-keeps-retrying-same-card\">same-card diagnostic</a> walks through that mismatch. For messaging and unresolved accounts, use the <a href=\"/resources/stripe-dunning\">dunning checklist</a>.</p><p>Saved-card fallback is also advertised by other recovery vendors. Read the public-documentation comparisons with <a href=\"/resources/rebound-vs-flycode\">FlyCode</a> and <a href=\"/resources/rebound-vs-stunning\">Stunning</a> when evaluating scope; this feature alone is not exclusive to Rebound.</p>"
       }
     ],
     "sources": [
@@ -426,7 +430,7 @@
     ],
     "keyword": "Stripe Smart Retries vs card fallback",
     "editor": "Rebound",
-    "reviewed": "2026-11-09",
+    "reviewed": "2026-11-10",
     "seoTitle": "Stripe Smart Retries vs. saved-card fallback"
   },
   {
@@ -435,7 +439,7 @@
     "description": "A step-by-step workflow for an unpaid subscription invoice with multiple saved cards. Check eligibility, stop on payment, and keep the original invoice reference.",
     "topic": "Stripe payments",
     "published": "2026-11-09",
-    "updated": "2026-11-09",
+    "updated": "2026-11-10",
     "answer": "To retry with another saved card, work from the existing unpaid invoice, check that the customer’s alternative card is eligible, attempt that invoice, and verify the result before considering another card.",
     "sections": [
       {
@@ -457,6 +461,10 @@
       {
         "title": "Do not confuse this payment with future renewals",
         "body": "<p>Paying an existing invoice and choosing the default for future renewals are separate tasks. After resolving the current debt, review where the subscription’s intended payment method is configured. A customer who updates billing details should know whether that change affects the current invoice, later invoices, or both.</p><p>For that distinction, read <a href='/resources/stripe-smart-retries-vs-card-fallback'>retry timing versus fallback</a>. For a result that needs customer verification, use the <a href='/resources/stripe-authentication-required'>authentication guide</a>.</p>"
+      },
+      {
+        "title": "A worked invoice walkthrough",
+        "body": "<div class=\"inline-note\"><strong>Illustrative walkthrough—not live account evidence.</strong> Invoice INV-1041 has $96 outstanding. Card A fails. Card B pays the original invoice. Card C is not attempted. There is one $96 collection, not three debts.</div><ol><li>Open the original invoice and confirm $96 remains due.</li><li>Review the customer’s distinct eligible cards and the latest decline advice.</li><li>Coordinate existing retries before starting collection.</li><li>Attempt the existing invoice using the chosen eligible method; inspect the returned outcome.</li><li>Stop once paid. If the outcome is uncertain, reconcile it before another card.</li><li>Record the invoice, request reference, paid amount, and next subscription action.</li></ol><p>A technical team can use Stripe’s <a href=\"https://docs.stripe.com/api/invoices/pay\">invoice pay endpoint</a> with a customer-owned payment method; this is an actual charging action. In Rebound, review the list and deliberately start the run instead of performing this sequence invoice by invoice.</p><p>A new customer default might not replace a subscription-level default. Use <a href=\"/resources/stripe-keeps-retrying-same-card\">the same-card diagnostic</a> if the old card keeps returning. Changing future billing preferences is separate from collecting this invoice.</p>"
       }
     ],
     "sources": [
@@ -476,7 +484,7 @@
     ],
     "keyword": "retry Stripe payment different card",
     "editor": "Rebound",
-    "reviewed": "2026-11-09",
+    "reviewed": "2026-11-10",
     "seoTitle": "Retry a Stripe invoice with a different saved card"
   },
   {
@@ -531,7 +539,7 @@
     "description": "Turn common subscription decline codes into a practical triage workflow. Separate customer action, card replacement, and outcomes that need verification.",
     "topic": "Stripe payments",
     "published": "2026-11-09",
-    "updated": "2026-11-09",
+    "updated": "2026-11-10",
     "answer": "A decline code helps explain a failed card attempt; it is not a universal instruction to retry. Read the code and payment state, then choose between customer action, an eligible alternative method, or review.",
     "sections": [
       {
@@ -553,6 +561,10 @@
       {
         "title": "Review patterns without losing invoice detail",
         "body": "<p>Each week, group unresolved invoices by next action: replacement needed, customer authentication, confirmed decline, no eligible saved method, and uncertain result. Assign an owner to each group. Keep invoice-level references so support can investigate an individual case.</p><p>Report distinct invoices and amounts, not just the number of decline events. A rising event count might mean the same debt was attempted more often rather than more customers becoming overdue.</p>"
+      },
+      {
+        "title": "Go deeper on two common troubleshooting paths",
+        "body": "<p>For low-funds failures, use the <a href=\"/resources/decline-code-51-insufficient-funds\">decline code 51 checklist</a>. For a non-specific issuer refusal, use the <a href=\"/resources/stripe-do-not-honor\">do_not_honor diagnostic</a>. The two are not the same diagnosis. Verify the actual code, network, and advice before choosing the next action.</p>"
       }
     ],
     "sources": [
@@ -568,7 +580,7 @@
     ],
     "keyword": "Stripe decline codes",
     "editor": "Rebound",
-    "reviewed": "2026-11-09",
+    "reviewed": "2026-11-10",
     "seoTitle": "Stripe decline codes: practical next actions"
   },
   {
@@ -627,7 +639,7 @@
     "description": "Copy and adapt three clear payment-failure emails: first notice, card update, and follow-up. Includes a checklist to stop reminders after payment.",
     "topic": "Revenue recovery",
     "published": "2026-11-09",
-    "updated": "2026-11-09",
+    "updated": "2026-11-10",
     "answer": "A useful failed-payment email states what remains due, identifies the subscription, and gives the customer one secure action. Check the invoice before sending and stop reminders when the balance is resolved.",
     "sections": [
       {
@@ -649,6 +661,10 @@
       {
         "title": "Use saved-card recovery and email for different jobs",
         "body": "<p>Some invoices can be resolved through an eligible saved-card attempt. Others need a new method, authentication, or a customer conversation. Match the next action to the case instead of sending the same message for every decline.</p><p>Rebound does not send these email campaigns. It handles operator-started saved-card collection and traceability. Read <a href='/resources/dunning-vs-card-fallback'>dunning versus card fallback</a> to plan how the two workflows should cooperate.</p>"
+      },
+      {
+        "title": "Suppress messages against the current invoice state",
+        "body": "<p>Before each send, check whether the invoice remains outstanding and whether another customer action is already in progress. Stop unpaid reminders after confirmed resolution; route unknown outcomes for review. A historical failure event alone is not enough to justify another email.</p><p>Assign one system to own each message type. If Stripe, your app, and a recovery vendor all react to the same failure, the customer can receive duplicate or conflicting instructions. Test suppression with an invoice that becomes paid between scheduling and sending.</p><p>Rebound does not send these messages. Use the templates in your existing communication system or Stripe’s supported settings, and coordinate those settings with <a href=\"/resources/stripe-dunning\">the complete dunning workflow</a>.</p>"
       }
     ],
     "sources": [
@@ -668,7 +684,7 @@
     ],
     "keyword": "failed payment email template",
     "editor": "Rebound",
-    "reviewed": "2026-11-09",
+    "reviewed": "2026-11-10",
     "seoTitle": "Failed payment email templates for SaaS"
   },
   {
@@ -677,7 +693,7 @@
     "description": "Reconcile Stripe failure counts with unpaid invoices. Check dates, timezone, pagination, duplicates, current balances, and recovered payments before comparing totals.",
     "topic": "Stripe payments",
     "published": "2026-11-09",
-    "updated": "2026-11-09",
+    "updated": "2026-11-10",
     "answer": "To reconcile a failed-payment report with Stripe, use the same account, mode, dates, timezone, and record type. Then group attempts by invoice and check current balances. A failure-event count and an unpaid-invoice count will often differ.",
     "sections": [
       {
@@ -699,6 +715,14 @@
       {
         "title": "Close the reconciliation after recovery",
         "body": "<p>Keep the original selection so the before-and-after comparison uses the same invoices. Record confirmed payment separately from failed or uncertain attempts. Do not silently remove paid rows from historical reporting and then lose the explanation for the balance change.</p><p>Use <a href='/resources/payment-recovery-metrics'>fixed-cohort metrics</a> for results and <a href='/resources/stripe-payment-recovery-attribution'>request-level evidence</a> when identifying what your recovery tool collected.</p>"
+      },
+      {
+        "title": "Reconcile a small example before the whole month",
+        "body": "<p>Suppose your failure export contains 33 records. In an illustrative reconciliation, those records refer to 25 distinct subscription invoices. Three have since been paid, one was voided, and two have no usable saved method. You would report 33 historical failure records, 25 distinct invoices with failures, 21 currently unpaid non-void invoices, and at most 19 candidates before other eligibility checks. These are different questions, not interchangeable counts.</p><p>This example is not your account’s data. Keep void and paid records in history rather than deleting them to force totals to match.</p><ol><li>Use the same account, live/test mode, time zone, and failure-event interval on both sides.</li><li>Export all pages of matching records; record the extraction time.</li><li>Group by the original invoice ID, preserving the number of failures.</li><li>Read today’s invoice state separately from the historical event window.</li><li>Record every inclusion or exclusion reason.</li></ol><p>Use a start-inclusive, end-exclusive timestamp interval when joining event exports, and convert a calendar end date to the next day in the chosen time zone. Do not assume every day is exactly 24 hours across daylight-saving changes.</p>"
+      },
+      {
+        "title": "Download the reconciliation worksheet",
+        "body": "<p><a class=\"button\" href=\"/assets/failed-payment-reconciliation.csv\" download>Download reconciliation CSV →</a></p><p>The empty worksheet contains invoice and subscription references, failure timestamps, the report time zone, failure count, current balance, saved-card counts, eligibility reason, and reconciliation notes. Fill it with your own exports in a private workspace. It does not fetch Stripe data or initiate charges.</p><p>Keep separate currencies separate. Record the historical failure population first, then derive today’s recovery candidates. Use <a href=\"/resources/stripe-payment-recovery-attribution\">the attribution guide</a> when an invoice subsequently becomes paid.</p>"
       }
     ],
     "sources": [
@@ -718,7 +742,7 @@
     ],
     "keyword": "Stripe failed payment report",
     "editor": "Rebound",
-    "reviewed": "2026-11-09",
+    "reviewed": "2026-11-10",
     "seoTitle": "How to reconcile a Stripe failed-payment report"
   },
   {
@@ -727,7 +751,7 @@
     "description": "Trace recovery from a tool’s run to the original Stripe invoice and API request. Avoid claiming every payment after a run was recovered by that tool.",
     "topic": "Revenue recovery",
     "published": "2026-11-09",
-    "updated": "2026-11-09",
+    "updated": "2026-11-10",
     "answer": "Verify a recovery by matching the original invoice and confirmed payment with the collection tool’s attempt record. Stripe request logs can provide stronger evidence of origin than an invoice-paid event or a matching timestamp alone.",
     "sections": [
       {
@@ -749,6 +773,14 @@
       {
         "title": "How to use Rebound’s views",
         "body": "<p>Review card-by-card run outcomes in Collections and the recorded monthly payments in Insights. Follow the invoice reference to Stripe for verification. These views support traceability; they do not mean every payment in the connected Stripe account is attributable to Rebound.</p><p>Read <a href='/resources/payment-recovery-metrics'>the metrics guide</a> before reporting a percentage. The <a href='/customers/porter-metrics'>Porter Metrics customer example</a> clearly separates a customer-reported result from a public transaction audit.</p>"
+      },
+      {
+        "title": "An evidence trail you can reproduce",
+        "body": "<ol><li>Select one collected invoice in the run results.</li><li>Open that original invoice in the correct Stripe account and mode.</li><li>Find its relevant payment and request log around the run’s attempt time.</li><li>Compare the request ID, endpoint, invoice, method, and result with your tool’s record.</li><li>Verify the paid amount and any later refunds or disputes separately.</li></ol><p>A matching <code>POST /v1/invoices/{invoice}/pay</code> request is useful evidence of an invoice payment attempt. A shared API key or a nearby timestamp alone cannot identify the caller. A <code>paid_out_of_band</code> operation is not proof of a Stripe card charge. Check the full context.</p><p>In the event, request references may help connect the change to its API request. Some events are not caused by a direct API call. Do not assume an event label automatically names Rebound.</p><p><strong>Illustrative chain:</strong> run-example → in_example → req_example → confirmed invoice payment. These are placeholders, not redacted transaction records. Public customer-level proof should only be added after the actual records are reconciled and approved for disclosure.</p>"
+      },
+      {
+        "title": "Download an attribution ledger",
+        "body": "<p><a class=\"button\" href=\"/assets/payment-recovery-attribution.csv\" download>Download attribution CSV →</a></p><p>For each invoice, record the run, attempt time, Stripe request reference, confirmed collection, currency, attribution decision, reviewer, and later adjustments. Use “unknown” when evidence is incomplete rather than forcing every paid invoice into the recovered total.</p><p>Distinguish <strong>tool-attributed collection</strong> from <strong>incremental recovery</strong>: even a well-matched request does not prove the customer or another retry would never have paid. An incremental claim needs a comparison design, not just an API log.</p>"
       }
     ],
     "sources": [
@@ -772,7 +804,309 @@
     ],
     "keyword": "verify Stripe payment recovery",
     "editor": "Rebound",
-    "reviewed": "2026-11-09",
+    "reviewed": "2026-11-10",
     "seoTitle": "Verify payment recovery in Stripe: an audit checklist"
+  },
+  {
+    "slug": "stripe-keeps-retrying-same-card",
+    "title": "Why Stripe keeps retrying the same card after a payment fails",
+    "description": "A new card on the customer does not always change the subscription default. Diagnose repeated Stripe retries and choose the right invoice recovery action.",
+    "keyword": "stripe keeps retrying same card",
+    "answer": "Stripe can keep retrying a subscription’s default card even after another card is saved on the customer. Check which default controls the retry before changing the schedule or assuming the new card will be selected.",
+    "sections": [
+      {
+        "title": "Start with one unpaid invoice, not the customer’s card count",
+        "body": "<p>Open the original invoice and confirm its current balance and latest payment outcome. Then inspect its subscription and customer. A count of three saved cards answers how many methods exist; it does not tell you which one a scheduled retry selects.</p><p>Write down four things: invoice reference, last attempted card, subscription default, and customer billing default. If those references differ, investigate the mismatch before attempting collection.</p>"
+      },
+      {
+        "title": "The subscription default can take priority",
+        "body": "<p>Stripe documents a retry order: subscription default payment method, subscription default source, customer billing default payment method, then the legacy customer default source. Updating only a lower-priority default can leave the subscription retrying the previous method. See <a href=\"https://docs.stripe.com/billing/revenue-recovery/smart-retries\">Stripe’s payment method ordering</a>.</p><div class=\"inline-note\"><strong>Illustrative example.</strong> A subscription defaults to card A. The customer adds card B and makes it their customer-level default. The subscription still points to A. A saved replacement and the effective subscription default are different facts.</div>"
+      },
+      {
+        "title": "Separate three decisions: card, timing, and customer action",
+        "body": "<ol><li><strong>Card:</strong> verify which eligible method should pay this invoice.</li><li><strong>Timing:</strong> review the existing retry policy and other active recovery tools.</li><li><strong>Customer action:</strong> identify cases needing authentication, corrected details, or issuer contact.</li></ol><p>Do not solve an authentication problem by simply increasing attempts. Our <a href=\"/resources/stripe-authentication-required\">authentication guide</a> explains that branch. For the broader timing-versus-method distinction, read <a href=\"/resources/stripe-smart-retries-vs-card-fallback\">Smart Retries vs. saved-card fallback</a>.</p>"
+      },
+      {
+        "title": "Recover this invoice without confusing future renewals",
+        "body": "<p>A one-off attempt on the existing invoice and a change to the subscription’s future default are separate actions. Stripe’s invoice-payment API supports specifying a method belonging to that invoice’s customer. Verify the result against the original invoice rather than creating a second debt.</p><p>Use the <a href=\"/resources/stripe-retry-payment-different-card\">different-card walkthrough</a> for the operational sequence. Record any intended renewal-default change separately so a one-time recovery does not silently become a permanent billing preference.</p>"
+      },
+      {
+        "title": "Where Rebound fits",
+        "body": "<p>Rebound lets an operator review failed subscription payments, then deliberately start a run across eligible saved cards. Each eligible distinct card is tried once per invoice in that run, stopping on payment. Opening the list does not charge customers.</p><p>This is a collection workflow, not a promise that every stored card is usable. Rebound does not replace Stripe’s authentication requirements or supply an email campaign. Review <a href=\"/connection-and-controls\">connection and collection controls</a> before connecting.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe retry ordering and scheduling",
+        "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+      ],
+      [
+        "Stripe: pay an existing invoice",
+        "https://docs.stripe.com/api/invoices/pay"
+      ]
+    ],
+    "related": [
+      "stripe-retry-payment-different-card",
+      "stripe-smart-retries-vs-card-fallback",
+      "stripe-authentication-required"
+    ],
+    "topic": "Stripe payments",
+    "published": "2026-11-10",
+    "updated": "2026-11-10",
+    "reviewed": "2026-11-10",
+    "editor": "Rebound"
+  },
+  {
+    "slug": "stripe-dunning",
+    "title": "Stripe dunning: configure retries, emails, and the next action",
+    "description": "Set up Stripe dunning around retries, failed-payment emails, customer updates, and unresolved invoices. See where saved-card recovery fits.",
+    "keyword": "stripe dunning",
+    "answer": "Stripe dunning is the process of following up on overdue subscription payments using retries, customer messages, and a defined outcome when collection fails. Configure the native tools first, then identify the work your team still needs to handle.",
+    "sections": [
+      {
+        "title": "Give each part of the workflow an owner",
+        "body": "<p>Start with a simple operating rule: every unpaid subscription invoice needs a next action and an owner. That action might be a scheduled retry, a customer update, a deliberate saved-card run, or review. An invoice waiting for authentication should not disappear into the same bucket as one with a usable alternative card.</p><p><a href=\"/resources/dunning-vs-card-fallback\">Dunning and saved-card fallback</a> solve overlapping but different jobs. The objective is one coherent process, not several tools independently contacting or charging the same account.</p>"
+      },
+      {
+        "title": "Check the native retry settings",
+        "body": "<p>In Stripe, open <strong>Billing → Revenue recovery → Retries</strong>. Review your actual retry count, window, and final subscription outcome. Smart Retries chooses timing within the configured policy; do not assume another account’s settings apply to yours.</p><p>Document who can change this policy and which other systems can attempt collection. Use <a href=\"/resources/stripe-keeps-retrying-same-card\">the same-card diagnostic</a> when the problem is method selection rather than timing.</p>"
+      },
+      {
+        "title": "Configure a way for the customer to resolve the failure",
+        "body": "<p>Stripe provides failed-payment emails and payment-confirmation messages with hosted recovery options. Check the relevant email settings, branding, destination, and recipient details. Recurring invoice reminders for manually sent invoices are a separate setting from failed automatic-card notifications.</p><p>For your own messages, use <a href=\"/resources/failed-payment-email-templates\">the failed-payment templates</a>. Send customers to a secure billing page; do not ask them to email card details. Test the path from notification to invoice resolution.</p>"
+      },
+      {
+        "title": "A practical review checklist",
+        "body": "<ul><li><strong>Before the next attempt:</strong> check the current invoice balance and latest outcome.</li><li><strong>If a method needs attention:</strong> assign the card update or authentication request to an owner.</li><li><strong>If another eligible card exists:</strong> choose a coordinated collection workflow.</li><li><strong>After payment:</strong> remove the invoice from unpaid follow-up and verify future subscription status separately.</li><li><strong>If unresolved:</strong> follow the access and cancellation policy you actually communicated.</li></ul><p>Never treat a generic decline as proof the customer intended to cancel.</p>"
+      },
+      {
+        "title": "What Rebound adds—and what it does not",
+        "body": "<p>Rebound focuses on deliberate, invoice-level collection across eligible saved cards, with card-attempt and invoice results. It does not send dunning emails or operate an automatic background recovery schedule. Keep your customer communication and other retry policies coordinated with any run.</p><p>For a more complete communication suite, evaluate that requirement explicitly. The <a href=\"/resources/rebound-vs-stunning\">Stunning comparison</a> explains a different product scope; the <a href=\"/resources/rebound-vs-flycode\">FlyCode comparison</a> covers a broader recovery platform.</p>"
+      },
+      {
+        "title": "Measure the process without inflating recovery",
+        "body": "<p>Fix a cohort of distinct original invoices. Track their opening balances, collection outcomes, and who caused each payment. Failed attempts, paid invoices, collected cash, and retained customers are separate measures.</p><p>Use <a href=\"/resources/payment-recovery-metrics\">the recovery metrics guide</a> and <a href=\"/resources/stripe-payment-recovery-attribution\">the attribution worksheet</a> before presenting a recovery percentage. A paid invoice does not by itself prove incremental recovery over Stripe.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: automatic retries",
+        "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+      ],
+      [
+        "Stripe: customer recovery emails",
+        "https://docs.stripe.com/billing/revenue-recovery/customer-emails"
+      ]
+    ],
+    "related": [
+      "dunning-vs-card-fallback",
+      "failed-payment-email-templates",
+      "stripe-keeps-retrying-same-card"
+    ],
+    "topic": "Revenue recovery",
+    "published": "2026-11-10",
+    "updated": "2026-11-10",
+    "reviewed": "2026-11-10",
+    "editor": "Rebound"
+  },
+  {
+    "slug": "decline-code-51-insufficient-funds",
+    "title": "Decline code 51: an insufficient-funds checklist for subscriptions",
+    "description": "Handle card decline code 51 in a subscription business: verify the network response, inspect the invoice, and choose a customer update or eligible alternative card.",
+    "keyword": "decline code 51",
+    "answer": "For Visa card payments, network decline code 51 means insufficient funds. In Stripe, also inspect the normalized decline code and any retry advice. A low-funds failure is a payment problem to resolve, not automatic evidence of customer churn.",
+    "sections": [
+      {
+        "title": "Confirm what the code refers to",
+        "body": "<p>A network response code and a Stripe decline code are different fields. Stripe’s network reference maps Visa 51 to insufficient funds; the card network matters when reading raw codes. Check the actual payment record instead of translating a screenshot label in isolation.</p><p>This guide is for subscription operators. If your own card was declined, contact the merchant or card issuer; Rebound cannot view or fix your personal bank balance.</p>"
+      },
+      {
+        "title": "Use an invoice-first checklist",
+        "body": "<ol><li>Find the subscription’s original invoice and current unpaid balance.</li><li>Check whether another process or the customer has already paid it.</li><li>Read the latest failure and available advice rather than relying on an older event.</li><li>Review other saved methods for eligibility and authorization.</li><li>Choose the next action and document the outcome.</li></ol><p>Keep the amount and currency intact. Repeated failures on the same invoice do not create additional revenue exposure.</p>"
+      },
+      {
+        "title": "Choose an action that could change the result",
+        "body": "<p>Stripe’s guidance for <code>insufficient_funds</code> points to an alternative payment method. An eligible different saved card may provide a collection path; its existence does not guarantee success. If the customer needs to update billing or resolve a restriction, use a secure customer-facing path.</p><p>Review advice and existing retry activity before making another attempt. Avoid a rapid loop against the same unchanged method. If a payment outcome is uncertain, reconcile it before trying another card.</p>"
+      },
+      {
+        "title": "Illustrative case: one debt, two cards",
+        "body": "<div class=\"inline-note\"><strong>Example, not a customer result.</strong> A $96 subscription invoice fails on card A with insufficient funds. Card B is saved and eligible. The operator verifies that $96 remains due, starts the selected recovery workflow, and B pays the original invoice. The invoice is now paid; further cards are unnecessary.</div><p>If B fails too, the debt remains the same $96. Record the attempts and the unresolved next action, rather than counting $192 in failed revenue.</p>"
+      },
+      {
+        "title": "Move from troubleshooting to a repeatable process",
+        "body": "<p>Rebound handles the repeated card-by-card work after an operator starts a run. It stops for an invoice when paid or when its eligible cards are exhausted; unknown outcomes need review. It is not a way to override an issuer restriction.</p><p>Continue with <a href=\"/resources/stripe-retry-payment-different-card\">the different-card workflow</a> or <a href=\"/resources/failed-payment-email-templates\">a customer follow-up template</a>. Reconcile the result before calling the customer retained.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: network response codes",
+        "https://docs.stripe.com/declines/network-codes"
+      ],
+      [
+        "Stripe: normalized decline codes",
+        "https://docs.stripe.com/declines/codes"
+      ],
+      [
+        "Stripe: card declines and retry advice",
+        "https://docs.stripe.com/declines/card"
+      ]
+    ],
+    "related": [
+      "stripe-decline-codes",
+      "stripe-retry-payment-different-card",
+      "payment-recovery-metrics"
+    ],
+    "topic": "Stripe payments",
+    "published": "2026-11-10",
+    "updated": "2026-11-10",
+    "reviewed": "2026-11-10",
+    "editor": "Rebound"
+  },
+  {
+    "slug": "stripe-do-not-honor",
+    "title": "Stripe do_not_honor: what subscription operators should do next",
+    "description": "Diagnose a Stripe do_not_honor decline without guessing the bank’s reason. Check the original invoice, retry advice, and customer-action path.",
+    "keyword": "do not honor decline",
+    "answer": "Stripe’s do_not_honor decline means the issuer declined the payment without providing a specific reason. It does not identify a single cause such as insufficient funds. Check the payment evidence and ask the customer to contact their issuer when needed.",
+    "sections": [
+      {
+        "title": "Do not turn an unknown reason into a diagnosis",
+        "body": "<p>A generic issuer refusal does not tell you the customer’s balance or intent. For Visa, raw network code 05 is the network’s don’t-honor response; inspect the network and Stripe fields together. Do not label every such account fraudulent or churned.</p><p>Read the <a href=\"/resources/stripe-decline-codes\">decline-code guide</a> if your report mixes raw responses, Stripe codes, and human-readable messages.</p>"
+      },
+      {
+        "title": "Inspect before attempting collection again",
+        "body": "<ul><li>Confirm the original invoice remains unpaid.</li><li>Read the latest payment failure and any retry advice.</li><li>Check whether card details require correction or the customer must contact the issuer.</li><li>Identify other active retry systems and any uncertain recent outcome.</li><li>Record the next action and its owner.</li></ul><p>Do not assume that a scheduled or counted retry proves a new charge reached the network. Inspect the payment evidence for the attempt you are investigating.</p>"
+      },
+      {
+        "title": "Use advice to choose the branch",
+        "body": "<p>Stripe can return advice indicating that the method should not be tried again for the transaction, that a later attempt may be appropriate, or that card data needs confirmation. Follow the actual advice rather than treating every generic refusal as an instruction to retry immediately.</p><p>Customer authentication is another distinct branch. If that is required, follow <a href=\"/resources/stripe-authentication-required\">the authentication workflow</a>. Trying another card is not permission to bypass required customer action.</p>"
+      },
+      {
+        "title": "Ask for a useful customer action",
+        "body": "<p>Use neutral wording: “Your subscription payment did not complete. Please review your billing details or contact your card issuer, then use this secure billing link to resolve the invoice.” Include the genuine amount, invoice reference, and your support route.</p><p>Do not claim to know why the bank declined the card. Do not ask for a full card number, CVC, or bank statement by email. Our <a href=\"/resources/failed-payment-email-templates\">email templates</a> provide reusable fields.</p>"
+      },
+      {
+        "title": "When another saved card is relevant",
+        "body": "<p>If an authorized, eligible alternative exists and the invoice still needs payment, a controlled saved-card workflow may be appropriate. Rebound lets the operator start that work for selected invoices and records the outcomes. A stored card is not a recovery guarantee.</p><p>Stop on confirmed payment. If the result is unknown, investigate the original request and invoice before more collection. Use <a href=\"/resources/stripe-payment-recovery-attribution\">the evidence checklist</a> to keep the result traceable.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: decline code definitions",
+        "https://docs.stripe.com/declines/codes"
+      ],
+      [
+        "Stripe: network response codes",
+        "https://docs.stripe.com/declines/network-codes"
+      ],
+      [
+        "Stripe: card declines and advice",
+        "https://docs.stripe.com/declines/card"
+      ]
+    ],
+    "related": [
+      "stripe-decline-codes",
+      "stripe-authentication-required",
+      "stripe-payment-recovery-attribution"
+    ],
+    "topic": "Stripe payments",
+    "published": "2026-11-10",
+    "updated": "2026-11-10",
+    "reviewed": "2026-11-10",
+    "editor": "Rebound"
+  },
+  {
+    "slug": "rebound-vs-flycode",
+    "title": "Rebound vs. FlyCode: controlled collections or broader recovery?",
+    "description": "Compare Rebound’s operator-started invoice recovery with FlyCode’s advertised recovery platform. Both support saved-card fallback; evaluate the workflow you need.",
+    "keyword": "Rebound vs FlyCode",
+    "answer": "Both Rebound and FlyCode describe recovery using alternative saved cards. Rebound focuses on an operator-started invoice run; FlyCode markets a broader automated payment recovery platform. Choose based on ownership, onboarding, and evidence—not the fallback feature alone.",
+    "sections": [
+      {
+        "title": "The job you are buying",
+        "body": "<p>Choose a focused operator workspace when your team wants to inspect a date-filtered invoice group and deliberately initiate its collection. Evaluate a broader platform when the requirement includes automated recovery orchestration and customer communications.</p><p>Rebound is the publisher of this comparison. This is a public-documentation comparison checked November 10, 2026, not a hands-on FlyCode benchmark. No equivalent invoice cohort was tested in both products.</p>"
+      },
+      {
+        "title": "Saved-card fallback exists in both products",
+        "body": "<p>FlyCode’s Adaptive Backup Cards page describes trying another saved card after the primary fails. Its pricing page also advertises retry models, transactional emails, and reporting. These are vendor descriptions, not performance independently verified by Rebound.</p><p>Rebound’s current workflow lets an operator select a date range, review unpaid subscription invoices, and start a run. It attempts eligible distinct cards once per invoice in that run and stops when paid. It does not provide a dunning email campaign or an automatic background collection schedule.</p>"
+      },
+      {
+        "title": "Questions to ask in an evaluation",
+        "body": "<ol><li>Who starts collection, and can you review the invoice group first?</li><li>How are existing retries coordinated?</li><li>What happens after success, exhaustion, or an unknown outcome?</li><li>Can a reported recovery be traced to the original invoice and request?</li><li>What customer communication and onboarding are included?</li><li>How are collected revenue and incremental recovery defined in the agreement?</li></ol><p>Ask each vendor to demonstrate these questions using a safe sample workflow. A feature list alone does not establish fit.</p>"
+      },
+      {
+        "title": "Pricing and evidence need a direct check",
+        "body": "<p>FlyCode advertises outcome-based pricing tied to recovery above a baseline; obtain the current quote and attribution terms directly. This page does not establish a fixed FlyCode fee or a Rebound price advantage.</p><p>Rebound’s <a href=\"/customers/porter-metrics\">Porter Metrics story</a> reports $8,000 recovered in 2026 through November 9. It is customer-reported, not a controlled comparison against FlyCode or proof of incremental lift over Stripe.</p>"
+      },
+      {
+        "title": "When to choose which direction",
+        "body": "<p>Evaluate Rebound when you specifically need a deliberate invoice-and-card collection workspace and can own the surrounding communication process. Evaluate FlyCode when its broader advertised recovery scope matches your requirements. Verify permissions, current terms, and operational controls with each vendor.</p><p>Inspect <a href=\"/connection-and-controls\">Rebound’s connection and controls</a>, the <a href=\"/stripe-revenue-recovery\">product workflow</a>, and <a href=\"/resources/stripe-dunning\">the dunning checklist</a> before deciding. Neither workflow can guarantee a card issuer approves a payment.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "FlyCode: Adaptive Backup Cards",
+        "https://www.flycode.com/products/recover/adaptive-backup-cards"
+      ],
+      [
+        "FlyCode: current pricing description",
+        "https://www.flycode.com/pricing"
+      ]
+    ],
+    "related": [
+      "rebound-vs-stunning",
+      "stripe-dunning",
+      "stripe-smart-retries-vs-card-fallback"
+    ],
+    "topic": "Revenue recovery",
+    "published": "2026-11-10",
+    "updated": "2026-11-10",
+    "reviewed": "2026-11-10",
+    "editor": "Rebound"
+  },
+  {
+    "slug": "rebound-vs-stunning",
+    "title": "Rebound vs. Stunning: saved-card runs or a dunning suite?",
+    "description": "Compare Rebound’s deliberate invoice recovery workflow with Stunning’s advertised emails, SMS, billing updates, and backup cards for Stripe.",
+    "keyword": "Rebound vs Stunning",
+    "answer": "Rebound focuses on operator-started recovery runs across eligible saved cards. Stunning advertises a wider Stripe dunning suite including customer messages, update pages, and backup cards. Both address payment failure; they offer different operating scopes.",
+    "sections": [
+      {
+        "title": "Start with the missing job in your billing process",
+        "body": "<p>If the missing job is reviewing unpaid invoices and initiating collection across existing eligible cards, a focused workspace may fit. If it is persistent customer outreach and billing-update journeys, evaluate a product that supplies those features.</p><p>This comparison is published by Rebound and uses Stunning’s public feature documentation checked November 10, 2026. It is not an independent product test or a recovery-rate comparison.</p>"
+      },
+      {
+        "title": "What Stunning publicly describes",
+        "body": "<p>For Stripe, Stunning advertises failed-payment emails, SMS, in-app notices, payment-update pages, reporting, and backup cards. Its backup workflow asks customers to supply a backup and describes switching to it when the main card fails. Check its current configuration and platform-specific terms directly.</p><p>That feature set is broader than Rebound’s current collection workspace. Do not assume either product’s public list describes every setting or limitation in a specific account.</p>"
+      },
+      {
+        "title": "What Rebound currently does",
+        "body": "<p>Rebound loads failed subscription payments in a chosen date range and shows the original invoice, balance, saved-card count, and collection state. The operator starts a run; the tool works through eligible distinct cards once per invoice in that run, stops on success, and holds uncertain results for review.</p><p>It does not provide an email or SMS campaign, a customer card-update campaign, or an automatic background collection schedule. Our <a href=\"/connection-and-controls\">controls page</a> explains connection and collection separately.</p>"
+      },
+      {
+        "title": "Use a short buying checklist",
+        "body": "<ul><li><strong>Communication:</strong> do you need the vendor to send messages, or will your existing process own them?</li><li><strong>Initiation:</strong> do you need an operator to review a fixed invoice list first?</li><li><strong>Saved methods:</strong> how are backup cards collected, selected, and checked?</li><li><strong>Coordination:</strong> how do vendor attempts interact with Stripe and other tools?</li><li><strong>Evidence:</strong> can your team explain which request paid the original invoice?</li><li><strong>Commercial terms:</strong> confirm current price, scope, and cancellation terms directly.</li></ul><p>No price ranking is asserted here. A lower headline fee is not meaningful without comparable scope.</p>"
+      },
+      {
+        "title": "Keep the outcome test honest",
+        "body": "<p>Compare defined invoice cohorts over an agreed time window. Separate the vendor’s actions from payments made by customers or other processes. Do not attribute every payment after activation to the tool.</p><p>Read <a href=\"/resources/stripe-payment-recovery-attribution\">the attribution guide</a> and <a href=\"/resources/payment-recovery-metrics\">the measurement guide</a>. If your need spans communication and collection, <a href=\"/resources/stripe-dunning\">map that full process</a> before selecting a product.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stunning: published feature descriptions",
+        "https://stunning.co/features"
+      ]
+    ],
+    "related": [
+      "rebound-vs-flycode",
+      "stripe-dunning",
+      "failed-payment-email-templates"
+    ],
+    "topic": "Revenue recovery",
+    "published": "2026-11-10",
+    "updated": "2026-11-10",
+    "reviewed": "2026-11-10",
+    "editor": "Rebound"
   }
 ]
