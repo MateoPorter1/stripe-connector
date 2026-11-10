@@ -4,6 +4,7 @@ function createBillingRoutes({Store=require('../models/BillingAccount'),auth=req
  let cached;
  function setup(){if(!cached){const config=billingConfig(env);cached={config,stripe:stripe||makeClient(config)};cached.service=createBilling({stripe:cached.stripe,Store,config});}return cached;}
  function failure(res,error){
+  console.error('Billing request failed',JSON.stringify({type:error.type||error.name||'Error',code:error.code||null,status:error.statusCode||null}));
   const code=error.statusCode&&error.statusCode<500?error.statusCode:503;
   // Stripe errors can include sensitive request details; never serialize or log them.
   res.status(code).json({success:false,error:code<500?error.message:'Billing is temporarily unavailable. Please try again.'});
