@@ -1,6 +1,6 @@
 # Rebound subscriptions
 
-One plan: USD 50/month, one 14-day trial per Rebound user. Stripe Checkout collects a card before starting the trial. Cancellation and payment-method changes use Stripe Customer Portal.
+One plan: USD 50/month, one 14-day trial per Rebound user. Stripe Checkout collects a payment method before starting the trial. Cancellation and payment-method changes use Stripe Customer Portal.
 
 Merchant billing is separate from customer recovery credentials. Only the dedicated Rebound key is used for Checkout, subscriptions and portal access. No key belongs in the frontend or this repository.
 
