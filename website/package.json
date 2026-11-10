@@ -1,1 +1,16 @@
-{"name":"rebound-website","private":true,"version":"1.0.0","type":"module","scripts":{"build":"node build.mjs","check":"node check.mjs"},"engines":{"node":">=20"},"devDependencies":{"esbuild":"^0.28.2"}}
+{
+  "name": "rebound-website",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs && node check.mjs",
+    "check": "node check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}

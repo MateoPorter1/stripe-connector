@@ -27,6 +27,10 @@
       {
         "title": "Use communication when a charge alone cannot solve it",
         "body": "<p>Some failures need a new card, customer authentication, or a conversation about the account. More retries are not a substitute for those actions. Keep your customer-facing billing messages clear: what failed, what remains due, and how to update the payment method.</p><p>Rebound focuses on a specific part of this process: an operator starts a run against eligible unpaid subscription invoices, and the tool tries eligible saved cards in sequence. It does not claim to eliminate every source of churn.</p>"
+      },
+      {
+        "title": "A weekly review that keeps the distinction visible",
+        "body": "<p>Use one short review for the customers whose billing issues remain unresolved. Keep the original invoice reference, next action, owner, and planned follow-up date. Review confirmed payments separately from cases that are simply waiting for the next retry.</p><p>At the reporting cutoff, classify customers using your documented loss definition. Keep later recoveries visible instead of presenting them as newly acquired customers. The <a href='/resources/delinquent-churn'>delinquent churn example</a> shows how an overdue population can produce a smaller actual churn count.</p><p>When the next action is unclear, begin with the <a href='/resources/stripe-failed-payment-report'>failed-payment reconciliation checklist</a>. A clean invoice list is more useful than changing a retention policy in response to an inflated failure count.</p>"
       }
     ],
     "sources": [
@@ -34,7 +38,16 @@
         "Stripe: automatic payment retries",
         "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
       ]
-    ]
+    ],
+    "related": [
+      "delinquent-churn",
+      "reduce-saas-churn",
+      "payment-recovery-metrics"
+    ],
+    "keyword": "involuntary churn",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Involuntary churn: definition, measurement & recovery"
   },
   {
     "slug": "stripe-failed-payments",
@@ -60,6 +73,10 @@
       {
         "title": "Run recovery and verify the result",
         "body": "<p>In Rebound, review the loaded list and click Start recovery to begin real collection attempts. Each eligible saved physical card is tried at most once per invoice in that run. The tool stops trying that invoice when it is paid, when the eligible cards are exhausted, or when an uncertain outcome needs review.</p><p>After a run, inspect the invoice-level result and card-attempt history. A successful outcome should link back to the original Stripe invoice. Keep a record of the amount collected, which invoice was paid, and when the result was confirmed.</p><p>Coordinate this process with any retry policy you already run in Stripe or another tool. Looking at a failure list should never itself trigger a charge.</p>"
+      },
+      {
+        "title": "Reconcile the selection before evaluating success",
+        "body": "<p>Keep the selected date range, matched invoice IDs, and balances at the start of the run. Compare that fixed population with confirmed results afterward. If you change dates midway through the review, label the new population rather than treating it as the same experiment.</p><p>Report why visible invoices are excluded from collection. Already-paid history, cancelled invoices, missing eligible cards, and unresolved payment states are different conditions. A smaller actionable queue is not proof that the failure scan missed records.</p><p>For the complete count check, use <a href='/resources/stripe-failed-payment-report'>the Stripe reporting guide</a>. For confirming where a successful payment originated, follow <a href='/resources/stripe-payment-recovery-attribution'>the attribution checklist</a> rather than relying on timing alone.</p>"
       }
     ],
     "sources": [
@@ -71,7 +88,16 @@
         "Stripe: payment retries",
         "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
       ]
-    ]
+    ],
+    "related": [
+      "stripe-failed-payment-report",
+      "stripe-retry-payment-different-card",
+      "stripe-decline-codes"
+    ],
+    "keyword": "stripe failed payments",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "How to recover failed Stripe subscription payments"
   },
   {
     "slug": "dunning-vs-card-fallback",
@@ -97,6 +123,10 @@
       {
         "title": "Choose the response that matches the failure",
         "body": "<ul><li><strong>A temporary funding problem:</strong> review the timing and retry policy.</li><li><strong>A different eligible card is already saved:</strong> consider a controlled fallback attempt.</li><li><strong>Authentication or a new method is required:</strong> involve the customer.</li><li><strong>The result of a charge is unknown:</strong> verify the outcome before attempting another payment.</li></ul><p>Use the original invoice as the shared reference across these actions. That makes it easier to coordinate tools and distinguish one debt from its many attempts.</p>"
+      },
+      {
+        "title": "Assign one owner to the collection journey",
+        "body": "<p>If several systems can charge and send messages, map their responsibilities around the same invoice. One team should be able to say which attempt is pending, which communication was sent, and what evidence will close the case.</p><p>A simple handoff rule helps: an uncertain payment waits for verification; a case requiring customer input receives an appropriate message; a confirmed paid invoice stops collection follow-up. That rule is more useful than increasing every retry count.</p><p>Use the <a href='/resources/failed-payment-email-templates'>customer email templates</a> for communication and <a href='/resources/stripe-smart-retries-vs-card-fallback'>the timing-versus-fallback comparison</a> when reviewing which part of recovery a tool actually handles.</p>"
       }
     ],
     "sources": [
@@ -104,7 +134,16 @@
         "Stripe: Smart Retries and payment-method ordering",
         "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
       ]
-    ]
+    ],
+    "related": [
+      "stripe-smart-retries-vs-card-fallback",
+      "failed-payment-email-templates",
+      "stripe-retry-payment-different-card"
+    ],
+    "keyword": "dunning vs card fallback",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Dunning vs. retries vs. saved-card fallback"
   },
   {
     "slug": "uncollectible-vs-void-invoices",
@@ -130,6 +169,10 @@
       {
         "title": "Use a clear review checklist",
         "body": "<ol><li>Find the original invoice and verify the customer and subscription.</li><li>Check the current invoice status and remaining amount.</li><li>Check whether a payment is still processing or its result is uncertain.</li><li>Review the saved cards and their eligibility.</li><li>Start collection only for the intended invoices and keep the resulting Stripe references.</li></ol><p>Rebound’s list separates invoice history from inclusion in a recovery run. A row being visible does not mean a charge is happening, and opening the list does not start collection.</p>"
+      },
+      {
+        "title": "Keep write-offs, recoveries, and reporting separate",
+        "body": "<p>Recovering written-off debt can be a useful cash outcome without proving that the customer has returned. Record the invoice payment and inspect subscription status separately. Do not automatically add the invoice amount to new MRR or expansion revenue.</p><p>If finance deliberately forgave an amount or ended the commercial relationship, resolve that business decision before putting historical invoices into a collection run. Technical payability alone is not the whole collection policy.</p><p>After a payment, retain the original invoice reference and the confirmed collected amount. The <a href='/resources/payment-recovery-metrics'>measurement guide</a> explains the difference between cash recovery and retained recurring revenue; the <a href='/resources/stripe-past-due-vs-unpaid'>subscription status guide</a> explains why an invoice result is not the entire account state.</p>"
       }
     ],
     "sources": [
@@ -137,6 +180,599 @@
         "Stripe: invoice transitions and payment endpoints",
         "https://docs.stripe.com/invoicing/integration/workflow-transitions"
       ]
-    ]
+    ],
+    "related": [
+      "stripe-past-due-vs-unpaid",
+      "stripe-failed-payment-report",
+      "stripe-retry-payment-different-card"
+    ],
+    "keyword": "uncollectible vs void invoices",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Uncollectible vs. void Stripe invoices"
+  },
+  {
+    "slug": "delinquent-churn",
+    "title": "Delinquent churn: how to find, measure, and reduce it",
+    "description": "Separate overdue accounts from lost customers. Use a clear delinquent churn definition, a worked example, and a practical subscription recovery checklist.",
+    "topic": "Churn",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Delinquent churn is customer loss following an unresolved overdue subscription payment. An overdue invoice is a recovery opportunity; it becomes churn only when the customer meets your defined loss criteria.",
+    "sections": [
+      {
+        "title": "Do not call every late payment churn",
+        "body": "<p>A subscription payment fails on Monday. The customer pays on Wednesday and keeps using the product. That was a billing incident, not a lost customer. If Monday’s dashboard calls it churn and Wednesday’s calls it a new sale, both acquisition and retention reports become misleading.</p><p>Paddle uses delinquent churn for payment-related customer loss. For your own reporting, write down the exact point when an overdue account becomes a lost account: access ended, subscription cancelled, or another documented rule. Apply the same rule each month.</p>"
+      },
+      {
+        "title": "A worked example: 20 overdue accounts, not 20 lost customers",
+        "body": "<p>Imagine 500 paying customers at the start of April. During April, 20 encounter overdue invoices. Twelve resolve the balance before your reporting cutoff. Eight meet your payment-related churn definition. The monthly delinquent customer churn rate is 8 ÷ 500 = <strong>1.6%</strong>, not 20 ÷ 500 = 4%.</p><p>Those eight customers might represent very different subscription values. Report the recurring revenue they represent separately from the customer count. This example is illustrative; it is not a Rebound benchmark.</p>"
+      },
+      {
+        "title": "Build a queue with an owner and an outcome",
+        "body": "<ol><li><strong>Identify the debt:</strong> use distinct subscription invoice IDs, not raw failure counts.</li><li><strong>Check today’s balance:</strong> remove paid or cancelled debt from the actionable queue.</li><li><strong>Choose a next step:</strong> eligible saved-card attempt, customer update, or manual review.</li><li><strong>Assign an owner:</strong> name the person responsible for unresolved cases.</li><li><strong>Close the loop:</strong> record payment, customer loss, or a reason collection stopped.</li></ol><p>A week of failed attempts on one invoice should produce one accountable case, not a growing stack of unrelated alerts. Our <a href='/resources/stripe-failed-payment-report'>reporting checklist</a> shows how to reconcile the list.</p>"
+      },
+      {
+        "title": "Track cohorts after the first decline",
+        "body": "<p>Group invoices by their first failure week, then revisit the same group after 7, 14, and 30 days. Record how much was collected and how much remains unresolved. Keeping the original group fixed makes it harder for newly failed invoices to hide improvements in older ones.</p><p>Separate recovery of old debt from continued subscription activity. An account can settle an old invoice and still cancel afterward. That payment belongs in your cash recovery result, but it does not automatically prove customer retention.</p>"
+      },
+      {
+        "title": "Where Rebound fits",
+        "body": "<p>Rebound handles a specific action within that process: review date-filtered failed Stripe subscription payments, then deliberately start a run across eligible saved cards. It is not a cancellation survey, email sender, or guarantee that an overdue customer will stay.</p><p>Start with the <a href='/resources/involuntary-churn'>involuntary churn guide</a> for the broader problem, then use <a href='/resources/payment-recovery-metrics'>recovery metrics</a> to measure the actual result.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Paddle: understanding delinquent churn",
+        "https://www.paddle.com/help/profitwell-metrics/analyse/subscription-metrics/understanding-delinquent-churn"
+      ]
+    ],
+    "related": [
+      "involuntary-churn",
+      "stripe-failed-payment-report",
+      "payment-recovery-metrics"
+    ],
+    "keyword": "delinquent churn",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Delinquent churn: definition, measurement & recovery"
+  },
+  {
+    "slug": "reduce-saas-churn",
+    "title": "How to reduce SaaS churn without mixing up the causes",
+    "description": "A practical SaaS churn plan: separate cancellations from payment failures, prioritize the right accounts, and measure retention with consistent cohorts.",
+    "topic": "Churn",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Reduce SaaS churn by identifying why customers leave before choosing a fix. Product dissatisfaction, pricing friction, and failed subscription payments need different responses and separate outcome measures.",
+    "sections": [
+      {
+        "title": "Start with a cause, not a single churn percentage",
+        "body": "<p>A churn rate tells you how many relationships ended. It does not tell you whether to improve onboarding, change pricing, or repair billing. Start a weekly review with three buckets: intentional cancellation, payment-related loss, and unknown cause.</p><p>Use evidence rather than guessing. A cancellation survey, a support conversation, product activity, and an unpaid invoice can each add context. An inactive user who also has a declined card does not automatically belong in only one bucket. Keep an unknown category until someone investigates.</p>"
+      },
+      {
+        "title": "Match each cause to a concrete action",
+        "body": "<ul><li><strong>Customers never reach value:</strong> identify the first useful outcome and remove obstacles to it.</li><li><strong>The plan no longer fits:</strong> explain available plan changes and clarify what customers lose or keep.</li><li><strong>Support problems accumulate:</strong> review unresolved cases before asking customers to renew.</li><li><strong>Payments fail:</strong> inspect unpaid invoices, available cards, and cases requiring customer action.</li></ul><p>Do not send a product discount as the default answer to a billing problem. Someone who wants to stay but needs to update a card needs a clear payment path, not another sales pitch.</p>"
+      },
+      {
+        "title": "Prioritize the next week of work",
+        "body": "<p>For each bucket, record affected customers, recurring revenue, a proposed action, and an owner. Choose one change you can evaluate against a fixed customer group. For example: give customers with unresolved billing issues a direct route to update payment details, then compare resolution with the prior process.</p><p>A small business can start with a spreadsheet. The important part is making each issue actionable and checking whether it was resolved. More dashboards do not compensate for cases nobody owns.</p>"
+      },
+      {
+        "title": "Measure customer retention and money separately",
+        "body": "<p>Suppose ten customers cancel: nine pay $20 a month and one pays $2,000. A customer-count measure treats each equally; a revenue measure shows the concentration. Keep both. Also separate cash collected on overdue invoices from the recurring revenue of customers who remain active.</p><p><a href='/resources/gross-vs-net-revenue-retention'>Gross and net revenue retention</a> help distinguish losses from expansion. A business can have strong expansion and still lose customers it should have kept. Do not let upgrades erase the operational view of those losses.</p>"
+      },
+      {
+        "title": "Build a payment-specific recovery lane",
+        "body": "<p>Payment-related cases deserve their own workflow because the customer may never have intended to cancel. Start with the original invoice, verify the remaining balance, and choose between a controlled saved-card attempt and customer follow-up. Keep communication and collection coordinated.</p><p>Rebound supports that saved-card lane for Stripe subscription invoices. It does not replace product retention work or guarantee an improvement in total churn. Read <a href='/resources/delinquent-churn'>how to measure delinquent churn</a> before claiming that recovered cash equals saved customers.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: net and gross revenue retention",
+        "https://stripe.com/resources/more/net-revenue-retention-vs-gross-revenue-retention"
+      ]
+    ],
+    "related": [
+      "delinquent-churn",
+      "gross-vs-net-revenue-retention",
+      "involuntary-churn"
+    ],
+    "keyword": "how to reduce SaaS churn",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "How to reduce SaaS churn: a practical plan"
+  },
+  {
+    "slug": "gross-vs-net-revenue-retention",
+    "title": "Gross vs. net revenue retention: formulas and a worked example",
+    "description": "Calculate GRR and NRR with a simple SaaS cohort example. Learn where payment recovery belongs and why collected overdue cash is not automatically new MRR.",
+    "topic": "Revenue recovery",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Gross revenue retention measures how much starting recurring revenue remains after churn and downgrades. Net revenue retention also includes expansion from that same starting customer cohort. Neither is simply the cash you collected this month.",
+    "sections": [
+      {
+        "title": "Use the same starting customer cohort",
+        "body": "<p>Choose a period and list the customers paying at its beginning. Measure the recurring revenue from those customers at the end. Keep customers acquired during the period out of this calculation: acquisition is important, but it answers a different question.</p><p>Use consistent treatment for currency, discounts, usage-based charges, and overdue accounts. Your billing system’s MRR definition may differ from cash receipts. Write the rule down before comparing months or comparing your number with someone else’s.</p>"
+      },
+      {
+        "title": "The formulas",
+        "body": "<div class='formula'><strong>GRR</strong><p>(Starting MRR − churned MRR − contraction MRR) ÷ starting MRR × 100</p><strong>NRR</strong><p>(Starting MRR − churned MRR − contraction MRR + expansion MRR) ÷ starting MRR × 100</p></div><p>Contraction means recurring revenue lost through downgrades or similar reductions. Expansion means additional recurring revenue from existing customers. With these definitions, GRR cannot exceed 100%; NRR can. If starting MRR is zero, the ratio is undefined, not zero.</p>"
+      },
+      {
+        "title": "A $50,000 cohort example",
+        "body": "<p>A SaaS business starts with $50,000 in MRR from its existing customers. It loses $2,000 to cancellations and $1,000 to downgrades, while existing customers add $4,000 in expansion. GRR is $47,000 ÷ $50,000 = <strong>94%</strong>. NRR is $51,000 ÷ $50,000 = <strong>102%</strong>.</p><p>The business grew within that cohort overall, but still lost $3,000 of recurring revenue before expansion. That loss remains worth investigating. These are made-up numbers for explaining the calculation, not performance claims.</p>"
+      },
+      {
+        "title": "Where recovered payments fit",
+        "body": "<p>Suppose an old $500 invoice is paid today. That is $500 of collected cash. It does not necessarily add $500 to MRR: the invoice might cover an earlier service period, include tax, or belong to a customer whose subscription has ended.</p><p>If resolving a failure prevents customer loss under your reporting rules, the recurring subscription value may remain in the retained cohort. Record that outcome separately from the invoice payment. Do not add the recovered invoice total directly to NRR’s expansion term.</p>"
+      },
+      {
+        "title": "Create a monthly reconciliation",
+        "body": "<ol><li>Freeze the starting cohort and starting MRR.</li><li>Record cancellations, contractions, and expansions for that cohort.</li><li>Apply the same overdue-account policy to every period.</li><li>Keep a separate ledger of recovered invoices and collection dates.</li><li>Explain adjustments rather than silently rewriting earlier results.</li></ol><p>Use <a href='/resources/payment-recovery-metrics'>payment recovery metrics</a> for collection operations and <a href='/tools/churn-calculator'>the recovery opportunity calculator</a> for scenarios. Neither replaces a full revenue-retention report.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: net and gross revenue retention",
+        "https://stripe.com/resources/more/net-revenue-retention-vs-gross-revenue-retention"
+      ]
+    ],
+    "related": [
+      "payment-recovery-metrics",
+      "reduce-saas-churn",
+      "delinquent-churn"
+    ],
+    "keyword": "gross vs net revenue retention",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Gross vs. net revenue retention: GRR & NRR formulas"
+  },
+  {
+    "slug": "payment-recovery-metrics",
+    "title": "Payment recovery metrics: measure money, invoices, and customers",
+    "description": "Define invoice and amount recovery rates, fixed cohorts, attribution, and time to recovery. Includes an example that avoids counting repeated declines as lost revenue.",
+    "topic": "Revenue recovery",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Measure payment recovery using a fixed set of failed invoices and confirmed outcomes. Report recovered money, paid invoices, and retained customers separately; repeated attempts are not additional debt.",
+    "sections": [
+      {
+        "title": "Start with a fixed population",
+        "body": "<p>A recovery rate needs a denominator you can explain. Choose a group of distinct invoices, such as subscription invoices with a first failure in October, and freeze their balances at the chosen starting point. Decide whether the report covers every failed invoice or only the invoices eligible for a particular tool.</p><p>Those are different rates. If 100 invoices failed but only 40 had eligible cards, success on 20 is 20% of all failed invoices and 50% of the eligible group. Neither number is wrong if the label is clear. Leaving out the denominator makes both easy to misuse.</p>"
+      },
+      {
+        "title": "Keep an amount rate and an invoice rate",
+        "body": "<div class='formula'><strong>Invoice recovery rate</strong><p>Distinct invoices paid from the starting group ÷ invoices in that group × 100</p><strong>Amount recovery rate</strong><p>Confirmed amount collected toward that group’s starting balances ÷ those starting balances × 100</p></div><p>Count each invoice once in the invoice rate. Handle partial payments explicitly in the amount rate. Separate currencies rather than adding unlike units, and state whether taxes and credits are included.</p>"
+      },
+      {
+        "title": "A small example that exposes misleading totals",
+        "body": "<p>Ten invoices have a combined unpaid balance of $1,000. Four invoices worth $600 get paid. The invoice recovery rate is <strong>40%</strong>; the amount recovery rate is <strong>60%</strong>. The same result supports both numbers because larger invoices recovered more often.</p><p>If those ten invoices produced 35 failed card attempts, the starting debt is still $1,000. A report that sums the amount of every failure would inflate the opportunity. These figures illustrate reporting mechanics, not expected recovery.</p>"
+      },
+      {
+        "title": "Track time and attribution",
+        "body": "<p>Measure elapsed time from the first failure to confirmed payment, then compare like-for-like cohorts. A newly failed invoice and an invoice overdue for six months should not be treated as equally mature recovery opportunities.</p><p>Separate payments linked to your tool’s attempts from payments that happened through another route, such as a customer paying directly. A payment occurring after a run is not enough to prove that the run caused it. Use the <a href='/resources/stripe-payment-recovery-attribution'>Stripe attribution checklist</a> to establish a stronger trail.</p>"
+      },
+      {
+        "title": "Use cash and retention reports together",
+        "body": "<p>Collected cash answers whether an invoice was settled. Customer retention answers whether the relationship continued under a documented definition. Review active subscription status and later billing periods before presenting a collection as a saved customer.</p><p>Rebound’s Insights view shows recorded recoveries and monthly detail. Use it alongside the original Stripe invoice and your own retention reporting. For planning rather than measurement, use <a href='/tools/churn-calculator'>the scenario calculator</a>; its assumptions are not observed performance.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: paying an existing invoice",
+        "https://docs.stripe.com/api/invoices/pay"
+      ],
+      [
+        "Stripe: event object",
+        "https://docs.stripe.com/api/events/object"
+      ]
+    ],
+    "related": [
+      "stripe-payment-recovery-attribution",
+      "gross-vs-net-revenue-retention",
+      "stripe-failed-payment-report"
+    ],
+    "keyword": "payment recovery metrics",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Payment recovery metrics & formulas"
+  },
+  {
+    "slug": "stripe-smart-retries-vs-card-fallback",
+    "title": "Stripe Smart Retries vs. saved-card fallback",
+    "description": "Understand retry timing, payment-method priority, and saved-card fallback. Use a decision checklist to coordinate Stripe recovery with an additional collection tool.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Stripe Smart Retries chooses when to retry eligible failed payments. Saved-card fallback chooses another eligible stored card to try. Compare timing, card selection, and reporting separately rather than assuming they are the same feature.",
+    "sections": [
+      {
+        "title": "Timing and card selection answer different questions",
+        "body": "<p>A payment that failed this morning might succeed later. A different saved card might also work. These are separate hypotheses: wait for a better moment, or choose another eligible method. Your billing process needs to be clear about which action it is taking.</p><p>Stripe documents an ordered set of subscription and customer defaults for retries. Smart Retries optimizes timing; the presence of several cards on a customer does not by itself mean a round-robin attempt across every stored card.</p>"
+      },
+      {
+        "title": "An illustrative three-card invoice",
+        "body": "<p>A customer owes $96 and has cards A, B, and C. Card A fails. A timed retry strategy may attempt collection later using the applicable configured method. A saved-card fallback strategy may try eligible card B and, if necessary, eligible card C.</p><p>If card B pays the invoice, the process should stop. The goal is to settle the $96 debt once, not to test every card. If a result is still processing or uncertain, pause the invoice for verification rather than treating uncertainty as a decline.</p>"
+      },
+      {
+        "title": "What to check before combining tools",
+        "body": "<ul><li><strong>Ownership:</strong> which system can start a charge, and when?</li><li><strong>Scope:</strong> which original invoices are eligible?</li><li><strong>Current state:</strong> does the tool recheck payment before its next attempt?</li><li><strong>Card eligibility:</strong> what happens with duplicates, expired cards, or methods requiring customer action?</li><li><strong>Evidence:</strong> can you connect a successful outcome to the payment request?</li></ul><p>A second recovery tool should not be a second uncoordinated collection process. Test in a non-live environment and review your retry settings before using both.</p>"
+      },
+      {
+        "title": "Where Rebound differs",
+        "body": "<p>Rebound is an operator-started recovery workspace. Review failed subscription payments for a date range and click Start recovery for the eligible invoices. It works through eligible distinct saved cards once per invoice in that run and stops on payment or when the run cannot continue safely.</p><p>It does not provide Smart Retries’ timing model, dunning email campaigns, or guaranteed recovery. Opening the list does not charge customers. Starting a later run is a separate collection decision, so do not interpret the per-run limit as a lifetime limit.</p>"
+      },
+      {
+        "title": "Choose based on the unresolved problem",
+        "body": "<p>If nobody has reviewed your current retry and email settings, start there. If the recurring problem is unpaid invoices where customers already have other eligible saved cards, inspect the <a href='/resources/stripe-retry-payment-different-card'>different-card workflow</a>. If authentication is required, use a customer-facing resolution path.</p><p>Evaluate tools with <a href='/resources/payment-recovery-metrics'>a fixed invoice cohort</a>. Compare actual confirmed collections, not a headline recovery percentage from a different business.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: payment retry timing and method priority",
+        "https://docs.stripe.com/billing/revenue-recovery/smart-retries"
+      ],
+      [
+        "Stripe: paying an existing invoice",
+        "https://docs.stripe.com/api/invoices/pay"
+      ]
+    ],
+    "related": [
+      "stripe-retry-payment-different-card",
+      "dunning-vs-card-fallback",
+      "payment-recovery-metrics"
+    ],
+    "keyword": "Stripe Smart Retries vs card fallback",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Stripe Smart Retries vs. saved-card fallback"
+  },
+  {
+    "slug": "stripe-retry-payment-different-card",
+    "title": "How to retry a failed Stripe invoice with a different saved card",
+    "description": "A step-by-step workflow for an unpaid subscription invoice with multiple saved cards. Check eligibility, stop on payment, and keep the original invoice reference.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "To retry with another saved card, work from the existing unpaid invoice, check that the customer’s alternative card is eligible, attempt that invoice, and verify the result before considering another card.",
+    "sections": [
+      {
+        "title": "Find the debt before choosing the card",
+        "body": "<p>Open the original subscription invoice and confirm its customer, currency, remaining amount, and current payment state. A historical decline can remain visible after the balance has been paid. Do not create a new standalone charge just because a failure list still contains the old attempt.</p><p>Stripe’s invoice payment API supports attempting payment on an existing invoice with a specified payment method. That establishes the technical path; it does not mean every saved card is eligible for every payment or that you should retry without reviewing the account.</p>"
+      },
+      {
+        "title": "Separate saved from eligible",
+        "body": "<p>Three saved payment-method records do not necessarily mean three useful attempts. You might find expired cards, duplicate records for the same physical card, or a method that cannot be used for this collection. An authentication requirement can also mean the customer must return.</p><p>Keep the total saved-card count and the eligible retry count separate. That distinction helps an operator understand why an account with several cards may still need follow-up. Avoid asking customers to send full card details to support; use a hosted update path instead.</p>"
+      },
+      {
+        "title": "Use a stop-on-payment sequence",
+        "body": "<ol><li>Verify that the original invoice still has an intended unpaid balance.</li><li>Select the next eligible distinct saved card under your collection policy.</li><li>Attempt payment of that invoice.</li><li>Confirm the outcome against the invoice and payment record.</li><li>Stop if paid; pause if processing or uncertain; continue only when a confirmed failure and policy permit it.</li></ol><p>If cards A and B fail and card C succeeds, the outcome is one paid invoice with three attempts. If A succeeds, B and C should not be charged for that invoice.</p>"
+      },
+      {
+        "title": "How Rebound handles the repeated work",
+        "body": "<p>Collections loads the last 15 days of failed subscription payments by default. Change the date range if needed, review unpaid invoices and saved-card counts, then start the filtered recovery run. Rebound works invoice by invoice instead of requiring a click for each customer and card.</p><p>Each eligible physical card is tried once per invoice in that run. Successful rows turn green. Card-attempt history and invoice references let you inspect what happened. Rebound holds uncertain results for review rather than blindly moving to another charge.</p>"
+      },
+      {
+        "title": "Do not confuse this payment with future renewals",
+        "body": "<p>Paying an existing invoice and choosing the default for future renewals are separate tasks. After resolving the current debt, review where the subscription’s intended payment method is configured. A customer who updates billing details should know whether that change affects the current invoice, later invoices, or both.</p><p>For that distinction, read <a href='/resources/stripe-smart-retries-vs-card-fallback'>retry timing versus fallback</a>. For a result that needs customer verification, use the <a href='/resources/stripe-authentication-required'>authentication guide</a>.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: paying an existing invoice",
+        "https://docs.stripe.com/api/invoices/pay"
+      ],
+      [
+        "Stripe: customer portal",
+        "https://docs.stripe.com/customer-management"
+      ]
+    ],
+    "related": [
+      "stripe-smart-retries-vs-card-fallback",
+      "stripe-authentication-required",
+      "stripe-payment-recovery-attribution"
+    ],
+    "keyword": "retry Stripe payment different card",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Retry a Stripe invoice with a different saved card"
+  },
+  {
+    "slug": "stripe-past-due-vs-unpaid",
+    "title": "Stripe past_due vs. unpaid: what each subscription status means",
+    "description": "Understand Stripe subscription status versus invoice status. Review overdue accounts without confusing a failed charge, unpaid debt, and a cancelled subscription.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "past_due and unpaid describe subscription states, while open, paid, uncollectible, and void describe invoices. Read the subscription, the relevant invoices, and your billing settings together before deciding what remains collectible.",
+    "sections": [
+      {
+        "title": "Three records, three questions",
+        "body": "<p>The subscription describes the ongoing billing relationship. The invoice records an amount billed. A payment attempt records an effort to collect it. One subscription can have several invoices, and one invoice can have several attempts.</p><p>This matters when support asks, “Why is the customer still unpaid?” A successful payment on one old invoice may not settle every outstanding obligation. Conversely, a historical failed attempt is not evidence that money remains due today.</p>"
+      },
+      {
+        "title": "What the subscription labels tell you",
+        "body": "<p>Stripe uses past_due when relevant invoice payment has not been settled under the account’s configuration. unpaid can be the configured outcome after unsuccessful recovery. Retry behavior and the invoices governing subscription status depend on billing settings.</p><p>Do not assume that paying any single invoice automatically restores a subscription. Check the status-resolution policy and the remaining applicable invoices. The current Stripe documentation describes these settings; your own configuration is the source of truth for the account.</p>"
+      },
+      {
+        "title": "Review an account in a useful order",
+        "body": "<ol><li>Confirm you are looking at the correct customer and subscription.</li><li>List the invoices still carrying a balance.</li><li>Separate old failures from currently payable debt.</li><li>Check whether a payment is in progress or needs customer action.</li><li>Resolve the intended debt and then verify subscription status.</li></ol><p>Keep a short note when the outcome differs from what support expected. That note can explain whether an old invoice remains, an invoice was cancelled, or the account needs another action.</p>"
+      },
+      {
+        "title": "An example with more than one invoice",
+        "body": "<p>A customer has an unpaid September invoice and an unpaid October invoice. The October payment is collected today. Support should verify the September balance and the configured subscription status rule rather than declaring the entire account fixed solely from October’s receipt.</p><p>The collection report should record the October payment once. Whether the customer is retained or access is restored is a separate question. This distinction prevents your recovery total from quietly becoming an inaccurate customer-retention total.</p>"
+      },
+      {
+        "title": "Where Rebound helps",
+        "body": "<p>Rebound shows failed subscription payments grouped around their invoices and checks current eligibility before collection. It does not make every visible historical failure actionable. Read <a href='/resources/uncollectible-vs-void-invoices'>the invoice-state guide</a> for written-off and cancelled debt.</p><p>After a run, inspect the original invoice in Stripe as well as the app result. For reporting, use <a href='/resources/stripe-failed-payment-report'>a defined date range and matching population</a> rather than comparing unrelated screen totals.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: subscription lifecycle and statuses",
+        "https://docs.stripe.com/billing/subscriptions/overview"
+      ]
+    ],
+    "related": [
+      "uncollectible-vs-void-invoices",
+      "stripe-failed-payment-report",
+      "payment-recovery-metrics"
+    ],
+    "keyword": "Stripe past due vs unpaid",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Stripe past_due vs. unpaid: subscription statuses"
+  },
+  {
+    "slug": "stripe-decline-codes",
+    "title": "Stripe decline codes: choose the next action after a failed payment",
+    "description": "Turn common subscription decline codes into a practical triage workflow. Separate customer action, card replacement, and outcomes that need verification.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "A decline code helps explain a failed card attempt; it is not a universal instruction to retry. Read the code and payment state, then choose between customer action, an eligible alternative method, or review.",
+    "sections": [
+      {
+        "title": "Triage the outcome before the wording",
+        "body": "<p>Start by confirming whether the attempt is actually a failure. A timeout in your app is not the same as an issuer declining the card. If the payment is processing or its result is unclear, verify it before another collection attempt.</p><p>Then record the original invoice, the method used, the decline information, and the time. The code explains that attempt. The invoice balance tells you whether there is still a debt to resolve.</p>"
+      },
+      {
+        "title": "Common codes and practical next steps",
+        "body": "<dl class='decision-list'><dt>insufficient_funds</dt><dd>Available funds were insufficient. Give the customer a clear route to another suitable method; do not assume immediate repetition will fix it.</dd><dt>expired_card</dt><dd>Use a replacement or another eligible card rather than repeatedly presenting the expired one.</dd><dt>authentication_required</dt><dd>Route the customer to complete the required verification. A background retry cannot perform the customer’s challenge.</dd><dt>do_not_honor or generic_decline</dt><dd>The message does not provide a dependable detailed explanation. Avoid inventing one; use an appropriate customer or issuer follow-up.</dd><dt>duplicate_transaction</dt><dd>Check for a recent existing payment before trying again.</dd></dl><p>These summaries cover selected codes, not the full decline catalog. Stripe’s reference below provides the exact current meanings and advice.</p>"
+      },
+      {
+        "title": "What to tell the customer",
+        "body": "<p>Use simple language: which subscription invoice needs attention, the remaining amount, and one secure way to resolve it. Do not turn internal risk signals into accusations. A customer-facing message should help someone pay, not reveal sensitive screening details or imply misconduct.</p><p>Keep the message synchronized with the balance. An email asking for payment after the invoice has already been paid is a fast way to lose trust. Our <a href='/resources/failed-payment-email-templates'>email templates</a> include placeholders for the amount, invoice, and resolution link.</p>"
+      },
+      {
+        "title": "When another saved card belongs in the workflow",
+        "body": "<p>An eligible alternative saved card can be useful when the intended debt is still outstanding and your collection policy permits using it. Saved-card recovery is not a way to bypass authentication requirements or ignore restrictions.</p><p>In Rebound, review the eligible invoices and start a controlled run. Each eligible distinct card is tried once per invoice in that run. Paid invoices stop; cases with uncertain outcomes need review. See <a href='/resources/stripe-retry-payment-different-card'>the different-card guide</a> for the sequence.</p>"
+      },
+      {
+        "title": "Review patterns without losing invoice detail",
+        "body": "<p>Each week, group unresolved invoices by next action: replacement needed, customer authentication, confirmed decline, no eligible saved method, and uncertain result. Assign an owner to each group. Keep invoice-level references so support can investigate an individual case.</p><p>Report distinct invoices and amounts, not just the number of decline events. A rising event count might mean the same debt was attempted more often rather than more customers becoming overdue.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: decline codes and next actions",
+        "https://docs.stripe.com/declines/codes"
+      ]
+    ],
+    "related": [
+      "stripe-authentication-required",
+      "failed-payment-email-templates",
+      "stripe-retry-payment-different-card"
+    ],
+    "keyword": "Stripe decline codes",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Stripe decline codes: practical next actions"
+  },
+  {
+    "slug": "stripe-authentication-required",
+    "title": "Stripe authentication_required: why another background retry may not help",
+    "description": "Understand subscription payments that require customer authentication. Learn the difference between a declined card, an unfinished challenge, and a confirmed payment.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "authentication_required means the payment needs customer verification. Direct the customer to an appropriate payment or authentication flow and verify completion; repeatedly retrying in the background does not complete that step for them.",
+    "sections": [
+      {
+        "title": "The customer may still want to pay",
+        "body": "<p>A renewal can fail even when a customer has a usable card and wants to keep the product. The customer is absent during the background payment, but the bank may require an action they must complete. Treat the case as an unfinished payment journey, not an immediate cancellation.</p><p>Stripe’s subscription documentation distinguishes a payment needing action from a completed payment. The practical question is whether the customer has a secure, working way to finish that action.</p>"
+      },
+      {
+        "title": "Give support a short resolution checklist",
+        "body": "<ol><li>Find the original invoice and confirm it remains unpaid.</li><li>Check the current payment state rather than relying only on an older error message.</li><li>Provide the appropriate hosted payment or verification route.</li><li>Explain the amount and subscription the action relates to.</li><li>Confirm payment before closing the case or changing access.</li></ol><p>A screenshot saying the customer opened a link is not payment confirmation. Keep the invoice reference and check the final result.</p>"
+      },
+      {
+        "title": "Use a customer message with one action",
+        "body": "<blockquote><p>Your payment for [subscription] needs one more step. Please use [secure payment link] to confirm payment of [amount] for invoice [number]. If you already completed it, contact [support] and we’ll check the result.</p></blockquote><p>Replace every placeholder, verify the destination, and send it through your approved customer communication process. Do not request full card details or verification codes in a support message. The template is wording to adapt, not an email sent by Rebound.</p>"
+      },
+      {
+        "title": "Keep recovery tools coordinated",
+        "body": "<p>Before another operator or system attempts the same invoice, make sure it can see whether the existing payment is complete, still processing, or awaiting customer action. An unclear result belongs in review. Otherwise two teams can act on different snapshots of the same debt.</p><p>Rebound focuses on eligible saved-card recovery and records run outcomes. It does not perform a customer’s verification challenge. A row that needs review is a useful signal to investigate, not a reason to assume the tool should keep charging.</p>"
+      },
+      {
+        "title": "Confirm the full account outcome",
+        "body": "<p>After the intended invoice is paid, check whether other balances or subscription conditions remain. Separately confirm any product-access change your business requires. A paid invoice and an active ongoing subscription answer different questions.</p><p>Use <a href='/resources/stripe-past-due-vs-unpaid'>the subscription status guide</a> for that distinction, and <a href='/resources/stripe-decline-codes'>the decline guide</a> when the problem is a different type of failure.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: subscription lifecycle and statuses",
+        "https://docs.stripe.com/billing/subscriptions/overview"
+      ],
+      [
+        "Stripe: decline codes and next actions",
+        "https://docs.stripe.com/declines/codes"
+      ]
+    ],
+    "related": [
+      "stripe-decline-codes",
+      "stripe-past-due-vs-unpaid",
+      "failed-payment-email-templates"
+    ],
+    "keyword": "Stripe authentication required",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Stripe authentication_required: what to do next"
+  },
+  {
+    "slug": "failed-payment-email-templates",
+    "title": "Failed payment email templates for SaaS subscriptions",
+    "description": "Copy and adapt three clear payment-failure emails: first notice, card update, and follow-up. Includes a checklist to stop reminders after payment.",
+    "topic": "Revenue recovery",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "A useful failed-payment email states what remains due, identifies the subscription, and gives the customer one secure action. Check the invoice before sending and stop reminders when the balance is resolved.",
+    "sections": [
+      {
+        "title": "First notice: explain the problem without blaming the customer",
+        "body": "<div class='email-example'><strong>Subject: A payment needs attention for [product]</strong><p>Hi [name],</p><p>We couldn’t complete the [amount] payment for [subscription], invoice [number]. Your subscription payment needs attention.</p><p>Please review it here: [secure invoice or billing link].</p><p>If you need help, reply to [support address]. We’ll help you check what happened.</p><p>[Team name]</p></div><p>This is a template, not an actual notice. Replace the fields and verify the unpaid balance before use. Do not claim that access has ended unless that is true under your policy.</p>"
+      },
+      {
+        "title": "Card update: ask for a specific fix",
+        "body": "<div class='email-example'><strong>Subject: Please update your payment method for [product]</strong><p>Hi [name],</p><p>Invoice [number] for [amount] is still unpaid. Please update your payment method through [secure billing link] so we can resolve it.</p><p>If you already updated your card, let us know at [support address] and we’ll check the invoice before taking further action.</p><p>[Team name]</p></div><p>Use this when a method update is an appropriate next step. Stripe’s customer portal can provide payment-detail management. Confirm how your integration applies an update to the current invoice and future renewals.</p>"
+      },
+      {
+        "title": "Follow-up: give a real deadline, not invented urgency",
+        "body": "<div class='email-example'><strong>Subject: Follow-up on your unpaid [product] invoice</strong><p>Hi [name],</p><p>We’re following up on invoice [number], with [amount] still due. You can review and resolve it at [secure billing link].</p><p>[If applicable: Under our billing policy, access changes on [actual date].]</p><p>If something looks wrong, contact [support address] before that date so we can help.</p><p>[Team name]</p></div><p>Remove the bracketed access sentence if no verified deadline applies. A fake countdown may create pressure, but it also creates confusion and support problems.</p>"
+      },
+      {
+        "title": "Before sending any of these emails",
+        "body": "<ul><li>Check current invoice status and balance, not only the original failure.</li><li>Use a recognizable sender and the correct customer contact.</li><li>Verify that the secure link resolves to the intended billing workflow.</li><li>Avoid full card numbers, bank details, and internal risk explanations.</li><li>Do not send a second email sequence if another tool already owns follow-up.</li><li>Stop or adjust the sequence after payment, cancellation, or another final resolution.</li></ul><p>Stripe provides configurable recovery emails. Review what is already enabled before adding manual reminders or another platform. The right cadence depends on your billing policy and account context; these templates do not prescribe a universal schedule.</p>"
+      },
+      {
+        "title": "Use saved-card recovery and email for different jobs",
+        "body": "<p>Some invoices can be resolved through an eligible saved-card attempt. Others need a new method, authentication, or a customer conversation. Match the next action to the case instead of sending the same message for every decline.</p><p>Rebound does not send these email campaigns. It handles operator-started saved-card collection and traceability. Read <a href='/resources/dunning-vs-card-fallback'>dunning versus card fallback</a> to plan how the two workflows should cooperate.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: customer recovery emails",
+        "https://docs.stripe.com/billing/revenue-recovery/customer-emails"
+      ],
+      [
+        "Stripe: customer portal",
+        "https://docs.stripe.com/customer-management"
+      ]
+    ],
+    "related": [
+      "dunning-vs-card-fallback",
+      "stripe-authentication-required",
+      "stripe-decline-codes"
+    ],
+    "keyword": "failed payment email template",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Failed payment email templates for SaaS"
+  },
+  {
+    "slug": "stripe-failed-payment-report",
+    "title": "How to build a failed-payment report that matches Stripe",
+    "description": "Reconcile Stripe failure counts with unpaid invoices. Check dates, timezone, pagination, duplicates, current balances, and recovered payments before comparing totals.",
+    "topic": "Stripe payments",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "To reconcile a failed-payment report with Stripe, use the same account, mode, dates, timezone, and record type. Then group attempts by invoice and check current balances. A failure-event count and an unpaid-invoice count will often differ.",
+    "sections": [
+      {
+        "title": "Agree on the question before comparing numbers",
+        "body": "<p>“What failed this month?” and “What is unpaid today?” are different questions. A payment may fail twice during the month and later succeed. That creates failure history but no remaining balance on that invoice.</p><p>Start the report with a plain-English definition: subscription payment failures during a date window, grouped by original invoice, with the current remaining balance. If you want raw attempts instead, label them as attempts. A dashboard showing 33 attempts and a report showing 25 invoices are not necessarily missing eight invoices.</p>"
+      },
+      {
+        "title": "Check six common causes of a mismatch",
+        "body": "<ol><li><strong>Account and mode:</strong> compare the same Stripe account and live or test environment.</li><li><strong>Time boundaries:</strong> use the same timezone and inclusive calendar-date rules.</li><li><strong>Record type:</strong> distinguish events, payments, invoices, and subscriptions.</li><li><strong>Pagination:</strong> finish the scan; an initial page is not the entire result.</li><li><strong>Grouping:</strong> consolidate attempts belonging to one invoice.</li><li><strong>Current state:</strong> label paid, voided, written-off, and unresolved invoices separately.</li></ol><p>Reconcile these differences explicitly before concluding a tool has lost records. If there is still a gap, compare invoice IDs directly.</p>"
+      },
+      {
+        "title": "Use a minimal reconciliation worksheet",
+        "body": "<p>For each invoice, keep the customer reference, invoice ID, currency, remaining amount, first and last failure in range, number of matched attempts, current state, and next action. Keep a separate list of raw attempts if you need to audit how the invoice group was produced.</p><p>For example, three declines against a $40 invoice represent three failures but only $40 of outstanding debt. Once paid, that invoice still belongs in the period’s failure history while its current amount due becomes zero. Preserve both facts.</p>"
+      },
+      {
+        "title": "Distinguish finding records from starting collection",
+        "body": "<p>A completed report is not itself permission to charge every row. Some invoices cannot or should not be retried. Review the intended debt, current payment state, saved methods, and collection policy before acting.</p><p>Rebound separates the unpaid invoice view from full failure history. It automatically loads the last 15 days and lets you change dates. Collection starts only through the deliberate run action; it is not triggered by reading the report.</p>"
+      },
+      {
+        "title": "Close the reconciliation after recovery",
+        "body": "<p>Keep the original selection so the before-and-after comparison uses the same invoices. Record confirmed payment separately from failed or uncertain attempts. Do not silently remove paid rows from historical reporting and then lose the explanation for the balance change.</p><p>Use <a href='/resources/payment-recovery-metrics'>fixed-cohort metrics</a> for results and <a href='/resources/stripe-payment-recovery-attribution'>request-level evidence</a> when identifying what your recovery tool collected.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: subscription webhooks",
+        "https://docs.stripe.com/billing/subscriptions/webhooks"
+      ],
+      [
+        "Stripe: event object",
+        "https://docs.stripe.com/api/events/object"
+      ]
+    ],
+    "related": [
+      "stripe-failed-payments",
+      "payment-recovery-metrics",
+      "stripe-payment-recovery-attribution"
+    ],
+    "keyword": "Stripe failed payment report",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "How to reconcile a Stripe failed-payment report"
+  },
+  {
+    "slug": "stripe-payment-recovery-attribution",
+    "title": "How to verify a recovered payment in Stripe",
+    "description": "Trace recovery from a tool’s run to the original Stripe invoice and API request. Avoid claiming every payment after a run was recovered by that tool.",
+    "topic": "Revenue recovery",
+    "published": "2026-11-09",
+    "updated": "2026-11-09",
+    "answer": "Verify a recovery by matching the original invoice and confirmed payment with the collection tool’s attempt record. Stripe request logs can provide stronger evidence of origin than an invoice-paid event or a matching timestamp alone.",
+    "sections": [
+      {
+        "title": "A paid event does not name the whole cause",
+        "body": "<p>An invoice can become paid through several routes: a background billing process, an operator, the customer, or another collection tool. The fact that it was paid after your run started does not establish that your tool caused the payment.</p><p>Start with the tool’s run ID, invoice ID, attempt time, recorded outcome, and Stripe references available for the attempt. Then confirm the invoice’s actual payment. If the evidence cannot be connected, label the origin unconfirmed rather than forcing it into an attributed total.</p>"
+      },
+      {
+        "title": "Inspect the original invoice and related request",
+        "body": "<ol><li>Open the invoice linked from the recovery result.</li><li>Verify the customer, currency, amount, and final payment state.</li><li>Locate the related payment and available request log in Stripe Workbench.</li><li>Compare the request endpoint, time, and request identifier with the tool’s evidence.</li><li>Retain the references so someone else can reproduce the check.</li></ol><p>Stripe associates API requests with request identifiers. The event object can also carry request-related information. What appears depends on how the action originated and what records are available; do not assume every event has a usable origin label.</p>"
+      },
+      {
+        "title": "What an invoice-pay request proves—and what it does not",
+        "body": "<p>A request to pay the intended invoice, linked to a successful payment and the tool’s attempt, is useful attribution evidence. An HTTP success code alone is not the full reconciliation: verify what the returned invoice and related payment actually show.</p><p>An idempotency key can help correlate an operation, but a memorable prefix is not a universal product badge. Do not assume Stripe will display “Recovered by Rebound” unless a specific verified integration field says so. API key identity and timestamps support an investigation; neither alone settles every case.</p>"
+      },
+      {
+        "title": "Keep a clean recovery ledger",
+        "body": "<p>Store the invoice, currency, confirmed collected amount, collection date, run reference, and relevant payment/request references. Separate confirmed tool-attributed collections from customer-paid or otherwise unattributed outcomes. Keep refunds and later adjustments distinguishable from the original collection.</p><p>For a monthly finance review, someone should be able to select a reported recovery and follow it back to the original debt and collection evidence. This is more useful than a large headline total with no drill-down.</p>"
+      },
+      {
+        "title": "How to use Rebound’s views",
+        "body": "<p>Review card-by-card run outcomes in Collections and the recorded monthly payments in Insights. Follow the invoice reference to Stripe for verification. These views support traceability; they do not mean every payment in the connected Stripe account is attributable to Rebound.</p><p>Read <a href='/resources/payment-recovery-metrics'>the metrics guide</a> before reporting a percentage. The <a href='/customers/porter-metrics'>Porter Metrics customer example</a> clearly separates a customer-reported result from a public transaction audit.</p>"
+      }
+    ],
+    "sources": [
+      [
+        "Stripe: request identifiers",
+        "https://docs.stripe.com/api/request_ids"
+      ],
+      [
+        "Stripe: event object",
+        "https://docs.stripe.com/api/events/object"
+      ],
+      [
+        "Stripe: paying an existing invoice",
+        "https://docs.stripe.com/api/invoices/pay"
+      ]
+    ],
+    "related": [
+      "payment-recovery-metrics",
+      "stripe-failed-payment-report",
+      "stripe-retry-payment-different-card"
+    ],
+    "keyword": "verify Stripe payment recovery",
+    "editor": "Rebound",
+    "reviewed": "2026-11-09",
+    "seoTitle": "Verify payment recovery in Stripe: an audit checklist"
   }
 ]
