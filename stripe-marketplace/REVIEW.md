@@ -49,3 +49,6 @@ See backend/services/stripeAppConnection.js and backend/routes/stripeApp.js. Pub
 - Evidence: reports/stripe-marketplace under the parent workspace (connected and disconnected screenshots).
 - 81 backend tests and 54 frontend tests passed. Website build validated 36 pages and all internal links.
 - This does not claim an end-to-end multi-card collection against real invoices or Marketplace approval.
+
+## Full sandbox collection test — November 10, 2026
+The dedicated reviewer workspace completed a synthetic USD 96 subscription-invoice recovery through the installed app's OAuth permissions. Card ending 0341 declined; card ending 4242 paid. The app recorded two attempts and completed the run; Stripe independently reported livemode=false, amount_paid=9600 and amount_remaining=0. No live collections were run. Server checks rejected this workspace's test-mode and live OAuth starts with HTTP 403; only general Sandbox is permitted. The configured reviewer identity alone receives a sandbox-only billing allowance, and blocked workspaces still cannot collect. All 83 backend checks passed.
