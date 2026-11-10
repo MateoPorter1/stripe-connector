@@ -54,3 +54,10 @@ test('voided invoices never charge despite a remaining amount',async()=>{
   const s=setup(['paid']);s.setInvoice({status:'void'});
   assert.equal((await retryInvoiceOnce(s.args)).state,'skipped');assert.equal(s.calls.length,0);
 });
+
+test('trial expiry between cards prevents the next charge without recording a false attempt',async()=>{
+ const s=setup(['declined','paid']);let checks=0;
+ s.args.allowed=async()=>{checks++;if(checks>2)throw Object.assign(new Error('Subscription expired'),{statusCode:402});return true;};
+ await assert.rejects(()=>retryInvoiceOnce(s.args),e=>e.statusCode===402);
+ assert.equal(s.calls.length,1);assert.equal(s.history.length,1);assert.equal(s.history[0].status,'declined');
+});

@@ -1,3 +1,4 @@
+import { trackAuthEvent } from '../services/analytics';
 import { waitForServer } from '../services/serverReady';
 import { authFetch } from '../services/authFetch';
 import React, { createContext, useState, useContext, useEffect, useCallback, useRef } from 'react';
@@ -80,6 +81,7 @@ export const AuthProvider = ({ children }) => {
       setToken(data.token);
       setUser(data.user);
 
+      trackAuthEvent('login', '/login');
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -112,6 +114,7 @@ export const AuthProvider = ({ children }) => {
       setToken(data.token);
       setUser(data.user);
 
+      trackAuthEvent('sign_up', '/signup');
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };

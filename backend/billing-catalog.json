@@ -1,0 +1,11 @@
+{
+  "account": "acct_1UaFmbEuNVUJyCmU",
+  "mode": "live",
+  "product": "prod_VbU3pDtFZzHrgY",
+  "price": "price_1UaH5lEuNVUJyCmUTTiIHzij",
+  "portal": "bpc_1UaH5lEuNVUJyCmU9W2xzGmL",
+  "amount": 5000,
+  "currency": "usd",
+  "interval": "month",
+  "trialDays": 14
+}

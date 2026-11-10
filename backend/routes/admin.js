@@ -36,50 +36,7 @@ router.get('/users', async (req, res) => {
 // @route   PUT /api/admin/users/:id/plan
 // @desc    Actualizar plan de usuario
 // @access  Admin
-router.put('/users/:id/plan', async (req, res) => {
-  try {
-    const { plan } = req.body;
-    const userId = req.params.id;
-
-    if (!['free', 'premium'].includes(plan)) {
-      return res.status(400).json({ error: 'Plan inválido. Debe ser "free" o "premium"' });
-    }
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'Usuario no encontrado' });
-    }
-
-    user.plan = plan;
-
-    // Si es premium, establecer fecha de expiración a 1 año
-    if (plan === 'premium') {
-      const expiryDate = new Date();
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-      user.planExpiry = expiryDate;
-    } else {
-      user.planExpiry = null;
-    }
-
-    await user.save();
-
-    res.json({
-      success: true,
-      message: `Plan actualizado a ${plan}`,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        plan: user.plan,
-        planExpiry: user.planExpiry
-      }
-    });
-  } catch (error) {
-    console.error('Error al actualizar plan:', error);
-    res.status(500).json({ error: 'Error al actualizar plan' });
-  }
-});
+router.put('/users/:id/plan', (req,res)=>res.status(410).json({error:'Legacy plans are retired. Manage the Stripe subscription in Subscribers.'}));
 
 // @route   PUT /api/admin/users/:id/role
 // @desc    Actualizar rol de usuario

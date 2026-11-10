@@ -50,6 +50,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/stripe', require('./routes/stripe'));
 app.use('/api/fallback', require('./routes/fallback'));
 app.use('/api/payment-batches', require('./routes/paymentBatches'));
+app.use('/api/admin/subscribers', require('./routes/subscribers').createSubscriberRouter());
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/stats', require('./routes/stats'));

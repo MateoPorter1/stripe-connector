@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { trackAuthEvent, trackAuthPage } from '../services/analytics';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import './Auth.css';
@@ -12,6 +13,11 @@ function Signup() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const signupStarted = useRef(false);
+  useEffect(() => { trackAuthPage('/signup'); }, []);
+  const startSignup = () => {
+    if (!signupStarted.current) { signupStarted.current = true; trackAuthEvent('signup_start', '/signup'); }
+  };
   const { signup } = useAuth();
   const navigate = useNavigate();
 
@@ -34,7 +40,7 @@ function Signup() {
     const result = await signup(name, email, password);
 
     if (result.success) {
-      navigate('/home');
+      navigate('/billing');
     } else {
       setError(result.error);
     }
@@ -55,7 +61,7 @@ function Signup() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} onFocus={startSignup}>
           <div className="form-group">
             <label htmlFor="name">Name</label>
             <input

@@ -1,7 +1,8 @@
+import {Link} from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
-import { LuUser, LuClipboard, LuStar, LuCircle, LuShield, LuKey, LuCircleCheckBig, LuTriangleAlert, LuTrash2, LuInfo, LuEye, LuEyeOff, LuSave } from 'react-icons/lu';
+import { LuUser, LuClipboard, LuShield, LuKey, LuCircleCheckBig, LuTriangleAlert, LuTrash2, LuInfo, LuEye, LuEyeOff, LuSave } from 'react-icons/lu';
 import './Profile.css';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -127,11 +128,9 @@ function Profile() {
                 <div className="info-value">{user?.email}</div>
               </div>
               <div className="info-item">
-                <label>Plan</label>
+                <label>Subscription</label>
                 <div className="info-value">
-                  <span className={`plan-badge-profile plan-${user?.plan || 'free'}`}>
-                    {user?.plan === 'premium' ? <><LuStar size={12} /> Premium</> : <><LuCircle size={12} /> Free</>}
-                  </span>
+                  <Link to="/billing">Manage subscription & billing →</Link>
                 </div>
               </div>
               <div className="info-item">

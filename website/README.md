@@ -34,3 +34,17 @@ The system emits `/sitemap.xml` with meaningful last-modified dates, `/feed.xml`
 Source standards and limitations are public at `/editorial-policy`; organization information is at `/about`. Do not add fake reviews, aggregate ratings, professional reviewer claims, or software prices/trial terms without evidence. Preserve the approved brand and avoid loading interactive assets on editorial pages unless used.
 
 Search Console ownership and sitemap submission must be confirmed in the actual property before calling them complete. Website publication, crawler accessibility, Google indexing, and Google rankings are four different states.
+
+## Google Analytics 4
+
+Create a GA4 web data stream for `https://reboundmrr.com`. Set `GA4_MEASUREMENT_ID` in the Vercel `rebound-website` project environment to its `G-...` Measurement ID, then redeploy. The build includes the Google tag on every website page when this variable is set; without it, no Analytics code is included. Invalid IDs fail the build. This only tracks the public website. Verify collection in Google Analytics Realtime after deployment.
+
+## Funnel events
+
+Public website: `signup_click` and `login_click` distinguish destination and CTA placement; `select_content` identifies guides/customer stories; `calculator_start` fires once after editing, `calculator_result` on a valid changed result; `recovery_demo_start` and `recovery_demo_replay` separate the first demo interaction from repeats; `resource_filter` records a selected topic. No calculator values or search terms are sent. Defaults do not count as calculator usage.
+
+The application uses `REACT_APP_GA4_MEASUREMENT_ID` for public signup/login page views, `signup_start` on first form focus, `sign_up` only after successful account creation, and `login` only after successful authentication. These events contain no names, emails, passwords, customer IDs, recovery amounts or error messages. URL queries are excluded from explicit page locations. Events are optional and cannot block authentication. Cookies are shared across reboundmrr.com subdomains by the Google tag. A CTA click is not a trial activation or completed signup.
+
+`sign_up` is registered as a GA4 key event for the acquisition conversion, counted once per event with no invented monetary value. Do not mark signup clicks or logins as acquisition conversions. Registered GA4 event-scoped dimensions: `cta_location`, `destination_path`, `content_type`, `item_id`, `topic`, `tool_name`.
+
+Enhanced measurement keeps page loads, scrolls, outbound clicks, video and downloads. Automatic history page views, form interactions and URL-based site search are disabled: authentication views and form outcomes are measured explicitly, and raw search strings are not collected.

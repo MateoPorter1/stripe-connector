@@ -2,6 +2,8 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import Dashboard from './Dashboard';
 import {MemoryRouter} from 'react-router-dom';
+import {billingRequest} from '../services/billing';
+jest.mock('../services/billing',()=>({billingRequest:jest.fn()}));
 import { paymentBatchRequest } from '../services/api';
 jest.mock('../components/Sidebar',()=>()=>null);
 jest.mock('../services/api',()=>({...jest.requireActual('../services/api'),paymentBatchRequest:jest.fn()}));
@@ -9,7 +11,7 @@ const invoice=id=>({id,number:id,email:'demo@example.invalid',currency:'usd',amo
 let root,container;
 const button=text=>text==='Retry filtered'?document.querySelector('.desk-run-button'):[...document.querySelectorAll('button')].find(b=>b.textContent.includes(text));
 const applyRange=async()=>{await act(async()=>button('Date range').click());await act(async()=>button('Apply').click());};
-beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;paymentBatchRequest.mockReset();paymentBatchRequest.mockResolvedValue({success:true,ready:true});Object.defineProperty(global,'crypto',{configurable:true,value:{randomUUID:()=> '12345678-1234-1234-1234-123456789012'}});container=document.createElement('div');document.body.appendChild(container);root=createRoot(container);});
+beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;billingRequest.mockReset();billingRequest.mockResolvedValue({success:true,access:{allowed:true}});paymentBatchRequest.mockReset();paymentBatchRequest.mockResolvedValue({success:true,ready:true});Object.defineProperty(global,'crypto',{configurable:true,value:{randomUUID:()=> '12345678-1234-1234-1234-123456789012'}});container=document.createElement('div');document.body.appendChild(container);root=createRoot(container);});
 afterEach(()=>{act(()=>root.unmount());container.remove();});
 test('opening page automatically loads the last 15 New York days without charging',async()=>{
   paymentBatchRequest.mockResolvedValueOnce({batch:null,attempts:[]}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:1,nextCursor:null});
@@ -122,3 +124,5 @@ test('explains why recovery is disabled while scanning and what to do when ready
  expect(container.textContent).toContain('Unpaid amount available to retry');
  expect(paymentBatchRequest.mock.calls.some(call=>call[1]?.method==='POST')).toBe(false);
 });
+
+ test('expired subscription leaves reading available and blocks start with billing link',async()=>{billingRequest.mockResolvedValue({success:true,access:{allowed:false,message:'Your trial has ended.'}});paymentBatchRequest.mockResolvedValueOnce({batch:null}).mockResolvedValueOnce({invoices:[invoice('in_1')],totalFetched:1,nextCursor:null});await act(async()=>root.render(<MemoryRouter><Dashboard/></MemoryRouter>));expect(container.textContent).toContain('Your trial has ended.');expect(container.textContent).toContain('demo@example.invalid');expect(button('Retry filtered').disabled).toBe(true);expect(container.querySelector('a[href="/billing"]')).toBeTruthy();});

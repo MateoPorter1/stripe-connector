@@ -12,6 +12,11 @@ const schema = new mongoose.Schema({
   cancelAtPeriodEnd: {type:Boolean,default:false},
   currentPeriodEnd: Date,
   syncedAt: Date,
+  trialStartedAt: Date,
+  trialEndsAt: Date,
+  paidThrough: Date,
+  collectionBlocked: {type:Boolean,default:false},
+  blockReason: String,
   leaseUntil: Date,
 }, {timestamps:true});
 schema.index({userId:1,scope:1},{unique:true});

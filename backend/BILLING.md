@@ -1,32 +1,26 @@
-# Rebound subscription billing — sandbox only
+# Rebound subscriptions
 
-US testing does not require incorporation. A claimable Stripe sandbox was created November 10, 2026 and expires November 17 unless claimed. Claim it in Stripe; account activation and real payments are a separate later step. No live price or trial duration has been approved.
+One plan: USD 50/month, one 14-day trial per Rebound user. Stripe Checkout collects a card before starting the trial. Cancellation and payment-method changes use Stripe Customer Portal.
 
-This implementation intentionally accepts only `BILLING_MODE=test` and test credentials. It never reads a user's recovery key or changes their existing plan/access. Test subscriptions are recorded in the separate BillingAccount collection, scoped by user and sandbox account. The $1 monthly test price is not launch pricing. Automatic tax is not enabled in this sandbox. Live billing requires a separate readiness review, approved pricing, merchant activation, tax decisions, and server-side access enforcement.
+Merchant billing is separate from customer recovery credentials. Only the dedicated Rebound key is used for Checkout, subscriptions and portal access. No key belongs in the frontend or this repository.
 
-## Configuration
-
-Store in backend environment or a secret manager, never frontend variables:
-
+Required backend environment:
 - BILLING_ENABLED=true
-- BILLING_MODE=test
-- REBOUND_BILLING_KEY: dedicated test restricted key with customers, products/prices, Checkout Sessions, subscriptions and customer portal permissions. Account read is needed to verify merchant identity.
-- REBOUND_BILLING_ACCOUNT: the Rebound sandbox acct_ reference
-- REBOUND_BILLING_PRICE: active, fixed monthly recurring test price
-- REBOUND_BILLING_PORTAL: portal configuration with invoice history, card update and cancellation
-- REBOUND_BILLING_WEBHOOK_SECRET: signing secret for this endpoint, not the API key
-- BILLING_APP_ORIGIN: exact trusted frontend origin; localhost allowed only for local work
+- BILLING_MODE=live (test for an isolated sandbox)
+- REBOUND_BILLING_ACCOUNT: Rebound merchant account
+- REBOUND_BILLING_PRICE: active USD 5000/month recurring price
+- REBOUND_BILLING_PORTAL: portal configuration
+- REBOUND_BILLING_KEY: dedicated restricted server key
+- REBOUND_BILLING_WEBHOOK_SECRET: signing secret
+- BILLING_APP_ORIGIN=https://app.reboundmrr.com
+- REBOUND_BILLING_ENFORCE=true
 
-`node scripts/setupBillingSandbox.js` prepares a $1 monthly test product and portal and saves an ignored mode-0600 `.env.test.local`. It requires a suitable test key in REBOUND_BILLING_KEY. Do not overwrite an existing file. The generated local webhook secret is for local signature tests only; use the actual Stripe endpoint/listener secret when connecting real deliveries.
+Webhook: POST /api/billing/webhook. Raw bytes and Stripe signature required. Subscribe to checkout.session.completed, checkout.session.async_payment_succeeded/failed, customer.subscription.created/updated/deleted/trial_will_end, invoice.paid/payment_failed/payment_action_required. Duplicate and out-of-order events refresh current Stripe state. Temporary failures return a retryable error. Reads never start collection.
 
-Load `.env.test.local` explicitly for local billing testing. `server.js` loads the normal `.env`; it does not silently activate subscription tests. Never copy a customer recovery key into the billing configuration.
+The trial clock is the earliest Stripe trial start and is capped at 14 days. A returning subscriber gets no second trial. A paid subscriber requires active status and a paid invoice covering the current service period for this plan. Test subscriptions never grant live access. At start/resume the server refreshes Stripe; before each card it checks expiry/blocking and refreshes Stripe if older than 60 seconds. Failed verification denies further attempts. An already-submitted charge cannot be recalled.
 
-## Routes and confirmation
+Administrators manage subscribers at /admin: search, sync Stripe, block/restore recovery access, cancel at period end or keep renewing, and inspect the administrator action history. Blocking access does not cancel subscription billing. Administrator workspaces are exempt from the plan gate; explicit blocks apply to them too. Legacy Free/Premium flags do not grant customer retry access and their update endpoint is retired.
 
-Authenticated GET /api/billing, POST /checkout, POST /confirm, POST /portal. Session success/cancel returns to /billing. Redirects alone never activate a subscription. Confirmation verifies the session's customer, user reference, subscription mode and test mode, then reads current subscriptions from Stripe.
+No automatic tax configuration has been applied. Tax registrations and commercial terms must be set by the business as applicable.
 
-Unauthenticated POST /api/billing/webhook uses the raw request body and verifies Stripe-Signature before processing. Subscribe to checkout.session.completed, checkout.session.async_payment_succeeded/failed, customer.subscription.created/updated/deleted, invoice.paid, invoice.payment_failed and invoice.payment_action_required. Events for unknown customers do not create users. Live or connected-account events are rejected. Duplicate and out-of-order delivery converges through current Stripe state under an account lock; a temporary error is returned for retry. No card details are stored locally.
-
-## Validation
-
-Run `node --test tests/billing.test.js`. Build React with `npm run build` from the app root. Exercise hosted checkout with Stripe test cards, confirm initial payment, check failed payment, portal cancellation at period end, duplicate checkout protection, rejected signatures and ownership checks. The billing SDK is installed under the `stripe-billing` alias so this new integration does not upgrade the recovery engine's older Stripe SDK.
+Checks: node --test backend/tests/*.test.js; CI=true npm test -- --watchAll=false --runInBand; CI=true npm run build. Never run real invoice retries to test subscription gating.

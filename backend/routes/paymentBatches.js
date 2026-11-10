@@ -8,6 +8,7 @@ const Batch=require('../models/RetryBatch');
 const Lease=require('../models/FallbackLease');
 const {filteredFailuresPage,verifySelection,keyVersion}=require('../services/filteredFailures');
 const {prepareBatchStorage,takeLease,batchPayload,launchBatch}=require('../services/paymentBatchRunner');
+const {assertRetryAccess}=require('../services/billingRuntime');
 const router=express.Router();router.use(auth);
 async function client(userId){const user=await User.findById(userId).select('+stripeApiKey');if(!user?.stripeApiKey)throw Object.assign(new Error('Connect Stripe in My Profile first.'),{statusCode:400});return {user,stripe:new Stripe(user.stripeApiKey),keyHash:keyVersion(user.stripeApiKey)};}
 function fail(res,error){console.error('Payment batch API:',error.type||error.name);res.status(error.statusCode||502).json({success:false,error:error.statusCode?error.message:'Could not complete this request. Refresh the run status before trying again.'});}
@@ -26,6 +27,7 @@ router.post('/start',async(req,res)=>{
   try{
     if(req.body.authorize!==true)throw Object.assign(new Error('Use Retry filtered payments to authorize this run.'),{statusCode:400});
     if(typeof req.body.requestId!=='string'||! /^[a-zA-Z0-9-]{16,64}$/.test(req.body.requestId))throw Object.assign(new Error('Invalid run identifier.'),{statusCode:400});
+    await assertRetryAccess(req.user._id,{fresh:true});
     await prepareBatchStorage();
     const previous=await Batch.findOne({userId:req.user._id,requestId:req.body.requestId});
     if(previous)return res.json(await batchPayload(await checkInterrupted(previous)));
@@ -44,6 +46,7 @@ router.post('/:id/stop',async(req,res)=>{try{if(!mongoose.isValidObjectId(req.pa
 router.post('/:id/resume',async(req,res)=>{
   try{
     if(req.body.authorize!==true||!mongoose.isValidObjectId(req.params.id))throw Object.assign(new Error('Explicitly resume the selected run.'),{statusCode:400});
+    await assertRetryAccess(req.user._id,{fresh:true});
     let batch=await checkInterrupted(await Batch.findOne({_id:req.params.id,userId:req.user._id}));
     if(!batch||!['interrupted','failed'].includes(batch.status))throw Object.assign(new Error('This run cannot be resumed.'),{statusCode:409});
     const {stripe,keyHash}=await client(req.user._id);if(keyHash!==batch.keyHash)throw Object.assign(new Error('The Stripe connection changed. Apply the dates again.'),{statusCode:400});

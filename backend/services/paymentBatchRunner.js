@@ -7,6 +7,7 @@ const User=require('../models/User');
 const {retryInvoiceOnce}=require('./manualInvoiceRetry');
 const {keyVersion}=require('./filteredFailures');
 const {idOf}=require('./cardFallback');
+const {assertRetryAccess}=require('./billingRuntime');
 let prepared;
 async function prepareBatchStorage(){
   if(!prepared)prepared=(async()=>{
@@ -30,6 +31,7 @@ async function processBatch(batch,stripe){
       const current=await Batch.exists({_id:batch._id,status:'running',runnerId});
       const user=await User.findById(batch.userId).select('+stripeApiKey');
       if(!current||!user?.stripeApiKey||keyVersion(user.stripeApiKey)!==batch.keyHash)return false;
+      await assertRetryAccess(batch.userId);
       const lease=await Lease.updateOne({_id:batch.accountId,owner:runnerId,until:{$gt:new Date()}},{$set:{until:new Date(Date.now()+120000)}});
       return lease.matchedCount===1;
     };
@@ -55,6 +57,7 @@ async function processBatch(batch,stripe){
             }},{upsert:true});
           }});
       }catch(error){
+        if([402,503,409].includes(error.statusCode))throw error;
         console.error('Manual invoice retry:',error.type||error.name);
         result={state:'review',reason:'could_not_confirm_outcome',attempts:await Attempt.countDocuments({batchId,invoiceId:item.invoiceId})};
       }
@@ -69,7 +72,7 @@ async function processBatch(batch,stripe){
     }
   }catch(error){
     console.error('Manual batch:',error.type||error.name);
-    await Batch.updateOne({_id:batch._id,runnerId},{$set:{status:'failed',lastError:'The run stopped. Review recorded attempts before resuming.',finishedAt:new Date()}});
+    await Batch.updateOne({_id:batch._id,runnerId},{$set:{status:'failed',lastError:error.statusCode===402?'Subscription access ended. Update billing before resuming.':'The run stopped. Review recorded attempts before resuming.',finishedAt:new Date()}});
   }finally{await Lease.deleteOne({_id:batch.accountId,owner:runnerId});}
 }
 function launchBatch(batch,stripe){

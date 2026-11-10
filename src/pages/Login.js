@@ -1,5 +1,6 @@
+import { trackAuthPage } from '../services/analytics';
 import RecoveryLogo from '../components/RecoveryLogo';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import './Auth.css';
@@ -11,6 +12,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
 
+  useEffect(() => { trackAuthPage('/login'); }, []);
   const { login } = useAuth();
   const navigate = useNavigate();
 
