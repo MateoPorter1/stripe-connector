@@ -139,3 +139,16 @@ test('valid uninstall disconnects only its account and ignores stale/unrelated e
   await f.service.receive(event, 'test'); assert.equal(row.status, 'disconnected');
   await f.service.receive(event, 'test'); assert.equal(row.status, 'disconnected');
 });
+
+test('configured review workspace cannot start or complete a non-sandbox connection', async () => {
+  const f = fixture();
+  const reviewEnv = { ...env, STRIPE_APP_REVIEW_USER_ID: 'user_a', STRIPE_APP_LIVE_INSTALL_ENABLED: 'true',
+    STRIPE_APP_DEVELOPER_KEY_SANDBOX: 'sk_test_sandbox', STRIPE_APP_INSTALL_URL_SANDBOX: 'https://marketplace.stripe.com/oauth/v2/authorize?client_id=ca_sandbox' };
+  const review = createConnectionService({ Connections:f.Connections, States:f.States, Installs:f.Installs, Users:f.Users, Batches:f.Batches, env:reviewEnv, now:f.now,
+    fetchImpl:async()=>{ throw new Error('A restricted grant must never be exchanged'); } });
+  for (const mode of ['live','test']) await assert.rejects(review.start('user_a',mode), e=>e.statusCode===403);
+  assert.match((await review.start('user_a','sandbox')).url,/ca_sandbox/);
+  const earlier = await f.service.start('user_a','test');
+  await assert.rejects(review.complete('user_a',{state:new URL(earlier.url).searchParams.get('state'),code:'ac_old'}),e=>e.statusCode===403);
+  assert.equal(f.Connections.rows.length,0);
+});

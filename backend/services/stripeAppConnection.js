@@ -49,6 +49,7 @@ function createConnectionService({
     return body;
   }
   async function start(userId, mode = 'live') {
+    if (require('./stripeReviewAccess').isReviewUser(userId, env) && mode !== 'sandbox') throw fail('This review workspace supports Stripe sandbox connections only.', 403);
     if (mode === 'live' && env.STRIPE_APP_LIVE_INSTALL_ENABLED !== 'true') throw fail('Live Stripe app installation is not open yet.', 503);
     const config = oauthConfig(mode, env);
     await States.init?.();
@@ -64,6 +65,7 @@ function createConnectionService({
     // Atomic consume: replay, expired state and another user's callback all fail.
     const saved = await States.findOneAndDelete({ _id: hash(state), userId, expiresAt: { $gt: new Date(now()) } });
     if (!saved) throw fail('This connection expired or was already used. Start again from Connect Stripe.');
+    if (require('./stripeReviewAccess').isReviewUser(userId, env) && saved.mode !== 'sandbox') throw fail('This review workspace supports Stripe sandbox connections only.', 403);
     const config = oauthConfig(saved.mode, env);
     await Connections.init?.();
     if (await Batches.exists({ userId, status: { $in: ['running', 'stopping'] } })) throw fail('Stop the current recovery run before changing Stripe accounts.', 409);

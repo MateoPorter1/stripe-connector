@@ -28,6 +28,7 @@ router.get('/stripe-status', async (req, res) => {
 });
 router.put('/stripe-key', async (req, res) => {
   try {
+    if (require('../services/stripeReviewAccess').isReviewUser(req.user._id)) return res.status(403).json({ error: 'This review workspace supports Stripe sandbox app connections only.' });
     const key = typeof req.body.stripeApiKey === 'string' ? req.body.stripeApiKey.trim() : '';
     if (!/^rk_(test|live)_[A-Za-z0-9]{10,500}$/.test(key)) return res.status(400).json({ error: 'Use a restricted Stripe key (rk_test_ or rk_live_), not your full secret key.' });
     if (await Connection.exists({ userId: req.user._id })) return res.status(409).json({ error: 'Reconnect using the Stripe app. This workspace already uses a Stripe app connection.' });
