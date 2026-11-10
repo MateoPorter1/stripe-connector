@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import './Auth.css';
+import RecoveryLogo from '../components/RecoveryLogo';
 
 function Signup() {
   const [name, setName] = useState('');
@@ -44,8 +45,9 @@ function Signup() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>Create Account</h1>
-        <p className="auth-subtitle">Sign up to manage your transactions</p>
+        <a className="auth-signup-brand" href="https://reboundmrr.com/" aria-label="Rebound website"><RecoveryLogo/></a>
+        <h1>Create your account</h1>
+        <p className="auth-subtitle">Start recovering failed Stripe subscription payments.</p>
 
         {error && (
           <div className="error-message">

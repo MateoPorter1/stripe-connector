@@ -8,6 +8,7 @@ import './pages/Light.css';
 import './pages/Professional.css';
 import './pages/CollectionsDesk.css';
 import './pages/BrightAccent.css';
+import './pages/CeramicApp.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
