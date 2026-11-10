@@ -1,0 +1,2 @@
+import {billingDestination} from './billing';
+test('only official hosted billing destinations are accepted',()=>{expect(billingDestination('https://checkout.stripe.com/c/pay/test')).toContain('checkout.stripe.com');expect(()=>billingDestination('https://checkout.stripe.com.attacker.example')).toThrow();expect(()=>billingDestination('javascript:alert(1)')).toThrow();expect(()=>billingDestination('http://billing.stripe.com')).toThrow();});

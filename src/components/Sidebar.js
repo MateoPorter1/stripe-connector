@@ -22,7 +22,7 @@ export default function Sidebar(){
   <nav aria-label="Workspace navigation"><Link to="/dashboard" aria-current={pathname==='/dashboard'?'page':undefined}>Collections</Link><Link to="/home" aria-current={pathname==='/home'?'page':undefined}>Insights</Link></nav>
   <div className="live-account-menu" ref={menu}>
    <button ref={trigger} className="live-account-trigger" aria-label="Account menu" aria-expanded={open} aria-controls="workspace-account-actions" onClick={()=>setOpen(value=>!value)}><span className="desk-account">{(user?.name||user?.email||'W').slice(0,1).toUpperCase()}</span><span className="account-display-name">{user?.name||'My workspace'}</span><LuChevronDown/></button>
-   {open&&<div className="live-account-actions" id="workspace-account-actions"><div className="live-account-identity"><strong>{user?.name||'My workspace'}</strong><small>{user?.email}</small></div><button onClick={()=>go('/profile')}><LuUser/>Stripe & settings</button>{user?.role==='admin'&&<button onClick={()=>go('/admin')}><LuShield/>Admin panel</button>}<button className="account-sign-out" onClick={()=>{logout();go('/login');}}><LuLogOut/>Sign out</button></div>}
+   {open&&<div className="live-account-actions" id="workspace-account-actions"><div className="live-account-identity"><strong>{user?.name||'My workspace'}</strong><small>{user?.email}</small></div><button onClick={()=>go('/profile')}><LuUser/>Stripe & settings</button><button onClick={()=>go('/billing')}>Subscription & billing</button>{user?.role==='admin'&&<button onClick={()=>go('/admin')}><LuShield/>Admin panel</button>}<button className="account-sign-out" onClick={()=>{logout();go('/login');}}><LuLogOut/>Sign out</button></div>}
   </div>
  </header>;
 }

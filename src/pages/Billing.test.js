@@ -1,0 +1,15 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {act} from 'react';
+import {MemoryRouter} from 'react-router-dom';
+import Billing from './Billing';
+import {billingRequest,billingDestination} from '../services/billing';
+jest.mock('../services/billing',()=>({billingRequest:jest.fn(),billingDestination:jest.fn()}));
+jest.mock('../components/Sidebar',()=>()=>null);
+let host,root;
+beforeEach(()=>{global.IS_REACT_ACT_ENVIRONMENT=true;host=document.createElement('div');document.body.appendChild(host);root=createRoot(host);jest.clearAllMocks();});
+afterEach(async()=>{await act(async()=>root.unmount());host.remove();});
+const render=async(path='/billing',props={})=>{await act(async()=>root.render(<MemoryRouter initialEntries={[path]} future={{v7_startTransition:true,v7_relativeSplatPath:true}}><Billing {...props}/></MemoryRouter>));};
+test('preview is explicitly test-only with no checkout requests',async()=>{await render('/billing',{preview:true});expect(host.textContent).toContain('$1.00');expect(host.textContent).toContain('Launch pricing has not been set');expect(host.textContent).toContain('move no real money');expect(host.querySelector('button').disabled).toBe(true);expect(billingRequest).not.toHaveBeenCalled();});
+test('return confirms session with server and does not claim payment success from redirect',async()=>{billingRequest.mockResolvedValue({configured:true,plan:{amount:100,currency:'usd'},billing:{status:'incomplete',hasCustomer:true}});await render('/billing?checkout=success&session_id=cs_test_ABC');expect(billingRequest).toHaveBeenCalledWith('/confirm',{sessionId:'cs_test_ABC'});expect(host.textContent).toContain('Test payment incomplete');expect(host.textContent).toContain('A return to this page alone does not confirm payment');expect(host.textContent).toContain('Manage test subscription');expect(host.textContent).not.toContain('Start test subscription');});
+test('unconfigured billing offers no payment button',async()=>{billingRequest.mockResolvedValue({configured:false});await render();expect(host.textContent).toContain('being prepared');expect(host.textContent).not.toContain('Start test subscription');expect(billingDestination).not.toHaveBeenCalled();});

@@ -8,12 +8,15 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
+import Billing from './pages/Billing';
 
 function AppRoutes() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
+          <Route path="/design-preview/billing" element={<Billing preview />} />
+          <Route path="/billing" element={<PrivateRoute><Billing /></PrivateRoute>} />
           <Route path="/design-preview/queue" element={<Dashboard preview />} />
           <Route path="/design-preview/insights" element={<Home preview />} />
           <Route path="/design-preview" element={<Dashboard preview />} />
