@@ -40,3 +40,12 @@ Customer/subscription/payment-method/payment-intent/charge reads support invoice
 
 ## Configuration
 See backend/services/stripeAppConnection.js and backend/routes/stripeApp.js. Publisher keys, webhook secrets and the vault key belong only in the backend host's secret settings. Never commit them. Keep STRIPE_APP_LIVE_INSTALL_ENABLED=false while testing.
+
+## Observed external test — November 10, 2026
+- Separate synthetic Rebound workspace; connected ordinary Stripe Sandbox acct_1UaEPAIiCZhWCeVy.
+- Stripe consent, OAuth callback and encrypted connection persistence completed; mode correctly stored as sandbox.
+- Collections scan completed with zero test payments and no charges.
+- Uninstalled through Stripe Dashboard; the lifecycle notification changed Rebound status to disconnected and hasConfiguredStripe=false.
+- Evidence: reports/stripe-marketplace under the parent workspace (connected and disconnected screenshots).
+- 81 backend tests and 54 frontend tests passed. Website build validated 36 pages and all internal links.
+- This does not claim an end-to-end multi-card collection against real invoices or Marketplace approval.

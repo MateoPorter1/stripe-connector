@@ -1,0 +1,21 @@
+{
+  "name": "Rebound",
+  "tagline": "Recover failed subscription payments across saved cards",
+  "website": "https://reboundmrr.com",
+  "install_url": "https://app.reboundmrr.com/stripe/install",
+  "privacy_url": "https://reboundmrr.com/privacy",
+  "support_url": "https://reboundmrr.com/support",
+  "support_email": "m@reboundmrr.com",
+  "pricing_url": "https://reboundmrr.com/pricing",
+  "pricing": "14-day free trial. Then USD 50/month or USD 500/year.",
+  "description": "A failed payment does not have to mean a lost customer. Rebound brings failed Stripe subscription payments into one workspace. Choose a date range, review unpaid invoices and saved cards, then start a recovery run. For each invoice, Rebound tries each distinct eligible saved card once in that run and stops when the invoice is paid, cards are exhausted, or an uncertain outcome needs review. Track invoice and card-attempt results, and follow the original invoice back to Stripe. Installing or opening Rebound never starts collection. Rebound is a separate paid service; a valid trial or subscription is required to start recovery.",
+  "features": [
+    "Find failed subscription payments within your selected date range",
+    "Review unpaid balances, saved-card counts and failure reasons",
+    "Start one controlled recovery run across eligible saved cards",
+    "Stop on successful payment and hold uncertain outcomes for review",
+    "Trace results by invoice, card attempt and recovery month"
+  ],
+  "limitations": "Recovery is not guaranteed. Expired cards, authentication requirements, paid or voided invoices and other ineligible records can prevent collection. Coordinate recovery with existing Stripe retry policies. Rebound is not a dunning email service.",
+  "review_status": "External testing passed for OAuth install, read-only scan and uninstall-driven disconnection in a separate sandbox. Marketplace listing not submitted or approved. Live app installations remain disabled."
+}
